@@ -81,7 +81,7 @@ if (project.hasProperty("native")) {
         binaries {
             named("main") {
                 imageName.set("HandicapCommitteeApp")
-                mainClass.set("com.golfclub.handicap.HandicapApplication")
+                mainClass.set("com.kenjdavidson.golf.handicap.HandicapApplication")
                 buildArgs.addAll(
                     "--no-fallback",
                     "--initialize-at-build-time=org.slf4j",
@@ -98,9 +98,9 @@ openApiGenerate {
     library.set("resttemplate")
     inputSpec.set("$projectDir/src/main/resources/openapi/golf-canada.yaml")
     outputDir.set(layout.buildDirectory.dir("generated-sources/openapi").get().asFile.absolutePath)
-    apiPackage.set("com.golfclub.handicap.golfcanada.api")
-    modelPackage.set("com.golfclub.handicap.golfcanada.model")
-    invokerPackage.set("com.golfclub.handicap.golfcanada.invoker")
+    apiPackage.set("com.kenjdavidson.golf.handicap.golfcanada.api")
+    modelPackage.set("com.kenjdavidson.golf.handicap.golfcanada.model")
+    invokerPackage.set("com.kenjdavidson.golf.handicap.golfcanada.invoker")
     configOptions.set(
         mapOf(
             "useJakartaEe" to "true",

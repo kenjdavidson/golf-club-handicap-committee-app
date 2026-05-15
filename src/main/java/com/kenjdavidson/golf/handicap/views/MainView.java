@@ -1,4 +1,4 @@
-package com.golfclub.handicap.views;
+package com.kenjdavidson.golf.handicap.views;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;

@@ -1,12 +1,12 @@
-package com.golfclub.handicap.golfcanada;
+package com.kenjdavidson.golf.handicap.golfcanada;
 
-import com.golfclub.handicap.golfcanada.api.AuthenticationApi;
-import com.golfclub.handicap.golfcanada.api.MembersApi;
-import com.golfclub.handicap.golfcanada.invoker.ApiClient;
-import com.golfclub.handicap.golfcanada.model.AuthToken;
-import com.golfclub.handicap.golfcanada.model.HistoryEntry;
-import com.golfclub.handicap.golfcanada.model.HistoryResponse;
-import com.golfclub.handicap.golfcanada.model.Profile;
+import com.kenjdavidson.golf.handicap.golfcanada.api.AuthenticationApi;
+import com.kenjdavidson.golf.handicap.golfcanada.api.MembersApi;
+import com.kenjdavidson.golf.handicap.golfcanada.invoker.ApiClient;
+import com.kenjdavidson.golf.handicap.golfcanada.model.AuthToken;
+import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryEntry;
+import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryResponse;
+import com.kenjdavidson.golf.handicap.golfcanada.model.Profile;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;

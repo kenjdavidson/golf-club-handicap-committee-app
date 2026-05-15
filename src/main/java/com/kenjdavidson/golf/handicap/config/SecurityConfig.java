@@ -1,4 +1,4 @@
-package com.golfclub.handicap.config;
+package com.kenjdavidson.golf.handicap.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
