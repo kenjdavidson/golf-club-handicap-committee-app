@@ -3,25 +3,36 @@ package com.golfclub.handicap.golfcanada;
 import com.golfclub.handicap.golfcanada.api.AuthenticationApi;
 import com.golfclub.handicap.golfcanada.api.MembersApi;
 import com.golfclub.handicap.golfcanada.invoker.ApiClient;
+import com.golfclub.handicap.golfcanada.model.AuthToken;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class GolfCanadaClientGenerationTest {
 
     @Test
-    void generatedClientContainsRequiredOperations() {
+    void generatedClientContainsRequiredOperations() throws NoSuchMethodException {
         ApiClient apiClient = new ApiClient();
         AuthenticationApi authenticationApi = new AuthenticationApi(apiClient);
         MembersApi membersApi = new MembersApi(apiClient);
 
-        assertTrue(Arrays.stream(authenticationApi.getClass().getMethods())
-            .anyMatch(method -> method.getName().equals("authenticate")));
-        assertTrue(Arrays.stream(membersApi.getClass().getMethods())
-            .anyMatch(method -> method.getName().equals("getProfile")));
-        assertTrue(Arrays.stream(membersApi.getClass().getMethods())
-            .anyMatch(method -> method.getName().equals("getHistory")));
+        Method authenticateMethod = authenticationApi.getClass().getMethod(
+            "authenticate",
+            String.class, String.class, String.class, Boolean.class, String.class, String.class, String.class
+        );
+        Method getProfileMethod = membersApi.getClass().getMethod("getProfile", Long.class);
+        Method getHistoryMethod = membersApi.getClass().getMethod("getHistory", Long.class, Integer.class);
+
+        assertNotNull(authenticateMethod);
+        assertNotNull(getProfileMethod);
+        assertNotNull(getHistoryMethod);
+        assertEquals(AuthToken.class, authenticateMethod.getReturnType());
+        assertEquals(Map.class, getProfileMethod.getReturnType());
+        assertEquals(List.class, getHistoryMethod.getReturnType());
     }
 }
