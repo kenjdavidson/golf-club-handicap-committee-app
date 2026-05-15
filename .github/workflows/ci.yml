@@ -19,10 +19,10 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-          cache: maven
+          cache: gradle
 
       - name: Test
         env:
           GOLFCANADA_USERNAME: ${{ secrets.GOLFCANADA_USERNAME }}
           GOLFCANADA_PASSWORD: ${{ secrets.GOLFCANADA_PASSWORD }}
-        run: mvn -B test
+        run: ./gradlew test
