@@ -125,9 +125,9 @@ components:
     AuthToken:
       type: object
       properties:
-        token_type:
-          type: string
         access_token:
+          type: string
+        token_type:
           type: string
         expires_in:
           type: integer
