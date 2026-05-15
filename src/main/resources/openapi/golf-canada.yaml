@@ -55,7 +55,7 @@ paths:
         '404':
           description: Member not found
 
-  /api/members/{userId}/getHandicapHistory:
+  /api/scores/getHistory:
     get:
       summary: Retrieve member handicap history
       tags: [Members]
@@ -63,27 +63,31 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: offsetInDays
+        - name: $skip
           in: query
           required: false
           schema:
             type: integer
-            default: -365
+            default: 0
+        - name: $top
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: individualId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
       responses:
         '200':
           description: Member handicap history retrieved successfully
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/HistoryEntry'
+                $ref: '#/components/schemas/HistoryResponse'
         '401':
           description: Not authorized
         '404':
@@ -121,18 +125,103 @@ components:
     AuthToken:
       type: object
       properties:
-        access_token:
-          type: string
         token_type:
+          type: string
+        access_token:
           type: string
         expires_in:
           type: integer
           format: int32
         refresh_token:
           type: string
-        scope:
+        id_token:
           type: string
-      additionalProperties: true
+        user:
+          $ref: '#/components/schemas/User'
+        expire_date:
+          type: string
+          format: date-time
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        authUserId:
+          type: integer
+          format: int64
+        networkId:
+          type: integer
+          format: int64
+        golfCanadaCardId:
+          type: string
+        username:
+          type: string
+        fullName:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        handicap:
+          type: string
+        pcc:
+          type: string
+        email:
+          type: string
+        isAdmin:
+          type: boolean
+        isNationalAdmin:
+          type: boolean
+        isNationalLookupAdmin:
+          type: boolean
+        isAssociationAdmin:
+          type: boolean
+        isSystemAdmin:
+          type: boolean
+        isTournamentAdmin:
+          type: boolean
+        isHandicapChair:
+          type: boolean
+        isLimitedClubAdmin:
+          type: boolean
+        isPending:
+          type: boolean
+        membershipLevel:
+          type: string
+        expirationDate:
+          type: string
+          format: date-time
+        clubManagementGroupId:
+          type: integer
+        termsAndConditionsDate:
+          type: string
+          format: date-time
+        isClubManagingUpgrades:
+          type: boolean
+        allowScorePosting:
+          type: boolean
+        subscriptionRenewsOn:
+          type: string
+          format: date-time
+          nullable: true
+        scoreDefaults:
+          $ref: '#/components/schemas/ScoreDefaults'
+    ScoreDefaults:
+      type: object
+      properties:
+        nationalAssociation:
+          type: string
+        facilityId:
+          type: integer
+        facilityName:
+          type: string
+        courseId:
+          type: integer
+        teeId:
+          type: integer
+        postHoleByHole:
+          type: boolean
     Profile:
       type: object
       description: Member snapshot payload as returned by Golf Canada.
@@ -210,12 +299,94 @@ components:
       type: object
       description: Handicap history entry payload as returned by Golf Canada.
       properties:
+        id:
+          type: integer
+          format: int64
         date:
           type: string
           format: date-time
+        course:
+          type: string
+        tee:
+          type: string
+        holes:
+          type: string
+        score:
+          type: integer
+        rating:
+          type: number
+          format: double
+        slope:
+          type: integer
         handicap:
           type: number
           format: double
+        differential:
+          type: number
+          format: double
+        scaleTypeId:
+          type: integer
+          nullable: true
+        adjustedDifferential:
+          type: number
+          format: double
+        playedDifferential:
+          type: number
+          format: double
+          nullable: true
+        expectedDifferential:
+          type: number
+          format: double
+          nullable: true
+        estimatedRating:
+          type: number
+          format: double
+          nullable: true
+        estimatedSlope:
+          type: integer
+          nullable: true
+        scaledHolesPlayed:
+          type: integer
+          nullable: true
+        adjustment:
+          type: number
+          format: double
+        pccAdjustment:
+          type: number
+          format: double
+        isPCC:
+          type: boolean
+        type:
+          type: string
+        isHandicapScore:
+          type: boolean
+        isUsedInCalc:
+          type: boolean
+        isEdited:
+          type: boolean
+        canEdit:
+          type: boolean
+        canDelete:
+          type: boolean
+        adjustments:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
         lowHandicap:
           type: number
           format: double
+    HistoryResponse:
+      type: object
+      properties:
+        individualId:
+          type: integer
+          format: int64
+        total:
+          type: integer
+        showComplete:
+          type: boolean
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoryEntry'
