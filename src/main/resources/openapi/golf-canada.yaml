@@ -1,0 +1,392 @@
+openapi: 3.0.3
+info:
+  title: Golf Canada API Client
+  description: Minimal Golf Canada API operations required by the Handicap Committee app.
+  version: 1.0.0
+servers:
+  - url: https://scg.golfcanada.ca
+paths:
+  /connect/token:
+    post:
+      summary: Retrieve authentication token
+      tags: [Authentication]
+      operationId: authenticate
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authorized
+
+  /api/members/{userId}/getSnapshot:
+    get:
+      summary: Retrieve member profile information
+      tags: [Members]
+      operationId: getProfile
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Member profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '401':
+          description: Not authorized
+        '404':
+          description: Member not found
+
+  /api/scores/getHistory:
+    get:
+      summary: Retrieve member handicap history
+      tags: [Members]
+      operationId: getHistory
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: $skip
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: $top
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: individualId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Member handicap history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryResponse'
+        '401':
+          description: Not authorized
+        '404':
+          description: Member not found
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    AuthRequest:
+      type: object
+      required:
+        - grant_type
+        - username
+        - password
+      properties:
+        grant_type:
+          type: string
+          default: password
+        username:
+          type: string
+        password:
+          type: string
+        rememberme:
+          type: boolean
+        scope:
+          type: string
+        client_id:
+          type: string
+        client_secret:
+          type: string
+    AuthToken:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+        expires_in:
+          type: integer
+          format: int32
+        refresh_token:
+          type: string
+        id_token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+        expire_date:
+          type: string
+          format: date-time
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        authUserId:
+          type: integer
+          format: int64
+        networkId:
+          type: integer
+          format: int64
+        golfCanadaCardId:
+          type: string
+        username:
+          type: string
+        fullName:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        handicap:
+          type: string
+        pcc:
+          type: string
+        email:
+          type: string
+        isAdmin:
+          type: boolean
+        isNationalAdmin:
+          type: boolean
+        isNationalLookupAdmin:
+          type: boolean
+        isAssociationAdmin:
+          type: boolean
+        isSystemAdmin:
+          type: boolean
+        isTournamentAdmin:
+          type: boolean
+        isHandicapChair:
+          type: boolean
+        isLimitedClubAdmin:
+          type: boolean
+        isPending:
+          type: boolean
+        membershipLevel:
+          type: string
+        expirationDate:
+          type: string
+          format: date-time
+        clubManagementGroupId:
+          type: integer
+        termsAndConditionsDate:
+          type: string
+          format: date-time
+        isClubManagingUpgrades:
+          type: boolean
+        allowScorePosting:
+          type: boolean
+        subscriptionRenewsOn:
+          type: string
+          format: date-time
+          nullable: true
+        scoreDefaults:
+          $ref: '#/components/schemas/ScoreDefaults'
+    ScoreDefaults:
+      type: object
+      properties:
+        nationalAssociation:
+          type: string
+        facilityId:
+          type: integer
+        facilityName:
+          type: string
+        courseId:
+          type: integer
+        teeId:
+          type: integer
+        postHoleByHole:
+          type: boolean
+    Profile:
+      type: object
+      description: Member snapshot payload as returned by Golf Canada.
+      properties:
+        club:
+          type: string
+        membershipType:
+          type: string
+        expirationDate:
+          type: string
+          format: date-time
+        homeCourse:
+          type: string
+        defaultTee:
+          type: string
+        courseHandicap:
+          type: string
+        winterHandicap:
+          type: string
+        winterCourseHandicap:
+          type: string
+        isWinterHandicapDisplayed:
+          type: boolean
+        scores:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        clubManagementGroup:
+          type: string
+        ytdScoreCount:
+          type: integer
+        ytdScoreAverage:
+          type: number
+          format: double
+        ytdYear:
+          type: integer
+        transferClubName:
+          type: string
+        transferRequestDate:
+          type: string
+          format: date-time
+        lastCardRequestedOn:
+          type: string
+          format: date-time
+        expectedDeliveryOn:
+          type: string
+          format: date-time
+        isCardsSentToClub:
+          type: boolean
+        lowHandicap:
+          type: string
+        lowHandicapOn:
+          type: string
+          format: date-time
+        adjustedLowHandicap:
+          type: string
+        displayLowHandicap:
+          type: string
+        adjustedLowHandicapStartOn:
+          type: string
+          format: date-time
+        adjustedLowHandicapEndOn:
+          type: string
+          format: date-time
+        lowHandicapAdjustedOn:
+          type: string
+          format: date-time
+        isLowIndexAdjusted:
+          type: boolean
+        subscriptionRenewsOn:
+          type: string
+          format: date-time
+    HistoryEntry:
+      type: object
+      description: Handicap history entry payload as returned by Golf Canada.
+      properties:
+        id:
+          type: integer
+          format: int64
+        date:
+          type: string
+          format: date-time
+        course:
+          type: string
+        tee:
+          type: string
+        holes:
+          type: string
+        score:
+          type: integer
+        rating:
+          type: number
+          format: double
+        slope:
+          type: integer
+        handicap:
+          type: number
+          format: double
+        differential:
+          type: number
+          format: double
+        scaleTypeId:
+          type: integer
+          nullable: true
+        adjustedDifferential:
+          type: number
+          format: double
+        playedDifferential:
+          type: number
+          format: double
+          nullable: true
+        expectedDifferential:
+          type: number
+          format: double
+          nullable: true
+        estimatedRating:
+          type: number
+          format: double
+          nullable: true
+        estimatedSlope:
+          type: integer
+          nullable: true
+        scaledHolesPlayed:
+          type: integer
+          nullable: true
+        adjustment:
+          type: number
+          format: double
+        pccAdjustment:
+          type: number
+          format: double
+        isPCC:
+          type: boolean
+        type:
+          type: string
+        isHandicapScore:
+          type: boolean
+        isUsedInCalc:
+          type: boolean
+        isEdited:
+          type: boolean
+        canEdit:
+          type: boolean
+        canDelete:
+          type: boolean
+        adjustments:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        lowHandicap:
+          type: number
+          format: double
+    HistoryResponse:
+      type: object
+      properties:
+        individualId:
+          type: integer
+          format: int64
+        total:
+          type: integer
+        showComplete:
+          type: boolean
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoryEntry'

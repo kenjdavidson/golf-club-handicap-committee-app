@@ -22,4 +22,7 @@ jobs:
           cache: maven
 
       - name: Test
+        env:
+          GOLFCANADA_USERNAME: ${{ secrets.GOLFCANADA_USERNAME }}
+          GOLFCANADA_PASSWORD: ${{ secrets.GOLFCANADA_PASSWORD }}
         run: mvn -B test
