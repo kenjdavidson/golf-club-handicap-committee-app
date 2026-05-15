@@ -1,5 +1,6 @@
 package com.kenjdavidson.golf.handicap;
 
+import com.kenjdavidson.golf.handicap.config.GolfCanadaSslTrustConfigurator;
 import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -17,7 +18,7 @@ class HandicapApplicationSslCertificateTest {
     void configuresDefaultSslSocketFactoryWithGolfCanadaCertificate() {
         SSLSocketFactory before = HttpsURLConnection.getDefaultSSLSocketFactory();
 
-        HandicapApplication.configureGolfCanadaCertificateTrust();
+        GolfCanadaSslTrustConfigurator.configureDefaultSslTrust();
 
         SSLSocketFactory after = HttpsURLConnection.getDefaultSSLSocketFactory();
         assertNotNull(after);
@@ -26,8 +27,8 @@ class HandicapApplicationSslCertificateTest {
 
     @Test
     void compositeTrustManagerTrustsBundledGolfCanadaCertificate() throws Exception {
-        X509TrustManager trustManager = HandicapApplication.createCompositeTrustManager();
-        X509Certificate certificate = HandicapApplication.loadGolfCanadaCertificate();
+        X509TrustManager trustManager = GolfCanadaSslTrustConfigurator.createCompositeTrustManager();
+        X509Certificate certificate = GolfCanadaSslTrustConfigurator.loadGolfCanadaCertificate();
         assertDoesNotThrow(() -> trustManager.checkServerTrusted(new X509Certificate[] {certificate}, "RSA"));
     }
 }
