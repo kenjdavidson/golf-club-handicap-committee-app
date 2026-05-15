@@ -1,0 +1,45 @@
+# -----------------------------------------------
+# Golf Club Handicap Committee App – .gitignore
+# -----------------------------------------------
+
+# Maven build output
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Vaadin frontend build artefacts
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+.pnpm-store/
+webpack.generated.js
+vite.generated.ts
+frontend/generated/
+
+# IDEs
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+.eclipse/
+*.classpath
+*.project
+*.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# JPackage / native build output
+*.exe
+*.msi
+*.dmg
+*.pkg
+*.deb
+*.rpm
+
+# Log files
+*.log
+logs/
