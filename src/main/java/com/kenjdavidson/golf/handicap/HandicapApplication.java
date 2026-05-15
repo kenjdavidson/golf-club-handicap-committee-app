@@ -1,4 +1,4 @@
-package com.golfclub.handicap;
+package com.kenjdavidson.golf.handicap;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;

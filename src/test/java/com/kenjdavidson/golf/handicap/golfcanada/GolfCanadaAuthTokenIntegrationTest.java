@@ -1,4 +1,4 @@
-package com.golfclub.handicap.golfcanada;
+package com.kenjdavidson.golf.handicap.golfcanada;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

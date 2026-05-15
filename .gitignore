@@ -2,11 +2,10 @@
 # Golf Club Handicap Committee App – .gitignore
 # -----------------------------------------------
 
-# Maven build output
-target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+# Gradle build output
+build/
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
 
 # Vaadin frontend build artefacts
 node_modules/

@@ -1,4 +1,4 @@
-package com.golfclub.handicap;
+package com.kenjdavidson.golf.handicap;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
