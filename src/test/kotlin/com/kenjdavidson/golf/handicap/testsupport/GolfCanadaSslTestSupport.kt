@@ -7,6 +7,7 @@ import org.springframework.web.client.RestTemplate
 object GolfCanadaSslTestSupport {
     @JvmStatic
     @JvmOverloads
+    @Synchronized
     fun createRestTemplate(connectTimeoutMillis: Int = 10_000, readTimeoutMillis: Int = 10_000): RestTemplate {
         GolfCanadaSslTrustConfigurator.configureDefaultSslTrust()
 
