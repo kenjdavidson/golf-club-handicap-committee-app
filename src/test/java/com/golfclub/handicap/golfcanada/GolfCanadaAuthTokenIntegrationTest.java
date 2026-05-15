@@ -1,5 +1,7 @@
 package com.golfclub.handicap.golfcanada;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpEntity;
@@ -19,9 +21,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class GolfCanadaAuthTokenIntegrationTest {
 
     private static final String SCOPE = "address+email+offline_access+openid+phone+profile+roles";
+    private static final RestTemplate REST_TEMPLATE = new RestTemplate();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Test
-    void authenticateWithEnvironmentCredentials() {
+    void authenticateWithEnvironmentCredentials() throws Exception {
         String username = System.getenv("GOLFCANADA_USERNAME");
         String password = System.getenv("GOLFCANADA_PASSWORD");
 
@@ -36,8 +40,7 @@ class GolfCanadaAuthTokenIntegrationTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response = restTemplate.exchange(
+        ResponseEntity<String> response = REST_TEMPLATE.exchange(
             "https://scg.golfcanada.ca/connect/token",
             HttpMethod.POST,
             new HttpEntity<>(body, headers),
@@ -47,6 +50,9 @@ class GolfCanadaAuthTokenIntegrationTest {
         HttpStatusCode statusCode = response.getStatusCode();
         assertTrue(statusCode.is2xxSuccessful(), "Expected successful auth response");
         assertNotNull(response.getBody());
-        assertTrue(response.getBody().contains("\"access_token\""));
+        JsonNode json = OBJECT_MAPPER.readTree(response.getBody());
+        JsonNode accessToken = json.get("access_token");
+        assertNotNull(accessToken);
+        assertTrue(!accessToken.asText().isBlank());
     }
 }
