@@ -15,12 +15,14 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GolfCanadaAuthTokenIntegrationTest {
 
-    private static final String SCOPE = "address+email+offline_access+openid+phone+profile+roles";
+    private static final String TOKEN_ENDPOINT_URL = "https://scg.golfcanada.ca/connect/token";
+    private static final String SCOPE = "address email offline_access openid phone profile roles";
     private static final RestTemplate REST_TEMPLATE = new RestTemplate();
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -34,14 +36,14 @@ class GolfCanadaAuthTokenIntegrationTest {
 
         String body = "grant_type=password"
             + "&password=" + URLEncoder.encode(password, StandardCharsets.UTF_8)
-            + "&scope=" + SCOPE
+            + "&scope=" + URLEncoder.encode(SCOPE, StandardCharsets.UTF_8)
             + "&username=" + URLEncoder.encode(username, StandardCharsets.UTF_8);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         ResponseEntity<String> response = REST_TEMPLATE.exchange(
-            "https://scg.golfcanada.ca/connect/token",
+            TOKEN_ENDPOINT_URL,
             HttpMethod.POST,
             new HttpEntity<>(body, headers),
             String.class
@@ -53,6 +55,6 @@ class GolfCanadaAuthTokenIntegrationTest {
         JsonNode json = OBJECT_MAPPER.readTree(response.getBody());
         JsonNode accessToken = json.get("access_token");
         assertNotNull(accessToken);
-        assertTrue(!accessToken.asText().isBlank());
+        assertFalse(accessToken.asText().isBlank());
     }
 }
