@@ -1,0 +1,143 @@
+openapi: 3.0.3
+info:
+  title: Golf Canada API Client
+  description: Minimal Golf Canada API operations required by the Handicap Committee app.
+  version: 1.0.0
+servers:
+  - url: https://scg.golfcanada.ca
+paths:
+  /connect/token:
+    post:
+      summary: Retrieve authentication token
+      tags: [Authentication]
+      operationId: authenticate
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authorized
+
+  /api/members/{userId}/getSnapshot:
+    get:
+      summary: Retrieve member profile information
+      tags: [Members]
+      operationId: getProfile
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Member profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '401':
+          description: Not authorized
+        '404':
+          description: Member not found
+
+  /api/members/{userId}/getHandicapHistory:
+    get:
+      summary: Retrieve member handicap history
+      tags: [Members]
+      operationId: getHistory
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: offsetInDays
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: -365
+      responses:
+        '200':
+          description: Member handicap history retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HistoryEntry'
+        '401':
+          description: Not authorized
+        '404':
+          description: Member not found
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    AuthRequest:
+      type: object
+      required:
+        - grant_type
+        - username
+        - password
+      properties:
+        grant_type:
+          type: string
+          default: password
+        username:
+          type: string
+        password:
+          type: string
+        rememberme:
+          type: boolean
+        scope:
+          type: string
+        client_id:
+          type: string
+        client_secret:
+          type: string
+    AuthToken:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+        expires_in:
+          type: integer
+          format: int32
+        refresh_token:
+          type: string
+        scope:
+          type: string
+      additionalProperties: true
+    Profile:
+      type: object
+      description: Member profile payload as returned by Golf Canada.
+      additionalProperties: true
+    HistoryEntry:
+      type: object
+      description: Handicap history entry payload as returned by Golf Canada.
+      additionalProperties: true

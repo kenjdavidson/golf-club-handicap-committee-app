@@ -27,6 +27,7 @@
         <java.version>17</java.version>
         <vaadin.version>24.3.13</vaadin.version>
         <pdfbox.version>3.0.3</pdfbox.version>
+        <openapi.generator.version>7.6.0</openapi.generator.version>
         <!-- jpackage output settings – override on the command line as needed -->
         <jpackage.app.name>HandicapCommitteeApp</jpackage.app.name>
         <jpackage.app.version>1.0.0</jpackage.app.version>
@@ -89,6 +90,11 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>jackson-databind-nullable</artifactId>
+            <version>0.2.6</version>
+        </dependency>
 
         <!-- ===== Test ===== -->
         <dependency>
@@ -136,6 +142,38 @@
                         <goals>
                             <goal>prepare-frontend</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>${openapi.generator.version}</version>
+                <executions>
+                    <execution>
+                        <id>generate-golf-canada-client</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/openapi/golf-canada.yaml</inputSpec>
+                            <generatorName>java</generatorName>
+                            <library>resttemplate</library>
+                            <output>${project.build.directory}/generated-sources/openapi</output>
+                            <apiPackage>com.golfclub.handicap.golfcanada.api</apiPackage>
+                            <modelPackage>com.golfclub.handicap.golfcanada.model</modelPackage>
+                            <invokerPackage>com.golfclub.handicap.golfcanada.invoker</invokerPackage>
+                            <configOptions>
+                                <useJakartaEe>true</useJakartaEe>
+                                <dateLibrary>java8</dateLibrary>
+                            </configOptions>
+                            <generateApiTests>false</generateApiTests>
+                            <generateModelTests>false</generateModelTests>
+                            <generateApiDocumentation>false</generateApiDocumentation>
+                            <generateModelDocumentation>false</generateModelDocumentation>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
