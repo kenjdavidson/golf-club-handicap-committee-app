@@ -19,7 +19,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
-import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -55,7 +54,7 @@ public class HandicapApplication {
             sslContext.init(
                 null,
                 new TrustManager[] {trustManager},
-                new SecureRandom()
+                null
             );
             SSLContext.setDefault(sslContext);
             HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
