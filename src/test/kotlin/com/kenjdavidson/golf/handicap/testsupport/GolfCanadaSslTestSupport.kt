@@ -6,16 +6,22 @@ import org.springframework.web.client.RestTemplate
 import java.time.Duration
 
 object GolfCanadaSslTestSupport {
+    private val defaultConnectTimeout = Duration.ofSeconds(10)
+    private val defaultReadTimeout = Duration.ofSeconds(10)
+
     init {
         GolfCanadaSslTrustConfigurator.configureDefaultSslTrust()
     }
 
     @JvmStatic
     @JvmOverloads
-    fun createRestTemplate(connectTimeoutMillis: Int = 10_000, readTimeoutMillis: Int = 10_000): RestTemplate {
+    fun createRestTemplate(
+        connectTimeout: Duration = defaultConnectTimeout,
+        readTimeout: Duration = defaultReadTimeout
+    ): RestTemplate {
         val requestFactory = SimpleClientHttpRequestFactory()
-        requestFactory.setConnectTimeout(Duration.ofMillis(connectTimeoutMillis.toLong()))
-        requestFactory.setReadTimeout(Duration.ofMillis(readTimeoutMillis.toLong()))
+        requestFactory.setConnectTimeout(connectTimeout)
+        requestFactory.setReadTimeout(readTimeout)
         return RestTemplate(requestFactory)
     }
 }
