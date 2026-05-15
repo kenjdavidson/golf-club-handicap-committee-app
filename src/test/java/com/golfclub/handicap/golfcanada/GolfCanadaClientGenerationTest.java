@@ -4,11 +4,12 @@ import com.golfclub.handicap.golfcanada.api.AuthenticationApi;
 import com.golfclub.handicap.golfcanada.api.MembersApi;
 import com.golfclub.handicap.golfcanada.invoker.ApiClient;
 import com.golfclub.handicap.golfcanada.model.AuthToken;
+import com.golfclub.handicap.golfcanada.model.HistoryEntry;
+import com.golfclub.handicap.golfcanada.model.Profile;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -32,7 +33,10 @@ class GolfCanadaClientGenerationTest {
         assertNotNull(getProfileMethod);
         assertNotNull(getHistoryMethod);
         assertEquals(AuthToken.class, authenticateMethod.getReturnType());
-        assertEquals(Map.class, getProfileMethod.getReturnType());
+        assertEquals(Profile.class, getProfileMethod.getReturnType());
         assertEquals(List.class, getHistoryMethod.getReturnType());
+
+        assertNotNull(Profile.class.getMethod("getClub"));
+        assertNotNull(HistoryEntry.class.getMethod("getHandicap"));
     }
 }
