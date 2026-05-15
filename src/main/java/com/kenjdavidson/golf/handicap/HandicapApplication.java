@@ -1,5 +1,6 @@
 package com.kenjdavidson.golf.handicap;
 
+import com.kenjdavidson.golf.handicap.config.GolfCanadaSslTrustConfigurator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -31,6 +32,7 @@ public class HandicapApplication {
     }
 
     public static void main(String[] args) {
+        GolfCanadaSslTrustConfigurator.configureDefaultSslTrust();
         SpringApplication.run(HandicapApplication.class, args);
     }
 
