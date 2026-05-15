@@ -10,7 +10,7 @@ plugins {
     kotlin("plugin.spring") version "2.0.21"
 }
 
-group = "com.golfclub"
+group = "com.kenjdavidson.golf"
 version = "1.0.0-SNAPSHOT"
 
 java {
