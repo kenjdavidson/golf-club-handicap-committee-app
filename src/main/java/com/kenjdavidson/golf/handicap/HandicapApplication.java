@@ -50,31 +50,37 @@ public class HandicapApplication {
 
     static void configureGolfCanadaCertificateTrust() {
         try {
-            CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-            Certificate golfCanadaCertificate;
-            try (InputStream certificateStream = HandicapApplication.class.getClassLoader()
-                .getResourceAsStream("certs/golfcanada.pem")) {
-                if (certificateStream == null) {
-                    log.warn("Golf Canada certificate resource not found; continuing with default JVM truststore");
-                    return;
-                }
-                golfCanadaCertificate = certificateFactory.generateCertificate(certificateStream);
-            }
-
-            X509TrustManager defaultTrustManager = getX509TrustManager(defaultTrustManagers());
-            X509TrustManager golfCanadaTrustManager = getX509TrustManager(golfCanadaTrustManagers(golfCanadaCertificate));
-
+            X509TrustManager trustManager = createCompositeTrustManager();
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(
                 null,
-                new TrustManager[] {new CompositeX509TrustManager(defaultTrustManager, golfCanadaTrustManager)},
+                new TrustManager[] {trustManager},
                 new SecureRandom()
             );
             SSLContext.setDefault(sslContext);
             HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
             log.info("Installed Golf Canada certificate into application SSL trust configuration");
-        } catch (IOException | GeneralSecurityException ex) {
+        } catch (IOException ex) {
+            log.warn("Golf Canada certificate resource not found; continuing with default JVM truststore");
+        } catch (GeneralSecurityException ex) {
             log.warn("Unable to install Golf Canada certificate into SSL trust configuration: {}", ex.getMessage());
+        }
+    }
+
+    static X509TrustManager createCompositeTrustManager() throws IOException, GeneralSecurityException {
+        X509TrustManager defaultTrustManager = getX509TrustManager(defaultTrustManagers());
+        X509TrustManager golfCanadaTrustManager = getX509TrustManager(golfCanadaTrustManagers(loadGolfCanadaCertificate()));
+        return new CompositeX509TrustManager(defaultTrustManager, golfCanadaTrustManager);
+    }
+
+    static X509Certificate loadGolfCanadaCertificate() throws IOException, GeneralSecurityException {
+        CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+        try (InputStream certificateStream = HandicapApplication.class.getClassLoader()
+            .getResourceAsStream("certs/golfcanada.pem")) {
+            if (certificateStream == null) {
+                throw new IOException("Missing certs/golfcanada.pem");
+            }
+            return (X509Certificate) certificateFactory.generateCertificate(certificateStream);
         }
     }
 
@@ -103,30 +109,33 @@ public class HandicapApplication {
         throw new IllegalStateException("No X509TrustManager available");
     }
 
-    private record CompositeX509TrustManager(X509TrustManager primary, X509TrustManager secondary) implements X509TrustManager {
+    private record CompositeX509TrustManager(
+        X509TrustManager defaultTrustManager,
+        X509TrustManager golfCanadaTrustManager
+    ) implements X509TrustManager {
 
         @Override
         public void checkClientTrusted(X509Certificate[] chain, String authType) throws java.security.cert.CertificateException {
             try {
-                primary.checkClientTrusted(chain, authType);
+                defaultTrustManager.checkClientTrusted(chain, authType);
             } catch (java.security.cert.CertificateException ex) {
-                secondary.checkClientTrusted(chain, authType);
+                golfCanadaTrustManager.checkClientTrusted(chain, authType);
             }
         }
 
         @Override
         public void checkServerTrusted(X509Certificate[] chain, String authType) throws java.security.cert.CertificateException {
             try {
-                primary.checkServerTrusted(chain, authType);
+                defaultTrustManager.checkServerTrusted(chain, authType);
             } catch (java.security.cert.CertificateException ex) {
-                secondary.checkServerTrusted(chain, authType);
+                golfCanadaTrustManager.checkServerTrusted(chain, authType);
             }
         }
 
         @Override
         public X509Certificate[] getAcceptedIssuers() {
-            X509Certificate[] primaryIssuers = primary.getAcceptedIssuers();
-            X509Certificate[] secondaryIssuers = secondary.getAcceptedIssuers();
+            X509Certificate[] primaryIssuers = defaultTrustManager.getAcceptedIssuers();
+            X509Certificate[] secondaryIssuers = golfCanadaTrustManager.getAcceptedIssuers();
             X509Certificate[] merged = Arrays.copyOf(primaryIssuers, primaryIssuers.length + secondaryIssuers.length);
             System.arraycopy(secondaryIssuers, 0, merged, primaryIssuers.length, secondaryIssuers.length);
             return merged;
