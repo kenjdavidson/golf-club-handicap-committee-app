@@ -10,6 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
@@ -23,8 +24,15 @@ class GolfCanadaAuthTokenIntegrationTest {
 
     private static final String TOKEN_ENDPOINT_URL = "https://scg.golfcanada.ca/connect/token";
     private static final String SCOPE = "address email offline_access openid phone profile roles";
-    private static final RestTemplate REST_TEMPLATE = new RestTemplate();
+    private static final RestTemplate REST_TEMPLATE = createRestTemplate();
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    private static RestTemplate createRestTemplate() {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(10000);
+        requestFactory.setReadTimeout(10000);
+        return new RestTemplate(requestFactory);
+    }
 
     @Test
     void authenticateWithEnvironmentCredentials() throws Exception {
