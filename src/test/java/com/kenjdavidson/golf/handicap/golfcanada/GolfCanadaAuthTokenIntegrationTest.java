@@ -5,12 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kenjdavidson.golf.handicap.testsupport.GolfCanadaSslTestSupport;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
+import org.opentest4j.TestAbortedException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
@@ -43,12 +45,25 @@ class GolfCanadaAuthTokenIntegrationTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        ResponseEntity<String> response = REST_TEMPLATE.exchange(
-            TOKEN_ENDPOINT_URL,
-            HttpMethod.POST,
-            new HttpEntity<>(body, headers),
-            String.class
-        );
+        ResponseEntity<String> response;
+        try {
+            response = GolfCanadaSslTestSupport.executeWithConnectionResetRetry(
+                () -> REST_TEMPLATE.exchange(
+                    TOKEN_ENDPOINT_URL,
+                    HttpMethod.POST,
+                    new HttpEntity<>(body, headers),
+                    String.class
+                )
+            );
+        } catch (ResourceAccessException exception) {
+            if (GolfCanadaSslTestSupport.isConnectionReset(exception)) {
+                throw new TestAbortedException(
+                    "Skipping auth integration test due to transient network reset while connecting to Golf Canada token endpoint",
+                    exception
+                );
+            }
+            throw exception;
+        }
 
         HttpStatusCode statusCode = response.getStatusCode();
         assertTrue(statusCode.is2xxSuccessful(), "Expected successful auth response");
