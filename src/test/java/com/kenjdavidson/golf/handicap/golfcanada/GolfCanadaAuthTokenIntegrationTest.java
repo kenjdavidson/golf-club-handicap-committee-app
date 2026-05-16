@@ -5,14 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kenjdavidson.golf.handicap.testsupport.GolfCanadaSslTestSupport;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
-import org.opentest4j.TestAbortedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GolfCanadaAuthTokenIntegrationTest {
 
+    private static final Logger LOG = LoggerFactory.getLogger(GolfCanadaAuthTokenIntegrationTest.class);
     private static final String TOKEN_ENDPOINT_URL = "https://scg.golfcanada.ca/connect/token";
     private static final String SCOPE = "address email offline_access openid phone profile roles";
     private static final RestTemplate REST_TEMPLATE = GolfCanadaSslTestSupport.createRestTemplate();
@@ -45,28 +46,18 @@ class GolfCanadaAuthTokenIntegrationTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        ResponseEntity<String> response;
-        try {
-            response = GolfCanadaSslTestSupport.executeWithConnectionResetRetry(
-                () -> REST_TEMPLATE.exchange(
-                    TOKEN_ENDPOINT_URL,
-                    HttpMethod.POST,
-                    new HttpEntity<>(body, headers),
-                    String.class
-                )
-            );
-        } catch (ResourceAccessException exception) {
-            if (GolfCanadaSslTestSupport.isConnectionReset(exception)) {
-                throw new TestAbortedException(
-                    "Skipping auth integration test due to transient network reset while connecting to Golf Canada token endpoint",
-                    exception
-                );
-            }
-            throw exception;
-        }
+        ResponseEntity<String> response = GolfCanadaSslTestSupport.executeWithConnectionResetRetry(
+            () -> REST_TEMPLATE.exchange(
+                TOKEN_ENDPOINT_URL,
+                HttpMethod.POST,
+                new HttpEntity<>(body, headers),
+                String.class
+            )
+        );
 
         HttpStatusCode statusCode = response.getStatusCode();
-        assertTrue(statusCode.is2xxSuccessful(), "Expected successful auth response");
+        LOG.info("Golf Canada token endpoint status: {}", statusCode.value());
+        assertTrue(statusCode.is2xxSuccessful(), "Expected successful auth response, got HTTP " + statusCode.value());
         assertNotNull(response.getBody());
         JsonNode json = OBJECT_MAPPER.readTree(response.getBody());
         JsonNode accessToken = json.get("access_token");

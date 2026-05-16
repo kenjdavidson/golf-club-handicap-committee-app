@@ -53,6 +53,24 @@ class GolfCanadaSslTestSupportTest {
     }
 
     @Test
+    fun executeWithConnectionResetRetry_throwsAfterMaxAttemptsForConnectionReset() {
+        var attempts = 0
+
+        assertThrows(ResourceAccessException::class.java) {
+            GolfCanadaSslTestSupport.executeWithConnectionResetRetry(
+                Supplier {
+                    attempts++
+                    throw ResourceAccessException("I/O error", SocketException("Connection reset by peer"))
+                },
+                3,
+                Duration.ZERO
+            )
+        }
+
+        assertEquals(3, attempts)
+    }
+
+    @Test
     fun isConnectionReset_detectsNestedCauseMessage() {
         val exception = ResourceAccessException("I/O error", IOException("Transport failed", SocketException("Connection reset by peer")))
         assertTrue(GolfCanadaSslTestSupport.isConnectionReset(exception))
