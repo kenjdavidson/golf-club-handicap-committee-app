@@ -12,6 +12,7 @@ object GolfCanadaSslTestSupport {
     private val defaultConnectTimeout = Duration.ofSeconds(10)
     private val defaultReadTimeout = Duration.ofSeconds(10)
     private val defaultRetryDelay = Duration.ofMillis(500)
+    private val connectionResetPatterns = listOf("connection reset", "connection reset by peer")
 
     init {
         GolfCanadaSslTrustConfigurator.configureDefaultSslTrust()
@@ -38,33 +39,43 @@ object GolfCanadaSslTestSupport {
     ): T {
         require(maxAttempts > 0) { "maxAttempts must be greater than zero" }
 
-        var currentAttempt = 1
-        while (true) {
+        var lastException: ResourceAccessException? = null
+        for (currentAttempt in 1..maxAttempts) {
             try {
                 return supplier.get()
             } catch (exception: ResourceAccessException) {
-                val shouldRetry = isConnectionReset(exception) && currentAttempt < maxAttempts
-                if (!shouldRetry) {
-                    throw exception
+                lastException = exception
+                if (!isConnectionReset(exception) || currentAttempt == maxAttempts) {
+                    break
                 }
 
-                if (!retryDelay.isNegative && !retryDelay.isZero) {
-                    Thread.sleep(retryDelay.toMillis())
+                if (retryDelay.toMillis() > 0) {
+                    try {
+                        Thread.sleep(retryDelay.toMillis())
+                    } catch (interrupted: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                        throw IllegalStateException("Thread interrupted during retry delay for connection reset", interrupted)
+                    }
                 }
-                currentAttempt++
             }
         }
+
+        throw requireNotNull(lastException) { "Failed to execute operation after $maxAttempts attempts" }
     }
 
     @JvmStatic
     fun isConnectionReset(throwable: Throwable?): Boolean {
         var current = throwable
         while (current != null) {
-            if (current.message?.lowercase(Locale.ROOT)?.contains("connection reset") == true) {
+            val currentMessage = current.message?.lowercase(Locale.ROOT)
+            if (isConnectionResetMessage(currentMessage)) {
                 return true
             }
             current = current.cause
         }
         return false
     }
+
+    private fun isConnectionResetMessage(message: String?): Boolean =
+        message != null && connectionResetPatterns.any(message::contains)
 }

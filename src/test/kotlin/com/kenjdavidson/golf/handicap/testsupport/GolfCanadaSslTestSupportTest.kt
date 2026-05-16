@@ -56,6 +56,10 @@ class GolfCanadaSslTestSupportTest {
     fun isConnectionReset_detectsNestedCauseMessage() {
         val exception = ResourceAccessException("I/O error", IOException("Transport failed", SocketException("Connection reset by peer")))
         assertTrue(GolfCanadaSslTestSupport.isConnectionReset(exception))
+    }
+
+    @Test
+    fun isConnectionReset_returnsFalseForNonResetErrors() {
         assertFalse(GolfCanadaSslTestSupport.isConnectionReset(ResourceAccessException("I/O error", ConnectException("Connection refused"))))
     }
 }
