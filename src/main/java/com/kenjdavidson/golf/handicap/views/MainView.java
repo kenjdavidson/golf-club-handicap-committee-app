@@ -76,7 +76,9 @@ public class MainView extends AppLayout {
 
     private Component buildUserSection() {
         MenuBar menuBar = new MenuBar();
+        menuBar.getElement().setAttribute("aria-label", "User menu");
         MenuItem menuItem = menuBar.addItem(VaadinIcon.CHEVRON_DOWN_SMALL.create());
+        menuItem.getElement().setAttribute("aria-label", "Open user menu");
         menuItem.getSubMenu().addItem("Log out", event -> authenticationContext.logout());
 
         Avatar avatar = new Avatar(userProfile.displayName());
@@ -262,13 +264,15 @@ public class MainView extends AppLayout {
     }
 
     private String buildInitials(String displayName) {
-        String[] parts = displayName.trim().split("\\s+");
-        if (parts[0].isBlank()) {
+        if (displayName == null || displayName.isBlank()) {
             return "CU";
         }
 
-        String first = parts[0].substring(0, 1).toUpperCase();
-        String second = parts.length > 1 ? parts[parts.length - 1].substring(0, 1).toUpperCase() : "";
+        String[] parts = displayName.trim().split("\\s+");
+        String firstPart = parts[0];
+        String lastPart = parts[parts.length - 1];
+        String first = firstPart.isEmpty() ? "C" : firstPart.substring(0, 1).toUpperCase();
+        String second = parts.length > 1 && !lastPart.isEmpty() ? lastPart.substring(0, 1).toUpperCase() : "";
         return first + second;
     }
 
