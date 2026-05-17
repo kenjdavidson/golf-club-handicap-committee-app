@@ -1,5 +1,6 @@
 package com.kenjdavidson.golf.handicap.views;
 
+import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.button.Button;
@@ -7,9 +8,9 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -22,16 +23,21 @@ class MainViewTest {
     @Test
     void rendersAuthenticatedUserAndWorkspaceControls() {
         AuthenticationContext authenticationContext = mock(AuthenticationContext.class);
-        UserDetails user = User.withUsername("committee.user")
-            .password("ignored")
-            .roles("COMMITTEE")
-            .build();
+        GolfCanadaAuthenticatedUser user = new GolfCanadaAuthenticatedUser(
+            "committee.user",
+            "Committee User",
+            "committee.user@example.com",
+            "1234567",
+            "access-token",
+            List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
 
-        when(authenticationContext.getAuthenticatedUser(UserDetails.class)).thenReturn(Optional.of(user));
+        when(authenticationContext.getAuthenticatedUser(GolfCanadaAuthenticatedUser.class)).thenReturn(Optional.of(user));
 
         MainView view = new MainView(authenticationContext);
 
-        assertTrue(containsText(view, "committee.user"));
+        assertTrue(containsText(view, "Committee User"));
+        assertTrue(containsText(view, "committee.user@example.com"));
         assertTrue(containsText(view, "Select folder"));
         assertTrue(containsText(view, "Status: Ready"));
         assertTrue(containsTextFieldValue(view, "No folder selected"));

@@ -1,21 +1,30 @@
 package com.kenjdavidson.golf.handicap.config;
 
+import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser;
+import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -28,8 +37,8 @@ class SecurityRoutingIntegrationTest {
     @LocalServerPort
     private int port;
 
-    @Autowired
-    private UserDetailsService userDetailsService;
+    @MockBean
+    private GolfCanadaAuthenticationService golfCanadaAuthenticationService;
 
     @Test
     void anonymousUsersAreRedirectedToLogin() throws IOException, InterruptedException {
@@ -48,18 +57,39 @@ class SecurityRoutingIntegrationTest {
     }
 
     @Test
-    void configuredCommitteeUserIsAvailable() {
-        UserDetails user = userDetailsService.loadUserByUsername("committee");
+    void successfulGolfCanadaLoginRedirectsToRoot() throws IOException, InterruptedException {
+        when(golfCanadaAuthenticationService.authenticate("golf.user@example.com", "test-password"))
+            .thenReturn(new GolfCanadaAuthenticatedUser(
+                "golf.user@example.com",
+                "Golf User",
+                "golf.user@example.com",
+                "1234567",
+                "access-token",
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+            ));
 
-        assertEquals("committee", user.getUsername());
-        assertTrue(user.getAuthorities().stream()
-            .anyMatch(authority -> "ROLE_COMMITTEE".equals(authority.getAuthority())));
+        HttpResponse<Void> response = HTTP_CLIENT.send(loginRequest(), HttpResponse.BodyHandlers.discarding());
+
+        assertEquals(302, response.statusCode());
+        assertTrue(response.headers().firstValue("location").orElse("").endsWith("/"));
+        verify(golfCanadaAuthenticationService).authenticate("golf.user@example.com", "test-password");
     }
 
     private HttpRequest request(String path) {
         return HttpRequest.newBuilder()
             .uri(URI.create("http://127.0.0.1:" + port + path))
             .GET()
+            .build();
+    }
+
+    private HttpRequest loginRequest() {
+        String body = "username=" + URLEncoder.encode("golf.user@example.com", StandardCharsets.UTF_8)
+            + "&password=" + URLEncoder.encode("test-password", StandardCharsets.UTF_8);
+
+        return HttpRequest.newBuilder()
+            .uri(URI.create("http://127.0.0.1:" + port + "/login"))
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+            .POST(HttpRequest.BodyPublishers.ofString(body))
             .build();
     }
 }
