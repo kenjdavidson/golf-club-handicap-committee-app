@@ -30,7 +30,7 @@ class LoginView : VerticalLayout(), BeforeEnterObserver {
             addClassNames(LumoUtility.Margin.Bottom.XSMALL)
         }
 
-        val message = Paragraph("Sign in with your Golf Canada credentials to access the committee workspace.").apply {
+        val message = Paragraph("Sign in with your Golf Canada email and password to access the committee workspace.").apply {
             addClassNames(
                 LumoUtility.Margin.Top.NONE,
                 LumoUtility.TextColor.SECONDARY

@@ -241,7 +241,7 @@ class MainView(
             .map { authenticatedUser ->
                 UserProfile(
                     displayName = authenticatedUser.displayName,
-                    details = authenticatedUser.email ?: authenticatedUser.golfCanadaCardId ?: "Golf Canada member",
+                    details = authenticatedUser.email ?: "Golf Canada member",
                     initials = buildInitials(authenticatedUser.displayName)
                 )
             }
