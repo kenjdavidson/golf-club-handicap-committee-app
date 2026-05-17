@@ -2,98 +2,46 @@ package com.kenjdavidson.golf.handicap.views;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
-import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.avatar.Avatar;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.sidenav.SideNav;
-import com.vaadin.flow.component.sidenav.SideNavItem;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import jakarta.annotation.security.PermitAll;
+
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Optional;
 
 /**
  * Main application layout and dashboard.
- *
- * <p>Uses the Vaadin {@link AppLayout} component which provides the standard
- * Lumo-themed shell with a collapsible left drawer and a top navigation bar.
- * The layout consists of:
- * <ul>
- *   <li><strong>Drawer (sidebar)</strong> – modular navigation links.  New
- *       modules (PDF Parser, Audit, etc.) register their own routes and appear
- *       here automatically once added.</li>
- *   <li><strong>Header (navbar)</strong> – application title and a live
- *       status badge indicating the local-database connection state.</li>
- *   <li><strong>Content area</strong> – a placeholder {@code ModuleContainer}
- *       that child views populate via Vaadin's router.</li>
- * </ul>
  */
 @Route("")
 @PageTitle("Handicap Committee App")
+@PermitAll
 public class MainView extends AppLayout {
 
-    public MainView() {
-        setPrimarySection(Section.DRAWER);
-        addToDrawer(buildDrawerContent());
+    private final AuthenticationContext authenticationContext;
+    private final UserProfile userProfile;
+
+    public MainView(AuthenticationContext authenticationContext) {
+        this.authenticationContext = authenticationContext;
+        this.userProfile = resolveUserProfile();
+
         addToNavbar(buildNavbar());
-    }
-
-    // -----------------------------------------------------------------------
-    // Drawer / Sidebar
-    // -----------------------------------------------------------------------
-
-    private Component buildDrawerContent() {
-        // Application brand at the top of the drawer
-        H1 appName = new H1("⛳ Handicap App");
-        appName.addClassNames(
-            LumoUtility.FontSize.LARGE,
-            LumoUtility.Margin.MEDIUM
-        );
-
-        SideNav nav = buildNavigation();
-
-        VerticalLayout drawerLayout = new VerticalLayout(appName, nav);
-        drawerLayout.setSizeFull();
-        drawerLayout.setPadding(false);
-        drawerLayout.setSpacing(false);
-        drawerLayout.getStyle().set("background", "var(--lumo-base-color)");
-
-        return drawerLayout;
-    }
-
-    /**
-     * Builds the primary navigation menu.
-     *
-     * <p>Each {@link SideNavItem} represents a module.  Route targets are
-     * defined as string paths here so new modules can be added by simply
-     * registering a {@code @Route} view class.
-     */
-    private SideNav buildNavigation() {
-        SideNav nav = new SideNav();
-        nav.setWidthFull();
-
-        SideNavItem dashboard = new SideNavItem("Dashboard", "/", VaadinIcon.HOME.create());
-
-        SideNavItem pdfParser = new SideNavItem("PDF Parser", "/pdf-parser",
-            VaadinIcon.FILE_TEXT.create());
-        pdfParser.setSuffixComponent(buildBadge("NEW"));
-
-        SideNavItem auditLog = new SideNavItem("Audit Log", "/audit",
-            VaadinIcon.LIST.create());
-
-        SideNavItem memberRounds = new SideNavItem("Member Rounds", "/member-rounds",
-            VaadinIcon.USER_CARD.create());
-
-        SideNavItem settings = new SideNavItem("Settings", "/settings",
-            VaadinIcon.COG.create());
-
-        nav.addItem(dashboard, pdfParser, auditLog, memberRounds, settings);
-        return nav;
+        setContent(buildMainContent());
     }
 
     // -----------------------------------------------------------------------
@@ -101,67 +49,81 @@ public class MainView extends AppLayout {
     // -----------------------------------------------------------------------
 
     private Component buildNavbar() {
-        DrawerToggle toggle = new DrawerToggle();
-
         H2 title = new H2("Golf Club Handicap Committee");
         title.addClassNames(
             LumoUtility.FontSize.MEDIUM,
             LumoUtility.Margin.NONE
         );
 
-        HorizontalLayout header = new HorizontalLayout(toggle, title, buildStatusIndicator());
+        Span icon = new Span("⛳");
+        icon.addClassNames(
+            LumoUtility.FontSize.LARGE,
+            LumoUtility.Margin.Right.SMALL
+        );
+
+        HorizontalLayout brand = new HorizontalLayout(icon, title);
+        brand.setSpacing(false);
+        brand.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+
+        HorizontalLayout header = new HorizontalLayout(brand, buildUserSection());
         header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         header.setWidthFull();
-        header.expand(title);
+        header.expand(brand);
         header.addClassNames(LumoUtility.Padding.Horizontal.MEDIUM);
 
         return header;
     }
 
-    /**
-     * Returns a small badge that shows the local-database connection status.
-     *
-     * <p>Because the application uses an in-memory H2 database that is always
-     * initialised on startup, the status is always "Connected" while the
-     * process is running.
-     */
-    private Component buildStatusIndicator() {
-        Span dot = new Span("●");
-        dot.getStyle()
-            .set("color", "var(--lumo-success-color)")
-            .set("font-size", "0.75rem")
-            .set("margin-right", "4px");
+    private Component buildUserSection() {
+        MenuBar menuBar = new MenuBar();
+        MenuItem menuItem = menuBar.addItem(VaadinIcon.CHEVRON_DOWN_SMALL.create());
+        menuItem.getSubMenu().addItem("Log out", event -> authenticationContext.logout());
 
-        Span label = new Span("Connected to local database");
-        label.addClassNames(
-            LumoUtility.FontSize.XSMALL,
+        Avatar avatar = new Avatar(userProfile.displayName());
+        avatar.setAbbreviation(userProfile.initials());
+
+        Span name = new Span(userProfile.displayName());
+        name.addClassNames(LumoUtility.FontWeight.MEDIUM);
+
+        Span details = new Span(userProfile.details());
+        details.addClassNames(
+            LumoUtility.FontSize.SMALL,
             LumoUtility.TextColor.SECONDARY
         );
 
-        Span status = new Span(dot, label);
-        status.getStyle()
-            .set("display", "flex")
-            .set("align-items", "center")
-            .set("white-space", "nowrap");
+        VerticalLayout info = new VerticalLayout(name, details);
+        info.setPadding(false);
+        info.setSpacing(false);
+        info.setMargin(false);
 
-        return status;
+        HorizontalLayout userSection = new HorizontalLayout(menuBar, avatar, info);
+        userSection.setSpacing(true);
+        userSection.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+
+        return userSection;
     }
 
-    // -----------------------------------------------------------------------
-    // Default content (Module Container placeholder)
-    // -----------------------------------------------------------------------
+    private Component buildMainContent() {
+        Component content = buildDashboardContent();
+        HorizontalLayout shell = new HorizontalLayout();
+        VerticalLayout wrapper = new VerticalLayout(buildPathToolbar(), content, buildStatusBar());
+        wrapper.setSizeFull();
+        wrapper.setPadding(false);
+        wrapper.setSpacing(false);
+        wrapper.expand(content);
 
-    /**
-     * When no child route is active, display a welcoming placeholder that
-     * explains the module system to new users.
-     */
-    private Component buildModuleContainerPlaceholder() {
+        shell.add(wrapper);
+        shell.setSizeFull();
+        return shell;
+    }
+
+    private Component buildDashboardContent() {
         H2 heading = new H2("Welcome to the Handicap Committee App");
         heading.addClassName(LumoUtility.Margin.Bottom.SMALL);
 
         Span description = new Span(
-            "Select a module from the sidebar to get started. " +
-            "Modules available: PDF Parser, Audit Log, Member Rounds, and Settings."
+            "Use the committee dashboard to access the current workspace and review " +
+            "the application modules that will be expanded in future updates."
         );
         description.addClassName(LumoUtility.TextColor.SECONDARY);
 
@@ -188,8 +150,66 @@ public class MainView extends AppLayout {
         container.setPadding(true);
         container.setSpacing(true);
 
-        setContent(container);
         return container;
+    }
+
+    private Component buildPathToolbar() {
+        H4 label = new H4("Workspace Folder");
+        label.addClassNames(
+            LumoUtility.Margin.NONE,
+            LumoUtility.FontSize.SMALL
+        );
+
+        TextField filePath = new TextField();
+        filePath.setReadOnly(true);
+        filePath.setWidthFull();
+        filePath.setValue("No folder selected");
+        filePath.setPrefixComponent(VaadinIcon.FOLDER_OPEN.create());
+
+        Button selectFolder = new Button("Select folder", VaadinIcon.FOLDER_OPEN_O.create());
+
+        HorizontalLayout controls = new HorizontalLayout(filePath, selectFolder);
+        controls.setWidthFull();
+        controls.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.END);
+        controls.expand(filePath);
+
+        VerticalLayout pathToolbar = new VerticalLayout(label, controls);
+        pathToolbar.setWidthFull();
+        pathToolbar.setSpacing(false);
+        pathToolbar.setPadding(true);
+        pathToolbar.getStyle()
+            .set("margin", "var(--lumo-space-m)")
+            .set("border-radius", "var(--lumo-border-radius-l)")
+            .set("background", "var(--lumo-contrast-5pct)")
+            .set("box-shadow", "var(--lumo-box-shadow-xs)");
+
+        return pathToolbar;
+    }
+
+    private Component buildStatusBar() {
+        Span leftStatus = new Span("Status: Ready");
+        leftStatus.addClassNames(
+            LumoUtility.FontSize.SMALL,
+            LumoUtility.TextColor.SECONDARY
+        );
+
+        Span rightStatus = new Span("Authentication active");
+        rightStatus.addClassNames(
+            LumoUtility.FontSize.SMALL,
+            LumoUtility.TextColor.SECONDARY
+        );
+
+        HorizontalLayout statusBar = new HorizontalLayout(leftStatus, rightStatus);
+        statusBar.setWidthFull();
+        statusBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+        statusBar.expand(leftStatus);
+        statusBar.addClassNames(
+            LumoUtility.Padding.Horizontal.MEDIUM,
+            LumoUtility.Padding.Vertical.SMALL
+        );
+        statusBar.getStyle().set("border-top", "1px solid var(--lumo-contrast-10pct)");
+
+        return statusBar;
     }
 
     /**
@@ -226,20 +246,32 @@ public class MainView extends AppLayout {
     // Helpers
     // -----------------------------------------------------------------------
 
-    /** Small pill badge used to annotate nav items (e.g. "NEW"). */
-    private static Span buildBadge(String text) {
-        Span badge = new Span(text);
-        badge.getElement().getThemeList().add("badge small contrast");
-        return badge;
+    private UserProfile resolveUserProfile() {
+        Optional<UserDetails> authenticatedUser = authenticationContext.getAuthenticatedUser(UserDetails.class);
+
+        return authenticatedUser
+            .map(user -> new UserProfile(
+                user.getUsername(),
+                user.getAuthorities().stream()
+                    .map(authority -> authority.getAuthority().replace("ROLE_", ""))
+                    .findFirst()
+                    .orElse("Authenticated user"),
+                buildInitials(user.getUsername())
+            ))
+            .orElse(new UserProfile("Committee User", "Authenticated user", "CU"));
     }
 
-    @Override
-    protected void afterNavigation() {
-        super.afterNavigation();
-        // Show the placeholder whenever the root route ("/") is active and
-        // no child view has set content explicitly.
-        if (getContent() == null) {
-            buildModuleContainerPlaceholder();
+    private String buildInitials(String displayName) {
+        String[] parts = displayName.trim().split("\\s+");
+        if (parts.length == 0 || parts[0].isBlank()) {
+            return "CU";
         }
+
+        String first = parts[0].substring(0, 1).toUpperCase();
+        String second = parts.length > 1 ? parts[parts.length - 1].substring(0, 1).toUpperCase() : "";
+        return (first + second).substring(0, Math.min(2, first.length() + second.length()));
+    }
+
+    private record UserProfile(String displayName, String details, String initials) {
     }
 }
