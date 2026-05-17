@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -37,26 +38,20 @@ class MainViewTest {
     }
 
     private boolean containsText(Component component, String expected) {
-        if (component instanceof HasText hasText && expected.equals(hasText.getText())) {
-            return true;
-        }
-
-        if (component instanceof Button button && expected.equals(button.getText())) {
-            return true;
-        }
-
-        if (component instanceof Span span && expected.equals(span.getText())) {
-            return true;
-        }
-
-        return component.getChildren().anyMatch(child -> containsText(child, expected));
+        return matchesComponent(component, candidate ->
+            candidate instanceof HasText hasText && expected.equals(hasText.getText())
+                || candidate instanceof Button button && expected.equals(button.getText())
+                || candidate instanceof Span span && expected.equals(span.getText())
+        );
     }
 
     private boolean containsTextFieldValue(Component component, String expected) {
-        if (component instanceof TextField textField && expected.equals(textField.getValue())) {
-            return true;
-        }
+        return matchesComponent(component, candidate ->
+            candidate instanceof TextField textField && expected.equals(textField.getValue())
+        );
+    }
 
-        return component.getChildren().anyMatch(child -> containsTextFieldValue(child, expected));
+    private boolean matchesComponent(Component component, Predicate<Component> predicate) {
+        return predicate.test(component) || component.getChildren().anyMatch(child -> matchesComponent(child, predicate));
     }
 }

@@ -30,10 +30,10 @@ import org.springframework.security.provisioning.UserDetailsManager;
 @EnableWebSecurity
 public class SecurityConfig extends VaadinWebSecurity {
 
-    @Value("${app.auth.username:committee}")
+    @Value("${app.auth.username}")
     private String username;
 
-    @Value("${app.auth.password:committee}")
+    @Value("${app.auth.password}")
     private String password;
 
     @Bean

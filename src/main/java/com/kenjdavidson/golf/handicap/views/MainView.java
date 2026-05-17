@@ -269,7 +269,7 @@ public class MainView extends AppLayout {
 
         String first = parts[0].substring(0, 1).toUpperCase();
         String second = parts.length > 1 ? parts[parts.length - 1].substring(0, 1).toUpperCase() : "";
-        return (first + second).substring(0, Math.min(2, first.length() + second.length()));
+        return first + second;
     }
 
     private record UserProfile(String displayName, String details, String initials) {
