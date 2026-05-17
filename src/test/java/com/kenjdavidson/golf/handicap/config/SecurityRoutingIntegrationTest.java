@@ -68,6 +68,9 @@ class SecurityRoutingIntegrationTest {
                     .email("golf.user@example.com")
                     .golfCanadaCardId("1234567")
                     .handicap("8.4")),
+                "golf.user@example.com",
+                "Golf User",
+                "golf.user@example.com",
                 List.of(new SimpleGrantedAuthority("ROLE_USER"))
             ));
 

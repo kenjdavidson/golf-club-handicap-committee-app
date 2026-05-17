@@ -33,6 +33,9 @@ class MainViewTest {
                 .golfCanadaCardId("1234567")
                 .handicap("8.4")
                 .membershipLevel("Gold")),
+            "committee.user",
+            "Committee User",
+            "committee.user@example.com",
             List.of(new SimpleGrantedAuthority("ROLE_USER"))
         );
 

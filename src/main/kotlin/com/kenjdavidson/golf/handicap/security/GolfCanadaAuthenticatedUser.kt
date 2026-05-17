@@ -8,22 +8,23 @@ import org.springframework.security.core.userdetails.UserDetails
 
 data class GolfCanadaAuthenticatedUser(
     val authToken: AuthToken,
+    private val usernameValue: String,
+    private val displayNameValue: String,
+    private val emailValue: String,
     private val authoritiesValue: Collection<GrantedAuthority>
 ) : UserDetails {
 
     val golfCanadaUser: User
-        get() = authToken.user ?: throw IncompleteGolfCanadaAuthenticationException(
-            "Golf Canada authentication response did not include a user."
-        )
+        get() = authToken.user ?: throw IncompleteGolfCanadaAuthenticationException(MISSING_USER_MESSAGE)
 
     val accessToken: String
         get() = requiredText(authToken.accessToken, "access token")
 
     val displayName: String
-        get() = requiredText(golfCanadaUser.fullName, "user full name")
+        get() = displayNameValue
 
     val email: String
-        get() = requiredText(golfCanadaUser.email, "user email")
+        get() = emailValue
 
     val golfCanadaCardId: String?
         get() = golfCanadaUser.golfCanadaCardId
@@ -41,21 +42,22 @@ data class GolfCanadaAuthenticatedUser(
 
     override fun getPassword(): String? = null
 
-    override fun getUsername(): String = requiredText(golfCanadaUser.username, "username")
+    override fun getUsername(): String = usernameValue
 
     companion object {
         @JvmStatic
         fun from(authToken: AuthToken): GolfCanadaAuthenticatedUser {
-            val user = authToken.user ?: throw IncompleteGolfCanadaAuthenticationException(
-                "Golf Canada authentication response did not include a user."
-            )
+            val user = authToken.user ?: throw IncompleteGolfCanadaAuthenticationException(MISSING_USER_MESSAGE)
             requiredText(authToken.accessToken, "access token")
-            requiredText(user.username, "username")
-            requiredText(user.fullName, "user full name")
-            requiredText(user.email, "user email")
+            val username = requiredText(user.username, "username")
+            val displayName = requiredText(user.fullName, "user full name")
+            val email = requiredText(user.email, "user email")
 
             return GolfCanadaAuthenticatedUser(
                 authToken = authToken,
+                usernameValue = username,
+                displayNameValue = displayName,
+                emailValue = email,
                 authoritiesValue = buildAuthorities(user)
             )
         }
@@ -82,6 +84,8 @@ data class GolfCanadaAuthenticatedUser(
                 ?: throw IncompleteGolfCanadaAuthenticationException(
                     "Golf Canada authentication response did not include $fieldName."
                 )
+
+        private const val MISSING_USER_MESSAGE = "Golf Canada authentication response did not include a user."
     }
 }
 

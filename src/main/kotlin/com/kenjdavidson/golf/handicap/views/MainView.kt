@@ -245,7 +245,7 @@ class MainView(
                     initials = buildInitials(authenticatedUser.displayName)
                 )
             }
-            .orElseThrow { IllegalStateException("Authenticated Golf Canada user not available.") }
+            .orElseThrow { IllegalStateException("No authenticated Golf Canada user found in the security context.") }
 
     private fun buildUserDetails(authenticatedUser: GolfCanadaAuthenticatedUser): String =
         listOfNotNull(
