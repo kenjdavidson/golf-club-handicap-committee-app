@@ -1,46 +1,61 @@
 package com.kenjdavidson.golf.handicap.security
 
 import com.kenjdavidson.golf.handicap.golfcanada.model.AuthToken
+import com.kenjdavidson.golf.handicap.golfcanada.model.User
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
 data class GolfCanadaAuthenticatedUser(
-    private val usernameValue: String,
-    val displayName: String,
-    val email: String?,
-    val golfCanadaCardId: String?,
-    val accessToken: String,
+    val authToken: AuthToken,
     private val authoritiesValue: Collection<GrantedAuthority>
 ) : UserDetails {
+
+    val golfCanadaUser: User
+        get() = authToken.user ?: throw IncompleteGolfCanadaAuthenticationException(
+            "Golf Canada authentication response did not include a user."
+        )
+
+    val accessToken: String
+        get() = requiredText(authToken.accessToken, "access token")
+
+    val displayName: String
+        get() = requiredText(golfCanadaUser.fullName, "user full name")
+
+    val email: String
+        get() = requiredText(golfCanadaUser.email, "user email")
+
+    val golfCanadaCardId: String?
+        get() = golfCanadaUser.golfCanadaCardId
+
+    val handicap: String?
+        get() = golfCanadaUser.handicap
+
+    val pcc: String?
+        get() = golfCanadaUser.pcc
+
+    val membershipLevel: String?
+        get() = golfCanadaUser.membershipLevel
 
     override fun getAuthorities(): Collection<GrantedAuthority> = authoritiesValue
 
     override fun getPassword(): String? = null
 
-    override fun getUsername(): String = usernameValue
+    override fun getUsername(): String = requiredText(golfCanadaUser.username, "username")
 
     companion object {
         @JvmStatic
         fun from(authToken: AuthToken): GolfCanadaAuthenticatedUser {
-            val user = authToken.user ?: error("Golf Canada authentication response did not include a user.")
-            val username = user.username?.takeIf { it.isNotBlank() }
-                ?: user.email?.takeIf { it.isNotBlank() }
-                ?: "golf-canada-user"
-            val displayName = user.fullName?.takeIf { it.isNotBlank() }
-                ?: listOfNotNull(user.firstName, user.lastName)
-                    .joinToString(" ")
-                    .takeIf { it.isNotBlank() }
-                ?: username
-            val accessToken = authToken.accessToken?.takeIf { it.isNotBlank() }
-                ?: error("Golf Canada authentication response did not include an access token.")
+            val user = authToken.user ?: throw IncompleteGolfCanadaAuthenticationException(
+                "Golf Canada authentication response did not include a user."
+            )
+            requiredText(authToken.accessToken, "access token")
+            requiredText(user.username, "username")
+            requiredText(user.fullName, "user full name")
+            requiredText(user.email, "user email")
 
             return GolfCanadaAuthenticatedUser(
-                usernameValue = username,
-                displayName = displayName,
-                email = user.email?.takeIf { it.isNotBlank() },
-                golfCanadaCardId = user.golfCanadaCardId?.takeIf { it.isNotBlank() },
-                accessToken = accessToken,
+                authToken = authToken,
                 authoritiesValue = buildAuthorities(user)
             )
         }
@@ -61,5 +76,13 @@ data class GolfCanadaAuthenticatedUser(
 
             return authorities
         }
+
+        private fun requiredText(value: String?, fieldName: String): String =
+            value?.takeIf { it.isNotBlank() }
+                ?: throw IncompleteGolfCanadaAuthenticationException(
+                    "Golf Canada authentication response did not include $fieldName."
+                )
     }
 }
+
+class IncompleteGolfCanadaAuthenticationException(message: String) : IllegalStateException(message)

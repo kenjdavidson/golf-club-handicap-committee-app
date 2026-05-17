@@ -1,5 +1,7 @@
 package com.kenjdavidson.golf.handicap.views;
 
+import com.kenjdavidson.golf.handicap.golfcanada.model.AuthToken;
+import com.kenjdavidson.golf.handicap.golfcanada.model.User;
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
@@ -24,11 +26,13 @@ class MainViewTest {
     void rendersAuthenticatedUserAndWorkspaceControls() {
         AuthenticationContext authenticationContext = mock(AuthenticationContext.class);
         GolfCanadaAuthenticatedUser user = new GolfCanadaAuthenticatedUser(
-            "committee.user",
-            "Committee User",
-            "committee.user@example.com",
-            "1234567",
-            "access-token",
+            new AuthToken().accessToken("access-token").user(new User()
+                .username("committee.user")
+                .fullName("Committee User")
+                .email("committee.user@example.com")
+                .golfCanadaCardId("1234567")
+                .handicap("8.4")
+                .membershipLevel("Gold")),
             List.of(new SimpleGrantedAuthority("ROLE_USER"))
         );
 
@@ -37,7 +41,7 @@ class MainViewTest {
         MainView view = new MainView(authenticationContext);
 
         assertTrue(containsText(view, "Committee User"));
-        assertTrue(containsText(view, "committee.user@example.com"));
+        assertTrue(containsText(view, "committee.user@example.com • HCP 8.4 • Gold"));
         assertTrue(containsText(view, "Select folder"));
         assertTrue(containsText(view, "Status: Ready"));
         assertTrue(containsTextFieldValue(view, "No folder selected"));

@@ -1,5 +1,7 @@
 package com.kenjdavidson.golf.handicap.config;
 
+import com.kenjdavidson.golf.handicap.golfcanada.model.AuthToken;
+import com.kenjdavidson.golf.handicap.golfcanada.model.User;
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser;
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticationService;
 import org.junit.jupiter.api.Test;
@@ -60,11 +62,12 @@ class SecurityRoutingIntegrationTest {
     void successfulGolfCanadaLoginRedirectsToRoot() throws IOException, InterruptedException {
         when(golfCanadaAuthenticationService.authenticate("golf.user@example.com", "test-password"))
             .thenReturn(new GolfCanadaAuthenticatedUser(
-                "golf.user@example.com",
-                "Golf User",
-                "golf.user@example.com",
-                "1234567",
-                "access-token",
+                new AuthToken().accessToken("access-token").user(new User()
+                    .username("golf.user@example.com")
+                    .fullName("Golf User")
+                    .email("golf.user@example.com")
+                    .golfCanadaCardId("1234567")
+                    .handicap("8.4")),
                 List.of(new SimpleGrantedAuthority("ROLE_USER"))
             ));
 

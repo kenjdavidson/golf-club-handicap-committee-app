@@ -15,7 +15,7 @@ import org.springframework.web.client.HttpClientErrorException
 
 class GolfCanadaAuthenticationServiceTest {
     private val authenticationApi = mock(AuthenticationApi::class.java)
-    private val authenticationService = DefaultGolfCanadaAuthenticationService(authenticationApi)
+    private val authenticationService = GolfCanadaOAuthAuthenticationService(authenticationApi)
 
     @Test
     fun `authenticate uses golf canada client and returns authenticated user`() {
@@ -36,6 +36,8 @@ class GolfCanadaAuthenticationServiceTest {
                     .fullName("Golf User")
                     .email("golf.user@example.com")
                     .golfCanadaCardId("1234567")
+                    .handicap("8.4")
+                    .membershipLevel("Gold")
             )
         )
 
@@ -44,6 +46,9 @@ class GolfCanadaAuthenticationServiceTest {
         assertEquals("golf.user@example.com", authenticatedUser.username)
         assertEquals("Golf User", authenticatedUser.displayName)
         assertEquals("golf.user@example.com", authenticatedUser.email)
+        assertEquals("8.4", authenticatedUser.handicap)
+        assertEquals("Gold", authenticatedUser.membershipLevel)
+        assertEquals("Golf User", authenticatedUser.golfCanadaUser.fullName)
         verify(authenticationApi).authenticate(
             "password",
             "golf.user@example.com",
@@ -71,6 +76,31 @@ class GolfCanadaAuthenticationServiceTest {
 
         assertThrows(BadCredentialsException::class.java) {
             authenticationService.authenticate("golf.user@example.com", "wrong-password")
+        }
+    }
+
+    @Test
+    fun `authenticate fails when required auth fields are missing`() {
+        `when`(
+            authenticationApi.authenticate(
+                "password",
+                "golf.user@example.com",
+                "secret-password",
+                false,
+                "address email offline_access openid phone profile roles",
+                null,
+                null
+            )
+        ).thenReturn(
+            AuthToken().accessToken("access-token").user(
+                User()
+                    .username("golf.user@example.com")
+                    .email("golf.user@example.com")
+            )
+        )
+
+        assertThrows(org.springframework.security.authentication.AuthenticationServiceException::class.java) {
+            authenticationService.authenticate("golf.user@example.com", "secret-password")
         }
     }
 }

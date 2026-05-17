@@ -241,11 +241,18 @@ class MainView(
             .map { authenticatedUser ->
                 UserProfile(
                     displayName = authenticatedUser.displayName,
-                    details = authenticatedUser.email ?: "Golf Canada member",
+                    details = buildUserDetails(authenticatedUser),
                     initials = buildInitials(authenticatedUser.displayName)
                 )
             }
-            .orElse(UserProfile("Committee User", "Golf Canada member", "CU"))
+            .orElseThrow { IllegalStateException("Authenticated Golf Canada user not available.") }
+
+    private fun buildUserDetails(authenticatedUser: GolfCanadaAuthenticatedUser): String =
+        listOfNotNull(
+            authenticatedUser.email,
+            authenticatedUser.handicap?.takeIf { it.isNotBlank() }?.let { "HCP $it" },
+            authenticatedUser.membershipLevel?.takeIf { it.isNotBlank() }
+        ).joinToString(" • ")
 
     private fun buildInitials(displayName: String?): String {
         if (displayName.isNullOrBlank()) {

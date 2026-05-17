@@ -9,7 +9,7 @@ import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestClientException
 
 @Service
-class DefaultGolfCanadaAuthenticationService(
+class GolfCanadaOAuthAuthenticationService(
     private val authenticationApi: AuthenticationApi
 ) : GolfCanadaAuthenticationService {
 
@@ -34,7 +34,7 @@ class DefaultGolfCanadaAuthenticationService(
             throw AuthenticationServiceException("Golf Canada authentication failed.", exception)
         } catch (exception: RestClientException) {
             throw AuthenticationServiceException("Golf Canada authentication failed.", exception)
-        } catch (exception: IllegalStateException) {
+        } catch (exception: IncompleteGolfCanadaAuthenticationException) {
             throw AuthenticationServiceException("Golf Canada authentication returned an incomplete response.", exception)
         }
     }
