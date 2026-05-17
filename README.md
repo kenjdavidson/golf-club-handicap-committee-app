@@ -7,6 +7,6 @@ To run the application locally, provide login credentials before startup:
 
 ```bash
 export APP_AUTH_USERNAME=committee
-export APP_AUTH_PASSWORD=committee
+export APP_AUTH_PASSWORD=committee-password
 ./gradlew bootRun
 ```

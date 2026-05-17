@@ -263,7 +263,7 @@ public class MainView extends AppLayout {
 
     private String buildInitials(String displayName) {
         String[] parts = displayName.trim().split("\\s+");
-        if (parts.length == 0 || parts[0].isBlank()) {
+        if (parts[0].isBlank()) {
             return "CU";
         }
 
