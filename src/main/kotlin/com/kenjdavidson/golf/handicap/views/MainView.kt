@@ -245,7 +245,11 @@ class MainView(
                     initials = buildInitials(authenticatedUser.displayName)
                 )
             }
-            .orElseThrow { IllegalStateException("No authenticated Golf Canada user found in the security context.") }
+            .orElseThrow {
+                IllegalStateException(
+                    "No authenticated Golf Canada user found in the security context. Please log in again to continue."
+                )
+            }
 
     private fun buildUserDetails(authenticatedUser: GolfCanadaAuthenticatedUser): String =
         listOfNotNull(
