@@ -100,10 +100,7 @@ class StructuredPdfRoundParser(
         val match = DATE_REGEX.find(rawPlayedDate) ?: return null
         val month = match.groupValues[1].toIntOrNull() ?: return null
         val day = match.groupValues[2].toIntOrNull() ?: return null
-        val yearToken = match.groupValues[3].take(4)
-        if (yearToken.length != 4) {
-            return null
-        }
+        val yearToken = match.groupValues[3]
         val year = yearToken.toIntOrNull() ?: return null
         return runCatching {
             LocalDate.parse("$month/$day/$year", PARSER_FORMATTER)

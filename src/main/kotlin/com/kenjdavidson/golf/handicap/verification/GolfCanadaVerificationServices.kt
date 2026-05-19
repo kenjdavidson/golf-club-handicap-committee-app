@@ -50,6 +50,9 @@ class DefaultGolfCanadaMemberLookupService(
         ).joinToString("|")
 
         return cache.computeIfAbsent(cacheKey) {
+            if (parsedHistory.memberId.isNullOrBlank() && parsedHistory.playerName.isNullOrBlank()) {
+                return@computeIfAbsent null
+            }
             val user = authenticatedUser.golfCanadaUser
             val individualId = user.id ?: user.authUserId ?: return@computeIfAbsent null
             val profileHomeCourse = runCatching {
@@ -76,15 +79,21 @@ class DefaultGolfCanadaMemberLookupService(
     }
 
     private fun matchesMemberId(parsedMemberId: String?, authenticatedCardId: String?): Boolean {
-        if (parsedMemberId.isNullOrBlank() || authenticatedCardId.isNullOrBlank()) {
+        if (parsedMemberId.isNullOrBlank()) {
             return true
+        }
+        if (authenticatedCardId.isNullOrBlank()) {
+            return false
         }
         return parsedMemberId.trim() == authenticatedCardId.trim()
     }
 
     private fun matchesName(parsedName: String?, authenticatedName: String?): Boolean {
-        if (parsedName.isNullOrBlank() || authenticatedName.isNullOrBlank()) {
+        if (parsedName.isNullOrBlank()) {
             return true
+        }
+        if (authenticatedName.isNullOrBlank()) {
+            return false
         }
         return normalizeName(parsedName) == normalizeName(authenticatedName)
     }
