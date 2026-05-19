@@ -131,7 +131,7 @@ class CachingGolfCanadaHistoryLookupService(
         }
         return cache.computeIfAbsent(individualId) {
             membersApiFactory.create(accessToken)
-                .getHistory(individualId, 0, 20)
+                .getHistory(individualId, 0, MAX_VERIFICATION_ROUNDS)
                 ?.data
                 .orEmpty()
                 .mapNotNull { it.date?.toLocalDate() }

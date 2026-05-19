@@ -36,7 +36,7 @@ class StructuredPdfRoundParser(
         val normalizedLines = rawText.lines().map(String::trim).filter(String::isNotBlank)
         val ownerName = OWNER_NAME_REGEX.find(rawText)?.value
         val rowChunks = reconstructRows(normalizedLines)
-        val rounds = rowChunks.mapNotNull(::parseRound).sortedByDescending { it.playedDate }.take(MAX_ROUNDS)
+        val rounds = rowChunks.mapNotNull(::parseRound).sortedByDescending { it.playedDate }.take(MAX_VERIFICATION_ROUNDS)
         val firstRow = rowChunks.firstOrNull()?.let(::splitCsvRespectingQuotes).orEmpty()
 
         return ParsedPlayerHistory(
@@ -149,6 +149,5 @@ class StructuredPdfRoundParser(
             .appendLiteral('/')
             .appendValue(ChronoField.YEAR, 4)
             .toFormatter()
-        const val MAX_ROUNDS = 20
     }
 }

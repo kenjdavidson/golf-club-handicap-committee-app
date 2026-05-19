@@ -104,14 +104,14 @@ class CompareDatesVerificationStep(
 class SingleFileVerificationService(
     steps: List<SingleFileVerificationStep>
 ) {
-    private val orderedSteps = steps
+    private val steps = steps
 
     fun verify(
         fileName: String,
         fileBytes: ByteArray,
         authenticatedUser: GolfCanadaAuthenticatedUser
     ): FileVerificationResult {
-        val context = orderedSteps.fold(
+        val context = steps.fold(
             VerificationContext(
                 fileName = fileName,
                 fileBytes = fileBytes,

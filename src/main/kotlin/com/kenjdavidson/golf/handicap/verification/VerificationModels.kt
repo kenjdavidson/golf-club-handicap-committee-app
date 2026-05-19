@@ -3,6 +3,8 @@ package com.kenjdavidson.golf.handicap.verification
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser
 import java.time.LocalDate
 
+const val MAX_VERIFICATION_ROUNDS = 20
+
 data class ParsedRound(
     val playedDate: LocalDate,
     val playDistance: String?,
