@@ -31,7 +31,7 @@ class CachedGolfCanadaMemberLookupService(
 
             GolfCanadaMemberMatch(
                 individualId = individualId,
-                fullName = parsedHistory.playerName?.takeIf { it.isNotBlank() },
+                fullName = parsedHistory.playerName?.trim(),
                 golfCanadaCardId = parsedMemberId,
                 homeCourse = profileHomeCourse
             )
