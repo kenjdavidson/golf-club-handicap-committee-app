@@ -3,10 +3,10 @@ package com.kenjdavidson.golf.handicap.views;
 import com.kenjdavidson.golf.handicap.golfcanada.model.AuthToken;
 import com.kenjdavidson.golf.handicap.golfcanada.model.User;
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser;
-import com.kenjdavidson.golf.handicap.verification.SingleFileVerificationService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.security.AuthenticationContext;
@@ -41,9 +41,15 @@ class MainViewTest {
         );
 
         when(authenticationContext.getAuthenticatedUser(GolfCanadaAuthenticatedUser.class)).thenReturn(Optional.of(user));
-        SingleFileVerificationService verificationService = mock(SingleFileVerificationService.class);
+        UserProfileResolver userProfileResolver = mock(UserProfileResolver.class);
+        when(userProfileResolver.resolveAuthenticatedUser(authenticationContext)).thenReturn(user);
+        when(userProfileResolver.buildUserProfile(user)).thenReturn(
+            new UserProfile("Committee User", "committee.user@example.com • HCP 8.4 • Gold", "CU")
+        );
+        SingleFileVerificationCardFactory cardFactory = mock(SingleFileVerificationCardFactory.class);
+        when(cardFactory.create(user)).thenReturn(new Div(new Span("Verify")));
 
-        MainView view = new MainView(authenticationContext, verificationService);
+        MainView view = new MainView(authenticationContext, userProfileResolver, cardFactory);
 
         assertTrue(containsText(view, "Committee User"));
         assertTrue(containsText(view, "committee.user@example.com • HCP 8.4 • Gold"));

@@ -1,35 +1,8 @@
 package com.kenjdavidson.golf.handicap.verification
 
-import com.kenjdavidson.golf.handicap.golfcanada.api.MembersApi
-import com.kenjdavidson.golf.handicap.golfcanada.invoker.ApiClient
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser
-import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
-import java.time.LocalDate
 import java.util.concurrent.ConcurrentHashMap
-
-interface GolfCanadaMemberLookupService {
-    fun findMember(
-        parsedHistory: ParsedPlayerHistory,
-        authenticatedUser: GolfCanadaAuthenticatedUser,
-        accessToken: String
-    ): GolfCanadaMemberMatch?
-}
-
-interface GolfCanadaHistoryLookupService {
-    fun getHistoryDates(individualId: Long?, accessToken: String): Set<LocalDate>
-}
-
-@Component
-class GolfCanadaMembersApiFactory(
-    private val baseApiClient: ApiClient
-) {
-    fun create(accessToken: String): MembersApi {
-        val apiClient = ApiClient().setBasePath(baseApiClient.basePath)
-        apiClient.setBearerToken(accessToken)
-        return MembersApi(apiClient)
-    }
-}
 
 @Service
 class DefaultGolfCanadaMemberLookupService(
@@ -55,9 +28,11 @@ class DefaultGolfCanadaMemberLookupService(
             }
             val user = authenticatedUser.golfCanadaUser
             val individualId = user.id ?: user.authUserId ?: return@computeIfAbsent null
-            val profileHomeCourse = runCatching {
+            val profileHomeCourse = try {
                 membersApiFactory.create(accessToken).getProfile(individualId).homeCourse
-            }.getOrNull()
+            } catch (exception: Exception) {
+                throw VerificationProcessingException("Unable to retrieve Golf Canada member profile.", exception)
+            }
 
             if (!matchesMemberId(parsedHistory.memberId, authenticatedUser.golfCanadaCardId)) {
                 return@computeIfAbsent null
@@ -118,26 +93,5 @@ class DefaultGolfCanadaMemberLookupService(
             trimmed
         }
         return normalized.lowercase().replace(Regex("\\s+"), " ").trim()
-    }
-}
-
-@Service
-class CachingGolfCanadaHistoryLookupService(
-    private val membersApiFactory: GolfCanadaMembersApiFactory
-) : GolfCanadaHistoryLookupService {
-    private val cache = ConcurrentHashMap<Long, Set<LocalDate>>()
-
-    override fun getHistoryDates(individualId: Long?, accessToken: String): Set<LocalDate> {
-        if (individualId == null) {
-            return emptySet()
-        }
-        return cache.computeIfAbsent(individualId) {
-            membersApiFactory.create(accessToken)
-                .getHistory(individualId, 0, MAX_VERIFICATION_ROUNDS)
-                ?.data
-                .orEmpty()
-                .mapNotNull { it.date?.toLocalDate() }
-                .toSet()
-        }
     }
 }

@@ -2,6 +2,7 @@ package com.kenjdavidson.golf.handicap.verification
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
@@ -19,7 +20,7 @@ class StructuredPdfRoundParserTest {
                 primaryClub = "Snake Point Golf Club"
             )
         }
-        val parser = StructuredPdfRoundParser(FakeExtractor("Ellis, Dean\n$rows"))
+        val parser = StructuredPdfRoundParser(FakeExtractor("Ellis, Dean\n$rows"), VerificationProperties(20))
 
         val parsed = parser.parse(ByteArray(0))
 
@@ -38,12 +39,21 @@ class StructuredPdfRoundParserTest {
             152314,"Ellis, Dean","2/10/2024","North
             Course","08:00","created","time","Mon","BClass","A","Snake Point Golf Club"
         """.trimIndent()
-        val parser = StructuredPdfRoundParser(FakeExtractor(text))
+        val parser = StructuredPdfRoundParser(FakeExtractor(text), VerificationProperties(20))
 
         val parsed = parser.parse(ByteArray(0))
 
         assertEquals(1, parsed.rounds.size)
         assertNotNull(parsed.rounds.first().playDistance)
+    }
+
+    @Test
+    fun `throws when no round rows can be detected`() {
+        val parser = StructuredPdfRoundParser(FakeExtractor("Ellis, Dean"), VerificationProperties(20))
+
+        assertThrows(VerificationProcessingException::class.java) {
+            parser.parse("pdf".toByteArray())
+        }
     }
 
     private fun buildRow(
