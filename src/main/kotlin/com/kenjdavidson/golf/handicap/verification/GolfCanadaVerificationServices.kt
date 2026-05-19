@@ -32,7 +32,7 @@ class GolfCanadaMembersApiFactory(
 }
 
 @Service
-class MockGolfCanadaMemberLookupService(
+class DefaultGolfCanadaMemberLookupService(
     private val membersApiFactory: GolfCanadaMembersApiFactory
 ) : GolfCanadaMemberLookupService {
     private val cache = ConcurrentHashMap<String, GolfCanadaMemberMatch?>()
