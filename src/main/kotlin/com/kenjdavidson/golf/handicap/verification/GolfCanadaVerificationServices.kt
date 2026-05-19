@@ -111,7 +111,9 @@ class DefaultGolfCanadaMemberLookupService(
         val trimmed = value.trim()
         val normalized = if (trimmed.contains(",")) {
             val parts = trimmed.split(",", limit = 2)
-            "${parts.getOrNull(1).orEmpty()} ${parts.getOrNull(0).orEmpty()}"
+            listOf(parts.getOrNull(1).orEmpty(), parts.getOrNull(0).orEmpty())
+                .filter { it.isNotBlank() }
+                .joinToString(" ")
         } else {
             trimmed
         }

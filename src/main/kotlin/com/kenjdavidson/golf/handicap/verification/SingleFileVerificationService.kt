@@ -102,9 +102,9 @@ class CompareDatesVerificationStep(
 
 @Service
 class SingleFileVerificationService(
-    steps: List<SingleFileVerificationStep>
+    verificationSteps: List<SingleFileVerificationStep>
 ) {
-    private val steps = steps
+    private val steps = verificationSteps
 
     fun verify(
         fileName: String,
