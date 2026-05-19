@@ -10,7 +10,7 @@ class GolfCanadaMembersApiFactory(
     private val baseApiClient: ApiClient,
     private val currentAuthenticatedUserProvider: CurrentAuthenticatedUserProvider
 ) {
-    private val membersApi: MembersApi by lazy {
+    private val membersApi: MembersApi by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         val apiClient = ApiClient().setBasePath(baseApiClient.basePath)
         apiClient.setBearerToken { currentAuthenticatedUserProvider.requireAccessToken() }
         MembersApi(apiClient)
