@@ -3,6 +3,7 @@ package com.kenjdavidson.golf.handicap.views;
 import com.kenjdavidson.golf.handicap.golfcanada.model.AuthToken;
 import com.kenjdavidson.golf.handicap.golfcanada.model.User;
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser;
+import com.kenjdavidson.golf.handicap.verification.SingleFileVerificationService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.button.Button;
@@ -40,12 +41,14 @@ class MainViewTest {
         );
 
         when(authenticationContext.getAuthenticatedUser(GolfCanadaAuthenticatedUser.class)).thenReturn(Optional.of(user));
+        SingleFileVerificationService verificationService = mock(SingleFileVerificationService.class);
 
-        MainView view = new MainView(authenticationContext);
+        MainView view = new MainView(authenticationContext, verificationService);
 
         assertTrue(containsText(view, "Committee User"));
         assertTrue(containsText(view, "committee.user@example.com • HCP 8.4 • Gold"));
         assertTrue(containsText(view, "Select folder"));
+        assertTrue(containsText(view, "Verify"));
         assertTrue(containsText(view, "Status: Ready"));
         assertTrue(containsTextFieldValue(view, "No folder selected"));
     }

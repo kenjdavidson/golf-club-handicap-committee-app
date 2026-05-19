@@ -1,7 +1,10 @@
 package com.kenjdavidson.golf.handicap.views
 
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser
+import com.kenjdavidson.golf.handicap.verification.SingleFileVerificationService
+import com.kenjdavidson.golf.handicap.verification.VerificationStatus
 import com.vaadin.flow.component.Component
+import com.vaadin.flow.component.Html
 import com.vaadin.flow.component.applayout.AppLayout
 import com.vaadin.flow.component.avatar.Avatar
 import com.vaadin.flow.component.button.Button
@@ -16,20 +19,25 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
+import com.vaadin.flow.component.upload.Upload
+import com.vaadin.flow.component.upload.receivers.MemoryBuffer
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
 import com.vaadin.flow.spring.security.AuthenticationContext
 import com.vaadin.flow.theme.lumo.LumoUtility
 import jakarta.annotation.security.PermitAll
+import java.time.format.DateTimeFormatter
 
 @Route("")
 @PageTitle("Handicap Committee App")
 @PermitAll
 class MainView(
-    private val authenticationContext: AuthenticationContext
+    private val authenticationContext: AuthenticationContext,
+    private val singleFileVerificationService: SingleFileVerificationService
 ) : AppLayout() {
 
-    private val userProfile = resolveUserProfile()
+    private val authenticatedUser = resolveAuthenticatedUser()
+    private val userProfile = buildUserProfile(authenticatedUser)
 
     init {
         addToNavbar(buildNavbar())
@@ -127,6 +135,7 @@ class MainView(
         }
 
         val cards = Div(
+            buildSingleFileVerificationCard(),
             buildWelcomeCard("📄 PDF Parser", "Import and parse member round PDFs exported from Golf Canada."),
             buildWelcomeCard("🔍 Audit Log", "Review all changes made during this session."),
             buildWelcomeCard("👤 Member Rounds", "Browse individual member round history for the current season."),
@@ -145,6 +154,86 @@ class MainView(
             )
             isPadding = true
             isSpacing = true
+        }
+    }
+
+    private fun buildSingleFileVerificationCard(): Div {
+        val uploadBuffer = MemoryBuffer()
+        val upload = Upload(uploadBuffer).apply {
+            setAcceptedFileTypes(".pdf")
+            isAutoUpload = true
+        }
+        val uploadStatus = Span("Upload a PDF and click Verify.")
+        val verificationResult = Div()
+        var uploadedBytes: ByteArray? = null
+        var uploadedFileName: String? = null
+
+        val verifyButton = Button("Verify", VaadinIcon.CHECK.create()).apply {
+            isEnabled = false
+            addClickListener {
+                val fileBytes = uploadedBytes ?: return@addClickListener
+                val fileName = uploadedFileName ?: "uploaded.pdf"
+                val result = singleFileVerificationService.verify(fileName, fileBytes, authenticatedUser)
+                val mismatches = if (result.mismatchedDates.isEmpty()) {
+                    "None"
+                } else {
+                    result.mismatchedDates.joinToString(", ") { it.format(DATE_FORMATTER) }
+                }
+                val notes = if (result.notes.isEmpty()) {
+                    ""
+                } else {
+                    "<br/><strong>Notes:</strong> ${result.notes.joinToString("; ")}"
+                }
+                verificationResult.removeAll()
+                verificationResult.add(
+                    Html(
+                        "<div>" +
+                            "<strong>Status:</strong> ${result.status}<br/>" +
+                            "<strong>Date Match:</strong> ${result.matchPercentage}% " +
+                            "(${result.matchedCount}/${result.comparedCount})<br/>" +
+                            "<strong>Mismatched Dates:</strong> $mismatches" +
+                            notes +
+                            "</div>"
+                    )
+                )
+                uploadStatus.text = when (result.status) {
+                    VerificationStatus.PASS -> "Verification complete: pass."
+                    VerificationStatus.WARNING -> "Verification complete: warning."
+                    VerificationStatus.ALERT -> "Verification complete: alert."
+                }
+            }
+        }
+
+        upload.addSucceededListener { event ->
+            uploadedBytes = uploadBuffer.inputStream.readBytes()
+            uploadedFileName = event.fileName
+            verifyButton.isEnabled = uploadedBytes?.isNotEmpty() == true
+            uploadStatus.text = "Uploaded ${event.fileName}"
+        }
+        upload.addFileRejectedListener { event ->
+            uploadedBytes = null
+            uploadedFileName = null
+            verifyButton.isEnabled = false
+            uploadStatus.text = event.errorMessage
+        }
+
+        return Div(
+            Span("Single File Verification").apply {
+                addClassNames(LumoUtility.FontSize.MEDIUM, LumoUtility.FontWeight.SEMIBOLD)
+            },
+            upload,
+            verifyButton,
+            uploadStatus,
+            verificationResult
+        ).apply {
+            style["display"] = "flex"
+            style["flex-direction"] = "column"
+            style["gap"] = "var(--lumo-space-s)"
+            style["padding"] = "var(--lumo-space-m)"
+            style["background"] = "var(--lumo-base-color)"
+            style["border"] = "1px solid var(--lumo-primary-color-10pct)"
+            style["border-radius"] = "var(--lumo-border-radius-m)"
+            style["box-shadow"] = "var(--lumo-box-shadow-xs)"
         }
     }
 
@@ -236,20 +325,20 @@ class MainView(
         }
     }
 
-    private fun resolveUserProfile(): UserProfile =
+    private fun resolveAuthenticatedUser(): GolfCanadaAuthenticatedUser =
         authenticationContext.getAuthenticatedUser(GolfCanadaAuthenticatedUser::class.java)
-            .map { authenticatedUser ->
-                UserProfile(
-                    displayName = authenticatedUser.displayName,
-                    details = buildUserDetails(authenticatedUser),
-                    initials = buildInitials(authenticatedUser.displayName)
-                )
-            }
             .orElseThrow {
                 IllegalStateException(
                     "No authenticated Golf Canada user found in the security context. Please log in again to continue."
                 )
             }
+
+    private fun buildUserProfile(authenticatedUser: GolfCanadaAuthenticatedUser): UserProfile =
+        UserProfile(
+            displayName = authenticatedUser.displayName,
+            details = buildUserDetails(authenticatedUser),
+            initials = buildInitials(authenticatedUser.displayName)
+        )
 
     private fun buildUserDetails(authenticatedUser: GolfCanadaAuthenticatedUser): String =
         listOfNotNull(
@@ -274,4 +363,8 @@ class MainView(
         val details: String,
         val initials: String
     )
+
+    private companion object {
+        val DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE
+    }
 }
