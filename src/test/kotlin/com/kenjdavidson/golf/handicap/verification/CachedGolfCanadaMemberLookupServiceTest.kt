@@ -70,7 +70,7 @@ class CachedGolfCanadaMemberLookupServiceTest {
     @Test
     fun `findMember throws verification exception when profile lookup fails`() {
         `when`(membersApiFactory.create()).thenReturn(membersApi)
-        `when`(membersApi.getProfile(152314L)).thenThrow(RuntimeException("boom"))
+        `when`(membersApi.getProfile(152314L)).thenThrow(RuntimeException("Profile lookup failed"))
 
         assertThrows(VerificationProcessingException::class.java) {
             service.findMember(

@@ -31,7 +31,7 @@ class CachedGolfCanadaMemberLookupService(
 
             GolfCanadaMemberMatch(
                 individualId = individualId,
-                fullName = parsedHistory.playerName?.trim(),
+                fullName = parsedHistory.playerName?.trim()?.ifBlank { UNKNOWN_PLAYER_NAME } ?: UNKNOWN_PLAYER_NAME,
                 golfCanadaCardId = parsedMemberId,
                 homeCourse = profileHomeCourse
             )
@@ -45,5 +45,9 @@ class CachedGolfCanadaMemberLookupService(
         val left = parsedHomeCourse.trim().lowercase()
         val right = profileHomeCourse.trim().lowercase()
         return left.contains(right) || right.contains(left)
+    }
+
+    private companion object {
+        private const val UNKNOWN_PLAYER_NAME = "Unknown Player"
     }
 }
