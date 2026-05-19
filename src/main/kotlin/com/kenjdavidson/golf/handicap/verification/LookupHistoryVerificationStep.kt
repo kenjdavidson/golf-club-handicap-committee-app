@@ -15,12 +15,10 @@ class LookupHistoryVerificationStep(
 
         val matchedMember = memberLookupService.findMember(
             parsedHistory = parsedHistory,
-            authenticatedUser = context.authenticatedUser,
-            accessToken = context.authenticatedUser.accessToken
+            authenticatedUser = context.authenticatedUser
         )
         val golfCanadaDates = historyLookupService.getHistoryDates(
-            matchedMember?.individualId,
-            context.authenticatedUser.accessToken
+            matchedMember?.individualId
         )
 
         return context.copy(matchedMember = matchedMember, golfCanadaDates = golfCanadaDates)

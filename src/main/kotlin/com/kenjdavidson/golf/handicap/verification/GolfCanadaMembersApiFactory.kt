@@ -2,15 +2,19 @@ package com.kenjdavidson.golf.handicap.verification
 
 import com.kenjdavidson.golf.handicap.golfcanada.api.MembersApi
 import com.kenjdavidson.golf.handicap.golfcanada.invoker.ApiClient
+import com.kenjdavidson.golf.handicap.security.CurrentAuthenticatedUserProvider
 import org.springframework.stereotype.Component
 
 @Component
 class GolfCanadaMembersApiFactory(
-    private val baseApiClient: ApiClient
+    private val baseApiClient: ApiClient,
+    private val currentAuthenticatedUserProvider: CurrentAuthenticatedUserProvider
 ) {
-    fun create(accessToken: String): MembersApi {
+    private val membersApi: MembersApi by lazy {
         val apiClient = ApiClient().setBasePath(baseApiClient.basePath)
-        apiClient.setBearerToken(accessToken)
-        return MembersApi(apiClient)
+        apiClient.setBearerToken { currentAuthenticatedUserProvider.requireAccessToken() }
+        MembersApi(apiClient)
     }
+
+    fun create(): MembersApi = membersApi
 }

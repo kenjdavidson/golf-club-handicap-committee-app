@@ -5,15 +5,14 @@ import org.springframework.stereotype.Service
 import java.util.concurrent.ConcurrentHashMap
 
 @Service
-class DefaultGolfCanadaMemberLookupService(
+class CachedGolfCanadaMemberLookupService(
     private val membersApiFactory: GolfCanadaMembersApiFactory
 ) : GolfCanadaMemberLookupService {
     private val cache = ConcurrentHashMap<String, GolfCanadaMemberMatch?>()
 
     override fun findMember(
         parsedHistory: ParsedPlayerHistory,
-        authenticatedUser: GolfCanadaAuthenticatedUser,
-        accessToken: String
+        authenticatedUser: GolfCanadaAuthenticatedUser
     ): GolfCanadaMemberMatch? {
         val cacheKey = listOf(
             parsedHistory.playerName.orEmpty(),
@@ -29,7 +28,7 @@ class DefaultGolfCanadaMemberLookupService(
             val user = authenticatedUser.golfCanadaUser
             val individualId = user.id ?: user.authUserId ?: return@computeIfAbsent null
             val profileHomeCourse = try {
-                membersApiFactory.create(accessToken).getProfile(individualId).homeCourse
+                membersApiFactory.create().getProfile(individualId).homeCourse
             } catch (exception: Exception) {
                 throw VerificationProcessingException("Unable to retrieve Golf Canada member profile.", exception)
             }
