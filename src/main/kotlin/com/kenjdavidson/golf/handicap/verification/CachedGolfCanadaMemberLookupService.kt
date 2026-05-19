@@ -18,6 +18,7 @@ class CachedGolfCanadaMemberLookupService(
 
         return cache.computeIfAbsent(cacheKey) {
             val individualId = parsedHistory.memberId?.trim()?.toLongOrNull() ?: return@computeIfAbsent null
+            val parsedMemberId = individualId.toString()
             val profileHomeCourse = try {
                 membersApiFactory.create().getProfile(individualId).homeCourse
             } catch (exception: Exception) {
@@ -30,8 +31,8 @@ class CachedGolfCanadaMemberLookupService(
 
             GolfCanadaMemberMatch(
                 individualId = individualId,
-                fullName = parsedHistory.playerName,
-                golfCanadaCardId = parsedHistory.memberId,
+                fullName = parsedHistory.playerName?.takeIf { it.isNotBlank() },
+                golfCanadaCardId = parsedMemberId,
                 homeCourse = profileHomeCourse
             )
         }
