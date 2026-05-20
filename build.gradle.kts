@@ -1,5 +1,3 @@
-import org.gradle.api.tasks.Sync
-import org.gradle.api.tasks.bundling.Zip
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -13,8 +11,9 @@ plugins {
 }
 
 group = "com.kenjdavidson.golf"
-val releaseVersion = (project.findProperty("release.version") as String?) ?: "1.0.0-SNAPSHOT"
-version = releaseVersion
+version = (project.findProperty("release.version") as String?) ?: "1.0.0-SNAPSHOT"
+
+apply(from = "$rootDir/gradle/release.gradle")
 
 java {
     toolchain {
@@ -164,117 +163,4 @@ tasks.register<org.springframework.boot.gradle.tasks.run.BootRun>("debugApp") {
         languageVersion.set(JavaLanguageVersion.of(21))
     })
     jvmArgs = listOf("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005")
-}
-
-// ── jpackage installer ─────────────────────────────────────────────────────────
-// Creates a self-contained Windows .exe installer.
-// Activate with: ./gradlew -Pproduction jpackageInstaller
-// Requires JDK 21+ with jpackage on PATH.
-val jpackageAppName = project.findProperty("jpackage.app.name") as String? ?: "HandicapCommitteeApp"
-val jpackageAppVersion = project.findProperty("jpackage.app.version") as String?
-    ?: releaseVersion.removeSuffix("-SNAPSHOT")
-val jpackageVendor = project.findProperty("jpackage.vendor") as String? ?: "Golf Club Handicap Committee"
-val jpackageInputDir = layout.buildDirectory.dir("jpackage-input")
-val jpackageOutputDir = layout.buildDirectory.dir("jpackage")
-val osName = System.getProperty("os.name").lowercase()
-val isWindows = osName.contains("windows")
-val isMac = osName.contains("mac")
-val jpackageImageName = if (isMac) "$jpackageAppName.app" else jpackageAppName
-val jpackageArchiveClassifier = when {
-    isWindows -> "windows"
-    isMac -> "macos"
-    else -> "linux"
-}
-
-tasks.register<Sync>("prepareJpackageInput") {
-    description = "Copies the boot jar into a clean staging directory for jpackage."
-    group = "distribution"
-    dependsOn("bootJar")
-
-    val bootJar = tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar")
-
-    into(jpackageInputDir)
-    from(bootJar.map { it.archiveFile })
-}
-
-tasks.register<Exec>("jpackageAppImage") {
-    description = "Creates a self-contained application image using jpackage."
-    group = "distribution"
-    dependsOn("prepareJpackageInput")
-
-    val bootJar = tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar").get()
-    val inputDir = jpackageInputDir.get().asFile
-    val outputDir = jpackageOutputDir.get().asFile
-
-    doFirst {
-        outputDir.mkdirs()
-
-        val command = mutableListOf(
-            "jpackage",
-            "--type", "app-image",
-            "--name", jpackageAppName,
-            "--app-version", jpackageAppVersion,
-            "--vendor", jpackageVendor,
-            "--description", "Golf Club Handicap Committee Desktop Application",
-            "--input", inputDir.absolutePath,
-            "--main-jar", bootJar.archiveFileName.get(),
-            "--main-class", "org.springframework.boot.loader.launch.JarLauncher",
-            "--dest", outputDir.absolutePath
-        )
-
-        if (isWindows) {
-            command.addAll(
-                listOf(
-                    "--win-shortcut",
-                    "--win-menu",
-                    "--win-menu-group", "Golf Club"
-                )
-            )
-        }
-
-        commandLine(command)
-    }
-}
-
-tasks.register<Zip>("jpackageAppArchive") {
-    description = "Packages the self-contained jpackage application image into a zip archive."
-    group = "distribution"
-    dependsOn("jpackageAppImage")
-
-    destinationDirectory.set(layout.buildDirectory.dir("distributions"))
-    archiveBaseName.set("handicap-committee-app")
-    archiveVersion.set(jpackageAppVersion)
-    archiveClassifier.set(jpackageArchiveClassifier)
-
-    from(jpackageOutputDir.map { it.dir(jpackageImageName) }) {
-        into(jpackageImageName)
-    }
-}
-
-tasks.register<Exec>("jpackageInstaller") {
-    description = "Creates a self-contained Windows .exe installer using jpackage."
-    group = "distribution"
-    dependsOn("prepareJpackageInput")
-
-    val bootJar = tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar").get()
-    val inputDir = jpackageInputDir.get().asFile
-    val outputDir = layout.buildDirectory.dir("jpackage").get().asFile
-
-    doFirst { outputDir.mkdirs() }
-
-    commandLine(
-        "jpackage",
-        "--type", "exe",
-        "--name", jpackageAppName,
-        "--app-version", jpackageAppVersion,
-        "--vendor", jpackageVendor,
-        "--description", "Golf Club Handicap Committee Desktop Application",
-        "--input", inputDir.absolutePath,
-        "--main-jar", bootJar.archiveFileName.get(),
-        "--main-class", "org.springframework.boot.loader.launch.JarLauncher",
-        "--dest", outputDir.absolutePath,
-        "--win-shortcut",
-        "--win-menu",
-        "--win-menu-group", "Golf Club"
-    )
 }

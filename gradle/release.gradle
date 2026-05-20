@@ -1,0 +1,104 @@
+import org.gradle.api.tasks.Sync
+import org.gradle.api.tasks.bundling.Zip
+
+def jpackageAppName = project.findProperty('jpackage.app.name') ?: 'HandicapCommitteeApp'
+def jpackageAppVersion = project.findProperty('jpackage.app.version') ?: project.version.toString().replace('-SNAPSHOT', '')
+def jpackageVendor = project.findProperty('jpackage.vendor') ?: 'Golf Club Handicap Committee'
+def jpackageInputDir = layout.buildDirectory.dir('jpackage-input')
+def jpackageOutputDir = layout.buildDirectory.dir('jpackage')
+def osName = System.getProperty('os.name').toLowerCase()
+def isWindows = osName.contains('windows')
+def isMac = osName.contains('mac')
+def jpackageImageName = isMac ? "${jpackageAppName}.app" : jpackageAppName
+def jpackageArchiveClassifier = isWindows ? 'windows' : (isMac ? 'macos' : 'linux')
+
+tasks.register('prepareJpackageInput', Sync) {
+    description = 'Copies the boot jar into a clean staging directory for jpackage.'
+    group = 'distribution'
+    dependsOn(tasks.named('bootJar'))
+
+    def bootJar = tasks.named('bootJar')
+
+    into(jpackageInputDir)
+    from(bootJar.map { it.archiveFile })
+}
+
+tasks.register('jpackageAppImage', Exec) {
+    description = 'Creates a self-contained application image using jpackage.'
+    group = 'distribution'
+    dependsOn(tasks.named('prepareJpackageInput'))
+
+    def bootJar = tasks.named('bootJar').get()
+    def inputDir = jpackageInputDir.get().asFile
+    def outputDir = jpackageOutputDir.get().asFile
+
+    doFirst {
+        outputDir.mkdirs()
+
+        def command = [
+            'jpackage',
+            '--type', 'app-image',
+            '--name', jpackageAppName,
+            '--app-version', jpackageAppVersion,
+            '--vendor', jpackageVendor,
+            '--description', 'Golf Club Handicap Committee Desktop Application',
+            '--input', inputDir.absolutePath,
+            '--main-jar', bootJar.archiveFileName.get(),
+            '--main-class', 'org.springframework.boot.loader.launch.JarLauncher',
+            '--dest', outputDir.absolutePath
+        ]
+
+        if (isWindows) {
+            command.addAll([
+                '--win-shortcut',
+                '--win-menu',
+                '--win-menu-group', 'Golf Club'
+            ])
+        }
+
+        commandLine(command)
+    }
+}
+
+tasks.register('jpackageAppArchive', Zip) {
+    description = 'Packages the self-contained jpackage application image into a zip archive.'
+    group = 'distribution'
+    dependsOn(tasks.named('jpackageAppImage'))
+
+    destinationDirectory.set(layout.buildDirectory.dir('distributions'))
+    archiveBaseName.set('handicap-committee-app')
+    archiveVersion.set(jpackageAppVersion)
+    archiveClassifier.set(jpackageArchiveClassifier)
+
+    from(jpackageOutputDir.map { it.dir(jpackageImageName) }) {
+        into(jpackageImageName)
+    }
+}
+
+tasks.register('jpackageInstaller', Exec) {
+    description = 'Creates a self-contained Windows .exe installer using jpackage.'
+    group = 'distribution'
+    dependsOn(tasks.named('prepareJpackageInput'))
+
+    def bootJar = tasks.named('bootJar').get()
+    def inputDir = jpackageInputDir.get().asFile
+    def outputDir = layout.buildDirectory.dir('jpackage').get().asFile
+
+    doFirst { outputDir.mkdirs() }
+
+    commandLine(
+        'jpackage',
+        '--type', 'exe',
+        '--name', jpackageAppName,
+        '--app-version', jpackageAppVersion,
+        '--vendor', jpackageVendor,
+        '--description', 'Golf Club Handicap Committee Desktop Application',
+        '--input', inputDir.absolutePath,
+        '--main-jar', bootJar.archiveFileName.get(),
+        '--main-class', 'org.springframework.boot.loader.launch.JarLauncher',
+        '--dest', outputDir.absolutePath,
+        '--win-shortcut',
+        '--win-menu',
+        '--win-menu-group', 'Golf Club'
+    )
+}
