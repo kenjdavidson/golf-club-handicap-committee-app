@@ -5,11 +5,10 @@ class ValueSignal<T>(initialValue: T) {
     private val subscribers = mutableListOf<(T) -> Unit>()
 
     fun subscribe(subscriber: (T) -> Unit): () -> Unit {
-        val currentValue = synchronized(this) {
+        synchronized(this) {
             subscribers += subscriber
-            value
+            subscriber(value)
         }
-        subscriber(currentValue)
         return {
             synchronized(this) {
                 subscribers.remove(subscriber)
