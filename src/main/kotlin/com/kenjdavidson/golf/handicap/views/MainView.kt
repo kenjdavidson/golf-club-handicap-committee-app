@@ -1,17 +1,16 @@
 package com.kenjdavidson.golf.handicap.views
 
+import com.kenjdavidson.golf.handicap.components.Navbar
+import com.kenjdavidson.golf.handicap.components.StatusBar
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser
 import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.applayout.AppLayout
-import com.vaadin.flow.component.avatar.Avatar
 import com.vaadin.flow.component.button.Button
-import com.vaadin.flow.component.contextmenu.MenuItem
 import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.html.H2
 import com.vaadin.flow.component.html.H4
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.VaadinIcon
-import com.vaadin.flow.component.menubar.MenuBar
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
@@ -28,93 +27,28 @@ import jakarta.annotation.security.PermitAll
 class MainView(
     private val authenticationContext: AuthenticationContext,
     private val userProfileResolver: UserProfileResolver,
-    private val singleFileVerificationCardFactory: SingleFileVerificationCardFactory
+    private val singleFileVerificationCardFactory: SingleFileVerificationCardFactory,
+    private val navbar: Navbar,
+    private val statusBar: StatusBar
 ) : AppLayout() {
 
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
-    private val userProfile = userProfileResolver.buildUserProfile(authenticatedUser)
 
     init {
-        addToNavbar(buildNavbar())
+        addToNavbar(navbar)
         content = buildMainContent()
-    }
-
-    private fun buildNavbar(): Component {
-        val title = H2("Golf Club Handicap Committee").apply {
-            addClassNames(
-                LumoUtility.FontSize.MEDIUM,
-                LumoUtility.Margin.NONE
-            )
-        }
-
-        val icon = Span("⛳").apply {
-            addClassNames(
-                LumoUtility.FontSize.LARGE,
-                LumoUtility.Margin.Right.SMALL
-            )
-        }
-
-        val brand = HorizontalLayout(icon, title).apply {
-            isSpacing = false
-            defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
-        }
-
-        return HorizontalLayout(brand, buildUserSection()).apply {
-            defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
-            setWidthFull()
-            expand(brand)
-            addClassNames(LumoUtility.Padding.Horizontal.MEDIUM)
-        }
-    }
-
-    private fun buildUserSection(): Component {
-        val menuBar = MenuBar().apply {
-            element.setAttribute("aria-label", "User menu")
-        }
-        val menuItem: MenuItem = menuBar.addItem(VaadinIcon.CHEVRON_DOWN_SMALL.create()).apply {
-            element.setAttribute("aria-label", "Open user menu")
-            subMenu.addItem("Log out") { authenticationContext.logout() }
-        }
-
-        val avatar = Avatar(userProfile.displayName).apply {
-            abbreviation = userProfile.initials
-        }
-
-        val name = Span(userProfile.displayName).apply {
-            addClassNames(LumoUtility.FontWeight.MEDIUM)
-        }
-
-        val details = Span(userProfile.details).apply {
-            addClassNames(
-                LumoUtility.FontSize.SMALL,
-                LumoUtility.TextColor.SECONDARY
-            )
-        }
-
-        val info = VerticalLayout(name, details).apply {
-            isPadding = false
-            isSpacing = false
-            setMargin(false)
-        }
-
-        return HorizontalLayout(menuBar, avatar, info).apply {
-            isSpacing = true
-            defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
-        }
     }
 
     private fun buildMainContent(): Component {
         val content = buildDashboardContent()
-        val wrapper = VerticalLayout(buildPathToolbar(), content, buildStatusBar()).apply {
+        val wrapper = VerticalLayout(buildPathToolbar(), content, statusBar).apply {
             setSizeFull()
             isPadding = false
             isSpacing = false
             expand(content)
         }
 
-        return HorizontalLayout(wrapper).apply {
-            setSizeFull()
-        }
+        return HorizontalLayout(wrapper).apply { setSizeFull() }
     }
 
     private fun buildDashboardContent(): Component {
@@ -183,33 +117,6 @@ class MainView(
             style["border-radius"] = "var(--lumo-border-radius-l)"
             style["background"] = "var(--lumo-contrast-5pct)"
             style["box-shadow"] = "var(--lumo-box-shadow-xs)"
-        }
-    }
-
-    private fun buildStatusBar(): Component {
-        val leftStatus = Span("Status: Ready").apply {
-            addClassNames(
-                LumoUtility.FontSize.SMALL,
-                LumoUtility.TextColor.SECONDARY
-            )
-        }
-
-        val rightStatus = Span("Authentication active with Golf Canada").apply {
-            addClassNames(
-                LumoUtility.FontSize.SMALL,
-                LumoUtility.TextColor.SECONDARY
-            )
-        }
-
-        return HorizontalLayout(leftStatus, rightStatus).apply {
-            setWidthFull()
-            defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
-            expand(leftStatus)
-            addClassNames(
-                LumoUtility.Padding.Horizontal.MEDIUM,
-                LumoUtility.Padding.Vertical.SMALL
-            )
-            style["border-top"] = "1px solid var(--lumo-contrast-10pct)"
         }
     }
 

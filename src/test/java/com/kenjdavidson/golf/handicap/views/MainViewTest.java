@@ -1,5 +1,7 @@
 package com.kenjdavidson.golf.handicap.views;
 
+import com.kenjdavidson.golf.handicap.components.Navbar;
+import com.kenjdavidson.golf.handicap.components.StatusBar;
 import com.kenjdavidson.golf.handicap.golfcanada.model.AuthToken;
 import com.kenjdavidson.golf.handicap.golfcanada.model.User;
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser;
@@ -48,14 +50,17 @@ class MainViewTest {
         );
         SingleFileVerificationCardFactory cardFactory = mock(SingleFileVerificationCardFactory.class);
         when(cardFactory.create(user)).thenReturn(new Div(new Span("Verify")));
+        Navbar navbar = new Navbar(authenticationContext, userProfileResolver);
+        StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver);
 
-        MainView view = new MainView(authenticationContext, userProfileResolver, cardFactory);
+        MainView view = new MainView(authenticationContext, userProfileResolver, cardFactory, navbar, statusBar);
 
         assertTrue(containsText(view, "Committee User"));
         assertTrue(containsText(view, "committee.user@example.com • HCP 8.4 • Gold"));
         assertTrue(containsText(view, "Select folder"));
         assertTrue(containsText(view, "Verify"));
         assertTrue(containsText(view, "Status: Ready"));
+        assertTrue(containsText(view, "Logged in as Committee User"));
         assertTrue(containsTextFieldValue(view, "No folder selected"));
     }
 
