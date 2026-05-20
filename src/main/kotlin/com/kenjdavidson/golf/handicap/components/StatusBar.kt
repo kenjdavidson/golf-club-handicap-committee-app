@@ -1,8 +1,10 @@
 package com.kenjdavidson.golf.handicap.components
 
+import com.kenjdavidson.golf.handicap.views.UserProfileResolver
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.html.Span
+import com.vaadin.flow.spring.security.AuthenticationContext
 import com.vaadin.flow.theme.lumo.LumoUtility
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.annotation.Scope
@@ -11,7 +13,12 @@ import org.springframework.stereotype.Component
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-class StatusBar : HorizontalLayout() {
+class StatusBar(
+    private val authenticationContext: AuthenticationContext,
+    userProfileResolver: UserProfileResolver,
+    private val uiComponentUpdater: UiComponentUpdater
+) : HorizontalLayout() {
+    private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
 
     private val status = Span("Status: Ready").apply {
         addClassNames(
@@ -20,7 +27,7 @@ class StatusBar : HorizontalLayout() {
         )
     }
 
-    private val context = Span("Authentication active with Golf Canada").apply {
+    private val context = Span("Logged in as ${authenticatedUser.displayName}").apply {
         addClassNames(
             LumoUtility.FontSize.SMALL,
             LumoUtility.TextColor.SECONDARY
@@ -45,18 +52,8 @@ class StatusBar : HorizontalLayout() {
 
     @EventListener
     fun onStatusUpdate(event: StatusUpdateEvent) {
-        runInUiContext {
+        uiComponentUpdater.update(this) {
             updateStatus(event.statusText)
-        }
-    }
-
-    private fun runInUiContext(update: () -> Unit) {
-        val currentUi = ui.orElse(null)
-        if (currentUi == null || currentUi.session == null) {
-            return
-        }
-        currentUi.access {
-            update()
         }
     }
 }
