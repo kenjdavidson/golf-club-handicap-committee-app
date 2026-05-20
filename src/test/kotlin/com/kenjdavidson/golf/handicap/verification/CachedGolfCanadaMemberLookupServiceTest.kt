@@ -12,13 +12,11 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 
 class CachedGolfCanadaMemberLookupServiceTest {
-    private val membersApiFactory = mock(GolfCanadaMembersApiFactory::class.java)
     private val membersApi = mock(MembersApi::class.java)
-    private val service = CachedGolfCanadaMemberLookupService(membersApiFactory)
+    private val service = CachedGolfCanadaMemberLookupService(membersApi)
 
     @Test
     fun `findMember returns match from parsed member id`() {
-        `when`(membersApiFactory.create()).thenReturn(membersApi)
         `when`(membersApi.getProfile(152314L)).thenReturn(Profile().homeCourse("Snake Point Golf Club"))
 
         val match = service.findMember(
@@ -52,7 +50,6 @@ class CachedGolfCanadaMemberLookupServiceTest {
 
     @Test
     fun `findMember caches repeated lookups for same parsed key`() {
-        `when`(membersApiFactory.create()).thenReturn(membersApi)
         `when`(membersApi.getProfile(152314L)).thenReturn(Profile().homeCourse("Snake Point Golf Club"))
         val parsed = ParsedPlayerHistory(
             playerName = "Ellis, Dean",
@@ -69,7 +66,6 @@ class CachedGolfCanadaMemberLookupServiceTest {
 
     @Test
     fun `findMember throws verification exception when profile lookup fails`() {
-        `when`(membersApiFactory.create()).thenReturn(membersApi)
         `when`(membersApi.getProfile(152314L)).thenThrow(RuntimeException("Profile lookup failed"))
 
         assertThrows(VerificationProcessingException::class.java) {
@@ -86,7 +82,6 @@ class CachedGolfCanadaMemberLookupServiceTest {
 
     @Test
     fun `findMember returns null when parsed and profile home course do not match`() {
-        `when`(membersApiFactory.create()).thenReturn(membersApi)
         `when`(membersApi.getProfile(152314L)).thenReturn(Profile().homeCourse("Different Course"))
 
         val match = service.findMember(

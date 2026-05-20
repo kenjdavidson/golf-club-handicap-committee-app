@@ -17,18 +17,16 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 
 class CachingGolfCanadaHistoryLookupServiceTest {
-    private val membersApiFactory = mock(GolfCanadaMembersApiFactory::class.java)
     private val membersApi = mock(MembersApi::class.java)
     private val clock = MutableClock(Instant.parse("2026-05-19T00:00:00Z"), ZoneOffset.UTC)
     private val service = CachingGolfCanadaHistoryLookupService(
-        membersApiFactory = membersApiFactory,
+        membersApi = membersApi,
         verificationProperties = VerificationProperties(20),
         clock = clock
     )
 
     @Test
     fun `uses cache for same day and refreshes when request date changes`() {
-        `when`(membersApiFactory.create()).thenReturn(membersApi)
         `when`(membersApi.getHistory(123L, 0, 20)).thenReturn(
             HistoryResponse().data(
                 listOf(HistoryEntry().date(OffsetDateTime.parse("2026-05-18T00:00:00Z")))

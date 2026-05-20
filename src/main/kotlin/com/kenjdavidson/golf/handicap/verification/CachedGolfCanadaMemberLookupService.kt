@@ -1,11 +1,12 @@
 package com.kenjdavidson.golf.handicap.verification
 
+import com.kenjdavidson.golf.handicap.golfcanada.api.MembersApi
 import org.springframework.stereotype.Service
 import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class CachedGolfCanadaMemberLookupService(
-    private val membersApiFactory: GolfCanadaMembersApiFactory
+    private val membersApi: MembersApi
 ) : GolfCanadaMemberLookupService {
     private val cache = ConcurrentHashMap<String, GolfCanadaMemberMatch?>()
 
@@ -20,7 +21,7 @@ class CachedGolfCanadaMemberLookupService(
             val individualId = parsedHistory.memberId?.trim()?.toLongOrNull() ?: return@computeIfAbsent null
             val parsedMemberId = individualId.toString()
             val profileHomeCourse = try {
-                membersApiFactory.create().getProfile(individualId).homeCourse
+                membersApi.getProfile(individualId).homeCourse
             } catch (exception: Exception) {
                 throw VerificationProcessingException("Unable to retrieve Golf Canada member profile.", exception)
             }

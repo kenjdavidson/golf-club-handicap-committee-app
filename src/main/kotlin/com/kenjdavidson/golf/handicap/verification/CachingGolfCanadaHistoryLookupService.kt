@@ -1,5 +1,6 @@
 package com.kenjdavidson.golf.handicap.verification
 
+import com.kenjdavidson.golf.handicap.golfcanada.api.MembersApi
 import org.springframework.stereotype.Service
 import java.time.Clock
 import java.time.LocalDate
@@ -7,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class CachingGolfCanadaHistoryLookupService(
-    private val membersApiFactory: GolfCanadaMembersApiFactory,
+    private val membersApi: MembersApi,
     private val verificationProperties: VerificationProperties,
     private val clock: Clock = Clock.systemDefaultZone()
 ) : GolfCanadaHistoryLookupService {
@@ -22,8 +23,7 @@ class CachingGolfCanadaHistoryLookupService(
 
         return cache.computeIfAbsent(cacheKey) {
             try {
-                membersApiFactory.create()
-                    .getHistory(individualId, 0, verificationProperties.maxRounds)
+                membersApi.getHistory(individualId, 0, verificationProperties.maxRounds)
                     ?.data
                     .orEmpty()
                     .mapNotNull { it.date?.toLocalDate() }
