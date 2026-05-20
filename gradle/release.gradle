@@ -3,7 +3,8 @@ import org.gradle.api.tasks.bundling.Zip
 
 def jpackageAppName = project.findProperty('jpackage.app.name') ?: 'HandicapCommitteeApp'
 def projectVersion = project.version.toString()
-def jpackageAppVersion = project.findProperty('jpackage.app.version') ?: projectVersion.replaceFirst(/-SNAPSHOT$/, '')
+def jpackageAppVersion = project.findProperty('jpackage.app.version') ?:
+    (projectVersion.endsWith('-SNAPSHOT') ? projectVersion[0..-10] : projectVersion)
 def jpackageVendor = project.findProperty('jpackage.vendor') ?: 'Golf Club Handicap Committee'
 def jpackageInputDir = layout.buildDirectory.dir('jpackage-input')
 def jpackageOutputDir = layout.buildDirectory.dir('jpackage')
@@ -27,11 +28,12 @@ tasks.register('jpackageAppImage', Exec) {
     group = 'distribution'
     dependsOn(tasks.named('prepareJpackageInput'))
 
-    def bootJar = tasks.named('bootJar').get()
+    def bootJar = tasks.named('bootJar')
     def inputDir = jpackageInputDir.get().asFile
     def outputDir = jpackageOutputDir.get().asFile
 
     doFirst {
+        def bootJarTask = bootJar.get()
         outputDir.mkdirs()
 
         def command = [
@@ -42,7 +44,7 @@ tasks.register('jpackageAppImage', Exec) {
             '--vendor', jpackageVendor,
             '--description', 'Golf Club Handicap Committee Desktop Application',
             '--input', inputDir.absolutePath,
-            '--main-jar', bootJar.archiveFileName.get(),
+            '--main-jar', bootJarTask.archiveFileName.get(),
             '--main-class', 'org.springframework.boot.loader.launch.JarLauncher',
             '--dest', outputDir.absolutePath
         ]
@@ -79,25 +81,28 @@ tasks.register('jpackageInstaller', Exec) {
     group = 'distribution'
     dependsOn(tasks.named('prepareJpackageInput'))
 
-    def bootJar = tasks.named('bootJar').get()
+    def bootJar = tasks.named('bootJar')
     def inputDir = jpackageInputDir.get().asFile
     def outputDir = layout.buildDirectory.dir('jpackage').get().asFile
 
-    doFirst { outputDir.mkdirs() }
+    doFirst {
+        def bootJarTask = bootJar.get()
+        outputDir.mkdirs()
 
-    commandLine(
-        'jpackage',
-        '--type', 'exe',
-        '--name', jpackageAppName,
-        '--app-version', jpackageAppVersion,
-        '--vendor', jpackageVendor,
-        '--description', 'Golf Club Handicap Committee Desktop Application',
-        '--input', inputDir.absolutePath,
-        '--main-jar', bootJar.archiveFileName.get(),
-        '--main-class', 'org.springframework.boot.loader.launch.JarLauncher',
-        '--dest', outputDir.absolutePath,
-        '--win-shortcut',
-        '--win-menu',
-        '--win-menu-group', 'Golf Club'
-    )
+        commandLine(
+            'jpackage',
+            '--type', 'exe',
+            '--name', jpackageAppName,
+            '--app-version', jpackageAppVersion,
+            '--vendor', jpackageVendor,
+            '--description', 'Golf Club Handicap Committee Desktop Application',
+            '--input', inputDir.absolutePath,
+            '--main-jar', bootJarTask.archiveFileName.get(),
+            '--main-class', 'org.springframework.boot.loader.launch.JarLauncher',
+            '--dest', outputDir.absolutePath,
+            '--win-shortcut',
+            '--win-menu',
+            '--win-menu-group', 'Golf Club'
+        )
+    }
 }
