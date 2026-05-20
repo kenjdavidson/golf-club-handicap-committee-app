@@ -142,6 +142,27 @@ tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
     }
 }
 
+tasks.register<org.springframework.boot.gradle.tasks.run.BootRun>("runApp") {
+    group = "application"
+    description = "Runs the Spring Boot application."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("com.kenjdavidson.golf.handicap.HandicapApplication")
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    })
+}
+
+tasks.register<org.springframework.boot.gradle.tasks.run.BootRun>("debugApp") {
+    group = "application"
+    description = "Runs the Spring Boot application with remote debugging on port 5005."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("com.kenjdavidson.golf.handicap.HandicapApplication")
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    })
+    jvmArgs = listOf("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005")
+}
+
 // ── jpackage installer ─────────────────────────────────────────────────────────
 // Creates a self-contained Windows .exe installer.
 // Activate with: ./gradlew -Pproduction jpackageInstaller

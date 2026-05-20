@@ -21,7 +21,9 @@ frontend/generated/
 *.iws
 *.iml
 *.ipr
-.vscode/
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
 .eclipse/
 *.classpath
 *.project

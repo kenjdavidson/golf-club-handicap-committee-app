@@ -1,0 +1,41 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Gradle: run app",
+      "type": "shell",
+      "command": "./gradlew",
+      "args": [
+        "--no-daemon",
+        "runApp"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Gradle: debug app (port 5005)",
+      "type": "shell",
+      "command": "./gradlew",
+      "args": [
+        "--no-daemon",
+        "debugApp"
+      ],
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": [
+          {
+            "regexp": ".*"
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": "Listening for transport dt_socket at address: 5005"
+        }
+      }
+    }
+  ]
+}
