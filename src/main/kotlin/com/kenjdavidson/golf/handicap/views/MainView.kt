@@ -26,10 +26,13 @@ import jakarta.annotation.security.PermitAll
 @PageTitle("Handicap Committee App")
 @PermitAll
 class MainView(
-    private val authenticationContext: AuthenticationContext
+    private val authenticationContext: AuthenticationContext,
+    private val userProfileResolver: UserProfileResolver,
+    private val singleFileVerificationCardFactory: SingleFileVerificationCardFactory
 ) : AppLayout() {
 
-    private val userProfile = resolveUserProfile()
+    private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
+    private val userProfile = userProfileResolver.buildUserProfile(authenticatedUser)
 
     init {
         addToNavbar(buildNavbar())
@@ -127,6 +130,7 @@ class MainView(
         }
 
         val cards = Div(
+            singleFileVerificationCardFactory.create(authenticatedUser),
             buildWelcomeCard("📄 PDF Parser", "Import and parse member round PDFs exported from Golf Canada."),
             buildWelcomeCard("🔍 Audit Log", "Review all changes made during this session."),
             buildWelcomeCard("👤 Member Rounds", "Browse individual member round history for the current season."),
@@ -236,42 +240,4 @@ class MainView(
         }
     }
 
-    private fun resolveUserProfile(): UserProfile =
-        authenticationContext.getAuthenticatedUser(GolfCanadaAuthenticatedUser::class.java)
-            .map { authenticatedUser ->
-                UserProfile(
-                    displayName = authenticatedUser.displayName,
-                    details = buildUserDetails(authenticatedUser),
-                    initials = buildInitials(authenticatedUser.displayName)
-                )
-            }
-            .orElseThrow {
-                IllegalStateException(
-                    "No authenticated Golf Canada user found in the security context. Please log in again to continue."
-                )
-            }
-
-    private fun buildUserDetails(authenticatedUser: GolfCanadaAuthenticatedUser): String =
-        listOfNotNull(
-            authenticatedUser.email,
-            authenticatedUser.handicap?.takeIf { it.isNotBlank() }?.let { "HCP $it" },
-            authenticatedUser.membershipLevel?.takeIf { it.isNotBlank() }
-        ).joinToString(" • ")
-
-    private fun buildInitials(displayName: String?): String {
-        if (displayName.isNullOrBlank()) {
-            return "CU"
-        }
-
-        val parts = displayName.trim().split("\\s+".toRegex())
-        val first = parts.firstOrNull()?.firstOrNull()?.uppercaseChar()?.toString() ?: "C"
-        val second = parts.drop(1).lastOrNull()?.firstOrNull()?.uppercaseChar()?.toString().orEmpty()
-        return first + second
-    }
-
-    private data class UserProfile(
-        val displayName: String,
-        val details: String,
-        val initials: String
-    )
 }

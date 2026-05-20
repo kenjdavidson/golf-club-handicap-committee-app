@@ -6,6 +6,7 @@ import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.security.AuthenticationContext;
@@ -40,12 +41,20 @@ class MainViewTest {
         );
 
         when(authenticationContext.getAuthenticatedUser(GolfCanadaAuthenticatedUser.class)).thenReturn(Optional.of(user));
+        UserProfileResolver userProfileResolver = mock(UserProfileResolver.class);
+        when(userProfileResolver.resolveAuthenticatedUser(authenticationContext)).thenReturn(user);
+        when(userProfileResolver.buildUserProfile(user)).thenReturn(
+            new UserProfile("Committee User", "committee.user@example.com • HCP 8.4 • Gold", "CU")
+        );
+        SingleFileVerificationCardFactory cardFactory = mock(SingleFileVerificationCardFactory.class);
+        when(cardFactory.create(user)).thenReturn(new Div(new Span("Verify")));
 
-        MainView view = new MainView(authenticationContext);
+        MainView view = new MainView(authenticationContext, userProfileResolver, cardFactory);
 
         assertTrue(containsText(view, "Committee User"));
         assertTrue(containsText(view, "committee.user@example.com • HCP 8.4 • Gold"));
         assertTrue(containsText(view, "Select folder"));
+        assertTrue(containsText(view, "Verify"));
         assertTrue(containsText(view, "Status: Ready"));
         assertTrue(containsTextFieldValue(view, "No folder selected"));
     }
