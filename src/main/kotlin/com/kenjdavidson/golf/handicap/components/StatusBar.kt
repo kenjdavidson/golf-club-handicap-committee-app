@@ -38,7 +38,6 @@ class StatusBar(
 
     init {
         status.text = statusSignal.value()
-        ensureSignalBinding()
         addAttachListener {
             ensureSignalBinding()
         }
@@ -55,7 +54,7 @@ class StatusBar(
 
     fun updateStatus(statusText: String) {
         statusSignal.value(statusText)
-        if (!signalBindingInitialized) {
+        if (!signalBindingInitialized && ui.isEmpty) {
             status.text = statusText
         }
     }
@@ -66,7 +65,7 @@ class StatusBar(
     }
 
     private fun ensureSignalBinding() {
-        if (signalBindingInitialized || ui.isEmpty) {
+        if (signalBindingInitialized) {
             return
         }
         status.element.bindText(statusSignal)
