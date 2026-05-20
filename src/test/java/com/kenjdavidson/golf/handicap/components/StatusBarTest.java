@@ -33,9 +33,7 @@ class StatusBarTest {
         );
         StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver);
 
-        StatusSignal statusSignal = new StatusSignal("Status: Ready");
-        statusBar.bind(statusSignal);
-        statusSignal.publish("Status: Processing");
+        statusBar.updateStatus("Status: Processing");
 
         assertTrue(containsText(statusBar, "Status: Processing"));
         assertTrue(containsText(statusBar, "Logged in as Committee User"));

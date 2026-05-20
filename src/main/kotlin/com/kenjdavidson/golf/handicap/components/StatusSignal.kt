@@ -1,5 +1,7 @@
 package com.kenjdavidson.golf.handicap.components
 
+import org.slf4j.LoggerFactory
+
 class StatusSignal(initialStatus: String) {
     private var status = initialStatus
     private val subscribers = mutableListOf<(String) -> Unit>()
@@ -19,6 +21,13 @@ class StatusSignal(initialStatus: String) {
         }
         currentSubscribers.forEach { subscriber ->
             runCatching { subscriber(statusText) }
+                .onFailure { exception ->
+                    logger.warn("Status signal subscriber failed for status: {}", statusText, exception)
+                }
         }
+    }
+
+    private companion object {
+        private val logger = LoggerFactory.getLogger(StatusSignal::class.java)
     }
 }

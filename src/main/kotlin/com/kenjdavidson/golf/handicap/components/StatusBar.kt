@@ -57,7 +57,6 @@ class StatusBar(
     private fun updateStatusSafely(statusText: String) {
         val currentUi = ui.orElse(null)
         if (currentUi == null || currentUi.session == null) {
-            updateStatus(statusText)
             return
         }
         currentUi.access {
