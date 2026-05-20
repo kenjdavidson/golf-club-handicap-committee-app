@@ -54,7 +54,7 @@ class StatusBar(
 
     fun updateStatus(statusText: String) {
         statusSignal.value(statusText)
-        if (!signalBindingInitialized && ui.isEmpty) {
+        if (!signalBindingInitialized) {
             status.text = statusText
         }
     }
