@@ -2,7 +2,7 @@ package com.kenjdavidson.golf.handicap.views;
 
 import com.kenjdavidson.golf.handicap.components.Navbar;
 import com.kenjdavidson.golf.handicap.components.StatusBar;
-import com.kenjdavidson.golf.handicap.components.UiComponentUpdater;
+import com.kenjdavidson.golf.handicap.components.StatusSignal;
 import com.kenjdavidson.golf.handicap.golfcanada.model.AuthToken;
 import com.kenjdavidson.golf.handicap.golfcanada.model.User;
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser;
@@ -21,6 +21,8 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -50,9 +52,9 @@ class MainViewTest {
             new UserProfile("Committee User", "committee.user@example.com • HCP 8.4 • Gold", "CU")
         );
         SingleFileVerificationCardFactory cardFactory = mock(SingleFileVerificationCardFactory.class);
-        when(cardFactory.create(user)).thenReturn(new Div(new Span("Verify")));
+        when(cardFactory.create(eq(user), any(StatusSignal.class))).thenReturn(new Div(new Span("Verify")));
         Navbar navbar = new Navbar(authenticationContext, userProfileResolver);
-        StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver, new UiComponentUpdater());
+        StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver);
 
         MainView view = new MainView(authenticationContext, userProfileResolver, cardFactory, navbar, statusBar);
 

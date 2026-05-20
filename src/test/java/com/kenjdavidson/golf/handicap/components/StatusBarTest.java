@@ -31,9 +31,11 @@ class StatusBarTest {
         when(userProfileResolver.buildUserProfile(user)).thenReturn(
             new UserProfile("Committee User", "committee.user@example.com • HCP 8.4 • Gold", "CU")
         );
-        StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver, new UiComponentUpdater());
+        StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver);
 
-        statusBar.updateStatus("Status: Processing");
+        StatusSignal statusSignal = new StatusSignal("Status: Ready");
+        statusBar.bind(statusSignal);
+        statusSignal.publish("Status: Processing");
 
         assertTrue(containsText(statusBar, "Status: Processing"));
         assertTrue(containsText(statusBar, "Logged in as Committee User"));

@@ -2,6 +2,7 @@ package com.kenjdavidson.golf.handicap.views
 
 import com.kenjdavidson.golf.handicap.components.Navbar
 import com.kenjdavidson.golf.handicap.components.StatusBar
+import com.kenjdavidson.golf.handicap.components.StatusSignal
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser
 import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.applayout.AppLayout
@@ -33,9 +34,11 @@ class MainView(
 ) : AppLayout() {
 
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
+    private val statusSignal = StatusSignal("Status: Ready")
 
     init {
         addToNavbar(navbar)
+        statusBar.bind(statusSignal)
         content = buildMainContent()
     }
 
@@ -64,7 +67,7 @@ class MainView(
         }
 
         val cards = Div(
-            singleFileVerificationCardFactory.create(authenticatedUser),
+            singleFileVerificationCardFactory.create(authenticatedUser, statusSignal),
             buildWelcomeCard("📄 PDF Parser", "Import and parse member round PDFs exported from Golf Canada."),
             buildWelcomeCard("🔍 Audit Log", "Review all changes made during this session."),
             buildWelcomeCard("👤 Member Rounds", "Browse individual member round history for the current season."),

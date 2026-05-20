@@ -8,15 +8,13 @@ import com.vaadin.flow.spring.security.AuthenticationContext
 import com.vaadin.flow.theme.lumo.LumoUtility
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.annotation.Scope
-import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 class StatusBar(
     private val authenticationContext: AuthenticationContext,
-    userProfileResolver: UserProfileResolver,
-    private val uiComponentUpdater: UiComponentUpdater
+    userProfileResolver: UserProfileResolver
 ) : HorizontalLayout() {
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
 
@@ -50,10 +48,9 @@ class StatusBar(
         status.text = statusText
     }
 
-    @EventListener
-    fun onStatusUpdate(event: StatusUpdateEvent) {
-        uiComponentUpdater.update(this) {
-            updateStatus(event.statusText)
+    fun bind(statusSignal: StatusSignal) {
+        statusSignal.subscribe { statusText ->
+            updateStatus(statusText)
         }
     }
 }
