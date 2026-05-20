@@ -2,7 +2,8 @@ import org.gradle.api.tasks.Sync
 import org.gradle.api.tasks.bundling.Zip
 
 def jpackageAppName = project.findProperty('jpackage.app.name') ?: 'HandicapCommitteeApp'
-def jpackageAppVersion = project.findProperty('jpackage.app.version') ?: project.version.toString().replace('-SNAPSHOT', '')
+def projectVersion = project.version.toString()
+def jpackageAppVersion = project.findProperty('jpackage.app.version') ?: projectVersion.replaceFirst(/-SNAPSHOT$/, '')
 def jpackageVendor = project.findProperty('jpackage.vendor') ?: 'Golf Club Handicap Committee'
 def jpackageInputDir = layout.buildDirectory.dir('jpackage-input')
 def jpackageOutputDir = layout.buildDirectory.dir('jpackage')
@@ -17,10 +18,8 @@ tasks.register('prepareJpackageInput', Sync) {
     group = 'distribution'
     dependsOn(tasks.named('bootJar'))
 
-    def bootJar = tasks.named('bootJar')
-
     into(jpackageInputDir)
-    from(bootJar.map { it.archiveFile })
+    from(tasks.named('bootJar').map { it.archiveFile })
 }
 
 tasks.register('jpackageAppImage', Exec) {
