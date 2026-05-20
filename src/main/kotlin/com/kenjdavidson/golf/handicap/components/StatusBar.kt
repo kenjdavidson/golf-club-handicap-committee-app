@@ -17,6 +17,7 @@ class StatusBar(
     userProfileResolver: UserProfileResolver
 ) : HorizontalLayout() {
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
+    private var unsubscribe: (() -> Unit)? = null
 
     private val status = Span("Status: Ready").apply {
         addClassNames(
@@ -49,8 +50,13 @@ class StatusBar(
     }
 
     fun bind(statusSignal: StatusSignal) {
-        statusSignal.subscribe { statusText ->
+        unsubscribe?.invoke()
+        unsubscribe = statusSignal.subscribe { statusText ->
             updateStatusSafely(statusText)
+        }
+        addDetachListener {
+            unsubscribe?.invoke()
+            unsubscribe = null
         }
     }
 

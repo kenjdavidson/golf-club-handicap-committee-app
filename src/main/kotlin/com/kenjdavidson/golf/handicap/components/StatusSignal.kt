@@ -1,25 +1,22 @@
 package com.kenjdavidson.golf.handicap.components
 
 import org.slf4j.LoggerFactory
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.atomic.AtomicReference
 
 class StatusSignal(initialStatus: String) {
-    private var status = initialStatus
-    private val subscribers = mutableListOf<(String) -> Unit>()
+    private val status = AtomicReference(initialStatus)
+    private val subscribers = CopyOnWriteArrayList<(String) -> Unit>()
 
-    fun subscribe(subscriber: (String) -> Unit) {
-        val currentStatus = synchronized(this) {
-            subscribers += subscriber
-            status
-        }
-        subscriber(currentStatus)
+    fun subscribe(subscriber: (String) -> Unit): () -> Unit {
+        subscribers += subscriber
+        subscriber(status.get())
+        return { subscribers.remove(subscriber) }
     }
 
     fun publish(statusText: String) {
-        val currentSubscribers = synchronized(this) {
-            status = statusText
-            subscribers.toList()
-        }
-        currentSubscribers.forEach { subscriber ->
+        status.set(statusText)
+        subscribers.forEach { subscriber ->
             runCatching { subscriber(statusText) }
                 .onFailure { exception ->
                     logger.warn("Status signal subscriber failed for status: {}", statusText, exception)
