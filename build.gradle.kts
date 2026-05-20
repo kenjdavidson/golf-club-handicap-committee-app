@@ -50,6 +50,7 @@ dependencies {
 
     // Vaadin 24 Flow UI
     implementation("com.vaadin:vaadin-spring-boot-starter")
+    implementation("com.vaadin:signals:24.10.5")
 
     // Apache PDFBox – PDF scorecard parsing
     implementation("org.apache.pdfbox:pdfbox:3.0.3")

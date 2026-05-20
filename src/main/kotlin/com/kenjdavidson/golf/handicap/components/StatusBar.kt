@@ -6,6 +6,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.spring.security.AuthenticationContext
 import com.vaadin.flow.theme.lumo.LumoUtility
+import com.vaadin.signals.Signal
+import com.vaadin.signals.ValueSignal
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.annotation.Scope
 import org.springframework.context.event.EventListener
@@ -19,6 +21,7 @@ class StatusBar(
 ) : HorizontalLayout() {
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
     private val statusSignal = ValueSignal("Status: Ready")
+    private var stopStatusBinding: Runnable? = null
 
     private val status = Span().apply {
         addClassNames(
@@ -35,7 +38,9 @@ class StatusBar(
     }
 
     init {
-        status.bindText(statusSignal)
+        stopStatusBinding = Signal.effect {
+            status.text = statusSignal.value()
+        }
         add(status, context)
         setWidthFull()
         defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
@@ -45,10 +50,14 @@ class StatusBar(
             LumoUtility.Padding.Vertical.SMALL
         )
         style["border-top"] = "1px solid var(--lumo-contrast-10pct)"
+        addDetachListener {
+            stopStatusBinding?.run()
+            stopStatusBinding = null
+        }
     }
 
     fun updateStatus(statusText: String) {
-        statusSignal.set(statusText)
+        statusSignal.value(statusText)
     }
 
     @EventListener
