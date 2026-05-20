@@ -20,7 +20,7 @@ class StatusBar(
 ) : HorizontalLayout() {
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
     private val statusSignal = ValueSignal("Status: Ready")
-    private var stopStatusBinding: Runnable? = null
+    private var signalBindingInitialized = false
 
     private val status = Span().apply {
         addClassNames(
@@ -37,7 +37,11 @@ class StatusBar(
     }
 
     init {
-        stopStatusBinding = status.bindText(statusSignal)
+        status.text = statusSignal.value()
+        ensureSignalBinding()
+        addAttachListener {
+            ensureSignalBinding()
+        }
         add(status, context)
         setWidthFull()
         defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
@@ -47,18 +51,25 @@ class StatusBar(
             LumoUtility.Padding.Vertical.SMALL
         )
         style["border-top"] = "1px solid var(--lumo-contrast-10pct)"
-        addDetachListener {
-            stopStatusBinding?.run()
-            stopStatusBinding = null
-        }
     }
 
     fun updateStatus(statusText: String) {
         statusSignal.value(statusText)
+        if (!signalBindingInitialized) {
+            status.text = statusText
+        }
     }
 
     @EventListener
     fun onStatusUpdate(event: StatusUpdateEvent) {
         updateStatus(event.message)
+    }
+
+    private fun ensureSignalBinding() {
+        if (signalBindingInitialized || ui.isEmpty) {
+            return
+        }
+        status.element.bindText(statusSignal)
+        signalBindingInitialized = true
     }
 }

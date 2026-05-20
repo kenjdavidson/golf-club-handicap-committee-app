@@ -1,13 +1,13 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "3.3.4"
-    id("io.spring.dependency-management") version "1.1.6"
-    id("com.vaadin") version "24.3.13"
-    id("org.openapi.generator") version "7.6.0"
+    id("org.springframework.boot") version "4.0.0"
+    id("io.spring.dependency-management") version "1.1.7"
+    id("com.vaadin") version "25.0.11"
+    id("org.openapi.generator") version "7.14.0"
     id("org.graalvm.buildtools.native") version "0.10.3" apply false
-    kotlin("jvm") version "2.0.21"
-    kotlin("plugin.spring") version "2.0.21"
+    kotlin("jvm") version "2.2.0"
+    kotlin("plugin.spring") version "2.2.0"
 }
 
 group = "com.kenjdavidson.golf"
@@ -33,7 +33,7 @@ vaadin {
 
 dependencyManagement {
     imports {
-        mavenBom("com.vaadin:vaadin-bom:24.3.13")
+        mavenBom("com.vaadin:vaadin-bom:25.0.11")
     }
 }
 
@@ -48,9 +48,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     runtimeOnly("com.h2database:h2")
 
-    // Vaadin 24 Flow UI
+    // Vaadin Flow UI
     implementation("com.vaadin:vaadin-spring-boot-starter")
-    implementation("com.vaadin:signals:24.10.5")
+    implementation("com.vaadin:vaadin-dev-server")
+    implementation("com.vaadin:signals")
 
     // Apache PDFBox – PDF scorecard parsing
     implementation("org.apache.pdfbox:pdfbox:3.0.3")
@@ -62,6 +63,7 @@ dependencies {
     // OpenAPI generated-client support
     implementation("org.openapitools:jackson-databind-nullable:0.2.6")
     implementation("io.swagger.core.v3:swagger-annotations:2.2.22")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
     // Kotlin support
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
@@ -112,6 +114,22 @@ openApiGenerate {
     generateModelTests.set(false)
     generateApiDocumentation.set(false)
     generateModelDocumentation.set(false)
+}
+
+tasks.named("openApiGenerate") {
+    doLast {
+        val apiClientFile = layout.buildDirectory.file(
+            "generated-sources/openapi/src/main/java/com/kenjdavidson/golf/handicap/golfcanada/invoker/ApiClient.java"
+        ).get().asFile
+        if (apiClientFile.exists()) {
+            var content = apiClientFile.readText()
+            content = content
+                .replace("defaultHeaders.containsKey(", "defaultHeaders.containsHeader(")
+                .replace("headers.entrySet()", "headers.headerSet()")
+                .replace("UriComponentsBuilder.fromHttpUrl(", "UriComponentsBuilder.fromUriString(")
+            apiClientFile.writeText(content)
+        }
+    }
 }
 
 // Add the generated sources to the main source set
