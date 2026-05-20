@@ -3,7 +3,6 @@ package com.kenjdavidson.golf.handicap.components
 import com.kenjdavidson.golf.handicap.views.UserProfileResolver
 import com.vaadin.flow.component.avatar.Avatar
 import com.vaadin.flow.component.button.Button
-import com.vaadin.flow.component.contextmenu.MenuItem
 import com.vaadin.flow.component.html.H2
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.VaadinIcon
@@ -23,6 +22,9 @@ class Navbar(
     private val authenticationContext: AuthenticationContext,
     userProfileResolver: UserProfileResolver
 ) : HorizontalLayout() {
+    private companion object {
+        const val DASHBOARD_ROUTE = ""
+    }
 
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
     private val userProfile = userProfileResolver.buildUserProfile(authenticatedUser)
@@ -47,10 +49,14 @@ class Navbar(
             defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
         }
 
-        val navButtons = HorizontalLayout(
-            Button("Dashboard"),
-            Button("Workspace")
-        ).apply {
+        val dashboardButton = Button("Dashboard").apply {
+            addClickListener { getUI().ifPresent { currentUi -> currentUi.navigate(DASHBOARD_ROUTE) } }
+        }
+        val workspaceButton = Button("Workspace").apply {
+            isEnabled = false
+        }
+
+        val navButtons = HorizontalLayout(dashboardButton, workspaceButton).apply {
             isPadding = false
             isSpacing = true
             setMargin(false)
@@ -68,7 +74,7 @@ class Navbar(
         val menuBar = MenuBar().apply {
             element.setAttribute("aria-label", "User menu")
         }
-        val menuItem: MenuItem = menuBar.addItem(VaadinIcon.CHEVRON_DOWN_SMALL.create()).apply {
+        menuBar.addItem(VaadinIcon.CHEVRON_DOWN_SMALL.create()).apply {
             element.setAttribute("aria-label", "Open user menu")
             subMenu.addItem("Log out") { authenticationContext.logout() }
         }

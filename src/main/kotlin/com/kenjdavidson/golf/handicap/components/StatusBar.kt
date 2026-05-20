@@ -53,15 +53,8 @@ class StatusBar : HorizontalLayout() {
     private fun runInUiContext(update: () -> Unit) {
         val currentUi = ui.orElse(null)
         if (currentUi == null || currentUi.session == null) {
-            update()
             return
         }
-
-        if (currentUi.session.hasLock()) {
-            update()
-            return
-        }
-
         currentUi.access {
             update()
         }
