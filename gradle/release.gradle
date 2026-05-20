@@ -3,8 +3,7 @@ import org.gradle.api.tasks.bundling.Zip
 
 def jpackageAppName = project.findProperty('jpackage.app.name') ?: 'HandicapCommitteeApp'
 def projectVersion = project.version.toString()
-def jpackageAppVersion = project.findProperty('jpackage.app.version') ?:
-    (projectVersion.endsWith('-SNAPSHOT') ? projectVersion[0..-10] : projectVersion)
+def jpackageAppVersion = project.findProperty('jpackage.app.version') ?: projectVersion.replaceAll('-SNAPSHOT$', '')
 def jpackageVendor = project.findProperty('jpackage.vendor') ?: 'Golf Club Handicap Committee'
 def jpackageInputDir = layout.buildDirectory.dir('jpackage-input')
 def jpackageOutputDir = layout.buildDirectory.dir('jpackage')
@@ -28,12 +27,11 @@ tasks.register('jpackageAppImage', Exec) {
     group = 'distribution'
     dependsOn(tasks.named('prepareJpackageInput'))
 
-    def bootJar = tasks.named('bootJar')
     def inputDir = jpackageInputDir.get().asFile
     def outputDir = jpackageOutputDir.get().asFile
 
     doFirst {
-        def bootJarTask = bootJar.get()
+        def bootJarTask = tasks.named('bootJar').get()
         outputDir.mkdirs()
 
         def command = [
@@ -81,12 +79,11 @@ tasks.register('jpackageInstaller', Exec) {
     group = 'distribution'
     dependsOn(tasks.named('prepareJpackageInput'))
 
-    def bootJar = tasks.named('bootJar')
     def inputDir = jpackageInputDir.get().asFile
     def outputDir = layout.buildDirectory.dir('jpackage').get().asFile
 
     doFirst {
-        def bootJarTask = bootJar.get()
+        def bootJarTask = tasks.named('bootJar').get()
         outputDir.mkdirs()
 
         commandLine(
