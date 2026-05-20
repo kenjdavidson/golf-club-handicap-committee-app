@@ -39,7 +39,15 @@ class StatusBar(
 
     init {
         stopStatusBinding = Signal.effect {
-            status.text = statusSignal.value()
+            val message = statusSignal.value()
+            val currentUi = ui.orElse(null)
+            if (currentUi == null || currentUi.session == null) {
+                status.text = message
+            } else {
+                currentUi.access {
+                    status.text = message
+                }
+            }
         }
         add(status, context)
         setWidthFull()
