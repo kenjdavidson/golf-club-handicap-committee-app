@@ -50,6 +50,21 @@ class StatusBar(
 
     fun bind(statusSignal: StatusSignal) {
         statusSignal.subscribe { statusText ->
+            updateStatusSafely(statusText)
+        }
+    }
+
+    private fun updateStatusSafely(statusText: String) {
+        val currentUi = ui.orElse(null)
+        if (currentUi == null || currentUi.session == null) {
+            updateStatus(statusText)
+            return
+        }
+        if (currentUi.session.hasLock()) {
+            updateStatus(statusText)
+            return
+        }
+        currentUi.access {
             updateStatus(statusText)
         }
     }

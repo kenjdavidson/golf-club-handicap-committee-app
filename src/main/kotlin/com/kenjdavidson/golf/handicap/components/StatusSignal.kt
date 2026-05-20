@@ -5,12 +5,18 @@ class StatusSignal(initialStatus: String) {
     private val subscribers = mutableListOf<(String) -> Unit>()
 
     fun subscribe(subscriber: (String) -> Unit) {
-        subscribers += subscriber
-        subscriber(status)
+        val currentStatus = synchronized(this) {
+            subscribers += subscriber
+            status
+        }
+        subscriber(currentStatus)
     }
 
     fun publish(statusText: String) {
-        status = statusText
-        subscribers.forEach { it(statusText) }
+        val currentSubscribers = synchronized(this) {
+            status = statusText
+            subscribers.toList()
+        }
+        currentSubscribers.forEach { it(statusText) }
     }
 }
