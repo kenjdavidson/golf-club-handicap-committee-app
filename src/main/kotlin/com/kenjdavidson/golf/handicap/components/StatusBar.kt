@@ -6,7 +6,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.spring.security.AuthenticationContext
 import com.vaadin.flow.theme.lumo.LumoUtility
-import com.vaadin.signals.Signal
 import com.vaadin.signals.ValueSignal
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.annotation.Scope
@@ -38,17 +37,7 @@ class StatusBar(
     }
 
     init {
-        stopStatusBinding = Signal.effect {
-            val message = statusSignal.value()
-            val currentUi = ui.orElse(null)
-            if (currentUi == null || currentUi.session == null) {
-                status.text = message
-            } else {
-                currentUi.access {
-                    status.text = message
-                }
-            }
-        }
+        stopStatusBinding = status.bindText(statusSignal)
         add(status, context)
         setWidthFull()
         defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
