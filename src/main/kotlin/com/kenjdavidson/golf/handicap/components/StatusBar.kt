@@ -8,6 +8,7 @@ import com.vaadin.flow.spring.security.AuthenticationContext
 import com.vaadin.flow.theme.lumo.LumoUtility
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.annotation.Scope
+import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 
 @Component
@@ -17,9 +18,9 @@ class StatusBar(
     userProfileResolver: UserProfileResolver
 ) : HorizontalLayout() {
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
-    private var unsubscribe: (() -> Unit)? = null
+    private val statusSignal = ValueSignal("Status: Ready")
 
-    private val status = Span("Status: Ready").apply {
+    private val status = Span().apply {
         addClassNames(
             LumoUtility.FontSize.SMALL,
             LumoUtility.TextColor.SECONDARY
@@ -34,6 +35,7 @@ class StatusBar(
     }
 
     init {
+        status.bindText(statusSignal)
         add(status, context)
         setWidthFull()
         defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
@@ -46,27 +48,11 @@ class StatusBar(
     }
 
     fun updateStatus(statusText: String) {
-        status.text = statusText
+        statusSignal.set(statusText)
     }
 
-    fun bind(statusSignal: StatusSignal) {
-        unsubscribe?.invoke()
-        unsubscribe = statusSignal.subscribe { statusText ->
-            updateStatusSafely(statusText)
-        }
-        addDetachListener {
-            unsubscribe?.invoke()
-            unsubscribe = null
-        }
-    }
-
-    private fun updateStatusSafely(statusText: String) {
-        val currentUi = ui.orElse(null)
-        if (currentUi == null || currentUi.session == null) {
-            return
-        }
-        currentUi.access {
-            updateStatus(statusText)
-        }
+    @EventListener
+    fun onStatusUpdate(event: StatusUpdateEvent) {
+        updateStatus(event.message)
     }
 }

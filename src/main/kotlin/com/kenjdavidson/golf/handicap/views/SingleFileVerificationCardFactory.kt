@@ -1,6 +1,6 @@
 package com.kenjdavidson.golf.handicap.views
 
-import com.kenjdavidson.golf.handicap.components.StatusSignal
+import com.kenjdavidson.golf.handicap.components.StatusUpdateEvent
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser
 import com.kenjdavidson.golf.handicap.verification.FileVerificationResult
 import com.kenjdavidson.golf.handicap.verification.SingleFileVerificationService
@@ -14,14 +14,16 @@ import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.upload.Upload
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer
 import com.vaadin.flow.theme.lumo.LumoUtility
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
 import java.time.format.DateTimeFormatter
 
 @Component
 class SingleFileVerificationCardFactory(
-    private val singleFileVerificationService: SingleFileVerificationService
+    private val singleFileVerificationService: SingleFileVerificationService,
+    private val eventPublisher: ApplicationEventPublisher
 ) {
-    fun create(authenticatedUser: GolfCanadaAuthenticatedUser, statusSignal: StatusSignal): Div {
+    fun create(authenticatedUser: GolfCanadaAuthenticatedUser): Div {
         val uploadBuffer = MemoryBuffer()
         val upload = Upload(uploadBuffer).apply {
             setAcceptedFileTypes(".pdf")
@@ -39,16 +41,16 @@ class SingleFileVerificationCardFactory(
                 val fileName = uploadedFileName ?: "uploaded.pdf"
 
                 try {
-                    statusSignal.publish("Verifying $fileName...")
+                    publishStatus("Verifying $fileName...")
                     val result = singleFileVerificationService.verify(fileName, fileBytes, authenticatedUser)
                     renderResult(result, verificationResult)
                     val statusMessage = statusText(result.status)
                     uploadStatus.text = statusMessage
-                    statusSignal.publish(statusMessage)
+                    publishStatus(statusMessage)
                 } catch (exception: VerificationProcessingException) {
                     val message = exception.message ?: "Verification failed."
                     uploadStatus.text = message
-                    statusSignal.publish(message)
+                    publishStatus(message)
                     verificationResult.removeAll()
                 }
             }
@@ -60,7 +62,7 @@ class SingleFileVerificationCardFactory(
             verifyButton.isEnabled = uploadedBytes?.isNotEmpty() == true
             val message = "Uploaded ${event.fileName}"
             uploadStatus.text = message
-            statusSignal.publish(message)
+            publishStatus(message)
         }
 
         upload.addFileRejectedListener { event ->
@@ -68,7 +70,7 @@ class SingleFileVerificationCardFactory(
             uploadedFileName = null
             verifyButton.isEnabled = false
             uploadStatus.text = event.errorMessage
-            statusSignal.publish(event.errorMessage)
+            publishStatus(event.errorMessage)
             verificationResult.removeAll()
         }
 
@@ -124,6 +126,10 @@ class SingleFileVerificationCardFactory(
             VerificationStatus.WARNING -> "Verification complete: warning."
             VerificationStatus.ALERT -> "Verification complete: alert."
         }
+    }
+
+    private fun publishStatus(message: String) {
+        eventPublisher.publishEvent(StatusUpdateEvent(message))
     }
 
     private companion object {

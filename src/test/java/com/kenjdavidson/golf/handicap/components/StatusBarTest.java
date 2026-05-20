@@ -39,6 +39,23 @@ class StatusBarTest {
         assertTrue(containsText(statusBar, "Logged in as Committee User"));
     }
 
+    @Test
+    void statusUpdateEventReplacesDisplayedText() {
+        AuthenticationContext authenticationContext = mock(AuthenticationContext.class);
+        UserProfileResolver userProfileResolver = mock(UserProfileResolver.class);
+        GolfCanadaAuthenticatedUser user = authenticatedUser();
+        when(authenticationContext.getAuthenticatedUser(GolfCanadaAuthenticatedUser.class)).thenReturn(Optional.of(user));
+        when(userProfileResolver.resolveAuthenticatedUser(authenticationContext)).thenReturn(user);
+        when(userProfileResolver.buildUserProfile(user)).thenReturn(
+            new UserProfile("Committee User", "committee.user@example.com • HCP 8.4 • Gold", "CU")
+        );
+        StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver);
+
+        statusBar.onStatusUpdate(new StatusUpdateEvent("Status: Event Processing"));
+
+        assertTrue(containsText(statusBar, "Status: Event Processing"));
+    }
+
     private boolean containsText(Component component, String expected) {
         return matchesComponent(component, candidate ->
             candidate instanceof HasText hasText && expected.equals(hasText.getText())
