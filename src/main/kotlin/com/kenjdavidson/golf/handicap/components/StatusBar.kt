@@ -60,10 +60,6 @@ class StatusBar(
             updateStatus(statusText)
             return
         }
-        if (currentUi.session.hasLock()) {
-            updateStatus(statusText)
-            return
-        }
         currentUi.access {
             updateStatus(statusText)
         }

@@ -17,6 +17,8 @@ class StatusSignal(initialStatus: String) {
             status = statusText
             subscribers.toList()
         }
-        currentSubscribers.forEach { it(statusText) }
+        currentSubscribers.forEach { subscriber ->
+            runCatching { subscriber(statusText) }
+        }
     }
 }
