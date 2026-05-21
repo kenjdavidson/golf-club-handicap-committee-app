@@ -16,6 +16,7 @@ def isMac = osName.contains('mac')
 def jpackageImageName = isMac ? "${jpackageAppName}.app" : jpackageAppName
 def jpackageArchiveClassifier = isWindows ? 'windows' : (isMac ? 'macos' : 'linux')
 def versionFile = rootProject.file('gradle.properties')
+def versionFilePath = rootProject.relativePath(versionFile)
 def snapshotTagFormatter = DateTimeFormatter.ofPattern('yyyyMMdd-HHmmss').withZone(ZoneOffset.UTC)
 def semanticSnapshotPattern = ~/^(\d+)\.(\d+)\.(\d+)-SNAPSHOT$/
 def stripSnapshotSuffix = { String version ->
@@ -60,16 +61,34 @@ def ensureTagMissing = { String tagName ->
 }
 
 def writeProjectVersion = { String newVersion ->
-    versionFile.text = "version=${newVersion}\n"
+    def updatedContents
+    def currentContents = versionFile.exists() ? versionFile.text : ''
+
+    if (currentContents == '') {
+        updatedContents = "version=${newVersion}\n"
+    } else if (currentContents =~ /(?m)^version=.*/) {
+        updatedContents = currentContents.replaceFirst(/(?m)^version=.*/, "version=${newVersion}")
+        if (!updatedContents.endsWith('\n')) {
+            updatedContents += '\n'
+        }
+    } else {
+        updatedContents = currentContents
+        if (!updatedContents.endsWith('\n')) {
+            updatedContents += '\n'
+        }
+        updatedContents += "version=${newVersion}\n"
+    }
+
+    versionFile.text = updatedContents
 }
 
-def createReleasePlan = { String releaseKind ->
+def createReleasePlan = { String releaseKind, String snapshotTimestamp = null ->
     def currentVersion = project.version.toString()
 
     if (releaseKind == 'snapshot') {
         return [
             releaseKind   : releaseKind,
-            releaseVersion: snapshotTagFormatter.format(ZonedDateTime.now(ZoneOffset.UTC)),
+            releaseVersion: snapshotTimestamp,
             nextVersion   : null
         ]
     }
@@ -95,7 +114,10 @@ def createReleasePlan = { String releaseKind ->
 }
 
 def prepareRelease = { String releaseKind ->
-    def plan = createReleasePlan(releaseKind)
+    def snapshotTimestamp = releaseKind == 'snapshot'
+        ? snapshotTagFormatter.format(ZonedDateTime.now(ZoneOffset.UTC))
+        : null
+    def plan = createReleasePlan(releaseKind, snapshotTimestamp)
     def tagName = "v${plan.releaseVersion}"
 
     logger.lifecycle("Preparing ${plan.releaseKind} release tag ${tagName}")
@@ -115,7 +137,7 @@ def prepareRelease = { String releaseKind ->
 
     if (plan.nextVersion) {
         writeProjectVersion(plan.nextVersion)
-        runGit(['add', versionFile.name])
+        runGit(['add', versionFilePath])
         runGit(['commit', '-m', "Bump version to ${plan.nextVersion}"])
     }
 
