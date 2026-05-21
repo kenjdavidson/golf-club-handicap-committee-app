@@ -65,13 +65,17 @@ class Navbar(
             abbreviation = userProfile.initials
         }
         val avatarButton = Button(avatar).apply {
-            addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_ICON)
+            addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ICON)
+            style["padding"] = "0"
+            style["min-width"] = "0"
+            style["border"] = "none"
+            style["cursor"] = "pointer"
             element.setAttribute("aria-label", "Open user menu")
         }
 
         ContextMenu(avatarButton).apply {
             isOpenOnClick = true
-            addItem("Log out") { authenticationContext.logout() }
+            addItem("Logout") { authenticationContext.logout() }
         }
 
         return HorizontalLayout(avatarButton).apply {

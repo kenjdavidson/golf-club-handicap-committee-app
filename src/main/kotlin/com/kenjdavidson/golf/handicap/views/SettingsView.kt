@@ -6,7 +6,7 @@ import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
 import jakarta.annotation.security.PermitAll
 
-@Route("settings")
+@Route(value = "settings", layout = AuthenticatedView::class)
 @PageTitle("Settings | Handicap Committee App")
 @PermitAll
 class SettingsView : VerticalLayout() {

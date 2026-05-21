@@ -54,20 +54,22 @@ class MainViewTest {
         Navbar navbar = new Navbar(authenticationContext, userProfileResolver);
         StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver);
 
-        MainView view = new MainView(authenticationContext, userProfileResolver, cardFactory, navbar, statusBar);
+        MainView view = new MainView(authenticationContext, userProfileResolver, cardFactory);
+        AuthenticatedView shell = new AuthenticatedView(navbar, statusBar);
+        shell.showRouterLayoutContent(view);
 
-        assertTrue(containsText(view, "Committee User"));
-        assertTrue(containsText(view, "Member #1234567"));
-        assertTrue(containsText(view, "Verify"));
-        assertTrue(containsText(view, "Status: Ready"));
-        assertTrue(containsText(view, "Logged in as Committee User"));
-        assertTrue(containsText(view, "Lookup"));
-        assertTrue(containsText(view, "Settings"));
-        assertFalse(containsText(view, "Golf Club Handicap Committee"));
-        assertFalse(containsText(view, "committee.user@example.com • HCP 8.4 • Gold"));
-        assertFalse(containsText(view, "Workspace Folder"));
-        assertFalse(containsText(view, "Welcome to the Handicap Committee App"));
-        assertFalse(containsTextFieldValue(view, "No folder selected"));
+        assertTrue(containsText(shell, "Committee User"));
+        assertTrue(containsText(shell, "Member #1234567"));
+        assertTrue(containsText(shell, "Verify"));
+        assertTrue(containsText(shell, "Status: Ready"));
+        assertTrue(containsText(shell, "Logged in as Committee User"));
+        assertTrue(containsText(shell, "Lookup"));
+        assertTrue(containsText(shell, "Settings"));
+        assertFalse(containsText(shell, "Golf Club Handicap Committee"));
+        assertFalse(containsText(shell, "committee.user@example.com • HCP 8.4 • Gold"));
+        assertFalse(containsText(shell, "Workspace Folder"));
+        assertFalse(containsText(shell, "Welcome to the Handicap Committee App"));
+        assertFalse(containsTextFieldValue(shell, "No folder selected"));
     }
 
     private boolean containsText(Component component, String expected) {

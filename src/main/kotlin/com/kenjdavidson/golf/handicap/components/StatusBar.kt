@@ -48,9 +48,6 @@ class StatusBar(
         style["background"] = "var(--lumo-base-color)"
         style["border-top"] = "1px solid var(--lumo-contrast-10pct)"
         style["flex-shrink"] = "0"
-        style["position"] = "sticky"
-        style["bottom"] = "0"
-        style["z-index"] = "1"
     }
 
     fun updateStatus(statusText: String) {
