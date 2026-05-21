@@ -5,18 +5,21 @@ import com.kenjdavidson.golf.handicap.components.StatusBar
 import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.HasElement
 import com.vaadin.flow.component.applayout.AppLayout
+import com.vaadin.flow.component.dependency.StyleSheet
 import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.router.RouterLink
 import jakarta.annotation.security.PermitAll
 
 @PermitAll
+@StyleSheet("context://styles/global.css")
 class AuthenticatedView(
-    private val navbar: Navbar,
+    navbar: Navbar,
     statusBar: StatusBar
 ) : AppLayout() {
     private val viewContainer = Div().apply {
         setSizeFull()
+
         style["overflow"] = "auto"
         style["min-height"] = "0"
     }

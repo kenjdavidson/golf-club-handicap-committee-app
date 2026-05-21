@@ -1,6 +1,7 @@
 package com.kenjdavidson.golf.handicap.views
 
-import com.vaadin.flow.component.html.H1
+import com.vaadin.flow.component.dependency.StyleSheet
+import com.vaadin.flow.component.html.H2
 import com.vaadin.flow.component.html.Paragraph
 import com.vaadin.flow.component.login.LoginForm
 import com.vaadin.flow.component.orderedlayout.FlexComponent
@@ -11,11 +12,15 @@ import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
 import com.vaadin.flow.server.auth.AnonymousAllowed
 import com.vaadin.flow.theme.lumo.LumoUtility
+import org.springframework.beans.factory.annotation.Value
 
 @Route("login")
 @PageTitle("Login | Handicap Committee App")
 @AnonymousAllowed
-class LoginView : VerticalLayout(), BeforeEnterObserver {
+@StyleSheet("context://styles/global.css")
+class LoginView(
+    @Value("\${app.ui.title:Handicap Committee App}") private val appTitle: String,
+) : VerticalLayout(), BeforeEnterObserver {
     private val loginForm = LoginForm()
 
     init {
@@ -26,7 +31,7 @@ class LoginView : VerticalLayout(), BeforeEnterObserver {
         style["justify-content"] = "center"
         style["background"] = "var(--lumo-contrast-5pct)"
 
-        val heading = H1("⛳ Handicap Committee App").apply {
+        val heading = H2("⛳ $appTitle").apply {
             addClassNames(LumoUtility.Margin.Bottom.XSMALL)
         }
 

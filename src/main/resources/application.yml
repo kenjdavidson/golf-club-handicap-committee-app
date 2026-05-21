@@ -1,3 +1,5 @@
 app:
   verification:
     max-rounds: 20
+  ui:
+    title: Bluesprings Handicap Committee
