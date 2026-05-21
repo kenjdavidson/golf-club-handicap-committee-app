@@ -116,6 +116,15 @@ openApiGenerate {
     generateModelTests.set(false)
     generateApiDocumentation.set(false)
     generateModelDocumentation.set(false)
+
+    // Use LocalDateTime instead of OffsetDateTime as Golf Canada doesn't provide time zones
+    typeMappings.set(mapOf(
+        "DateTime" to "LocalDateTime"
+    ))
+
+    importMappings.set(mapOf(
+        "LocalDateTime" to "java.time.LocalDateTime"
+    ))
 }
 
 tasks.named("openApiGenerate") {
