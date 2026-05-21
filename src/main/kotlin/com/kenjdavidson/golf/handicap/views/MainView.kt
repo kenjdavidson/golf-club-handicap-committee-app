@@ -33,22 +33,38 @@ class MainView(
 ) : AppLayout() {
 
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
+    private val menuPanel = buildMenuPanel()
 
     init {
+        navbar.setMenuToggleListener { menuPanel.isVisible = !menuPanel.isVisible }
         addToNavbar(navbar)
         content = buildMainContent()
     }
 
     private fun buildMainContent(): Component {
-        val content = buildDashboardContent()
-        val wrapper = VerticalLayout(buildPathToolbar(), content, statusBar).apply {
+        val mainPanel = VerticalLayout(buildPathToolbar(), buildDashboardContent()).apply {
             setSizeFull()
             isPadding = false
             isSpacing = false
-            expand(content)
+            style["overflow"] = "auto"
+            style["padding-bottom"] = "var(--lumo-space-l)"
+            element.setAttribute("tabindex", "0")
+            element.setAttribute("aria-label", "Main content")
         }
 
-        return HorizontalLayout(wrapper).apply { setSizeFull() }
+        val body = HorizontalLayout(menuPanel, mainPanel).apply {
+            setSizeFull()
+            isPadding = false
+            isSpacing = false
+            expand(mainPanel)
+        }
+
+        return VerticalLayout(body, statusBar).apply {
+            setSizeFull()
+            isPadding = false
+            isSpacing = false
+            expand(body)
+        }
     }
 
     private fun buildDashboardContent(): Component {
@@ -144,6 +160,39 @@ class MainView(
             style["border"] = "1px solid var(--lumo-contrast-10pct)"
             style["border-radius"] = "var(--lumo-border-radius-m)"
             style["box-shadow"] = "var(--lumo-box-shadow-xs)"
+        }
+    }
+
+    private fun buildMenuPanel(): Component {
+        val items = VerticalLayout(
+            buildMenuButton("Dashboard"),
+            buildMenuButton("Workspace"),
+            buildMenuButton("Settings")
+        ).apply {
+            isPadding = false
+            isSpacing = false
+            isMargin = false
+            setWidthFull()
+        }
+
+        return Div(items).apply {
+            style["width"] = "220px"
+            style["padding"] = "var(--lumo-space-m)"
+            style["border-right"] = "1px solid var(--lumo-contrast-10pct)"
+            style["background"] = "var(--lumo-base-color)"
+            style["position"] = "sticky"
+            style["top"] = "0"
+            style["align-self"] = "flex-start"
+        }
+    }
+
+    private fun buildMenuButton(label: String): Button {
+        return Button(label).apply {
+            addThemeName("tertiary-inline")
+            style["justify-content"] = "flex-start"
+            setWidthFull()
+            isEnabled = false
+            element.setAttribute("aria-disabled", "true")
         }
     }
 

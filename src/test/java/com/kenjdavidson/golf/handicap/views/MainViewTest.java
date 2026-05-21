@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -56,11 +57,16 @@ class MainViewTest {
         MainView view = new MainView(authenticationContext, userProfileResolver, cardFactory, navbar, statusBar);
 
         assertTrue(containsText(view, "Committee User"));
-        assertTrue(containsText(view, "committee.user@example.com • HCP 8.4 • Gold"));
+        assertTrue(containsText(view, "Member #1234567"));
         assertTrue(containsText(view, "Select folder"));
         assertTrue(containsText(view, "Verify"));
         assertTrue(containsText(view, "Status: Ready"));
         assertTrue(containsText(view, "Logged in as Committee User"));
+        assertTrue(containsText(view, "Dashboard"));
+        assertTrue(containsText(view, "Workspace"));
+        assertTrue(containsText(view, "Settings"));
+        assertFalse(containsText(view, "Golf Club Handicap Committee"));
+        assertFalse(containsText(view, "committee.user@example.com • HCP 8.4 • Gold"));
         assertTrue(containsTextFieldValue(view, "No folder selected"));
     }
 
