@@ -67,7 +67,7 @@ def ensureTagMissing = { String tagName ->
 }
 
 def ensureCommitExists = { String commitSha ->
-    if (!commitSha || !(commitSha ==~ commitShaPattern)) {
+    if (!commitSha || !commitShaPattern.matcher(commitSha).matches()) {
         throw new GradleException("Unable to determine a valid release commit SHA from '${commitSha ?: 'empty'}'.")
     }
 
@@ -78,7 +78,7 @@ def ensureCommitExists = { String commitSha ->
 }
 
 def ensureSnapshotVersion = { String version ->
-    if (!(version ==~ semanticSnapshotPattern)) {
+    if (!semanticSnapshotPattern.matcher(version).matches()) {
         throw new GradleException("Version '${version}' must match the semantic snapshot format x.y.z-SNAPSHOT.")
     }
 }
@@ -156,6 +156,7 @@ def prepareRelease = { String releaseKind ->
     ensureCleanGitState()
     ensureTagMissing(tagName)
 
+    // Tag the current releasable commit, then move the branch forward to the next snapshot version.
     def releaseCommit = runGit(['rev-parse', 'HEAD'], true)
     ensureCommitExists(releaseCommit)
 
