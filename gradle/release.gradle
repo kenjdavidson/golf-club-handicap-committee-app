@@ -1,0 +1,284 @@
+import org.gradle.api.GradleException
+import org.gradle.api.tasks.Sync
+import org.gradle.api.tasks.bundling.Zip
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+
+def jpackageAppName = project.findProperty('jpackage.app.name') ?: 'HandicapCommitteeApp'
+def projectVersion = project.version.toString()
+def jpackageVendor = project.findProperty('jpackage.vendor') ?: 'Golf Club Handicap Committee'
+def jpackageInputDir = layout.buildDirectory.dir('jpackage-input')
+def jpackageOutputDir = layout.buildDirectory.dir('jpackage')
+def osName = System.getProperty('os.name').toLowerCase()
+def isWindows = osName.contains('windows')
+def isMac = osName.contains('mac')
+def jpackageImageName = isMac ? "${jpackageAppName}.app" : jpackageAppName
+def jpackageArchiveClassifier = isWindows ? 'windows' : (isMac ? 'macos' : 'linux')
+def versionFile = rootProject.file('gradle.properties')
+def versionFilePath = rootProject.relativePath(versionFile)
+def snapshotSuffix = '-SNAPSHOT'
+def snapshotTagFormatter = DateTimeFormatter.ofPattern('yyyyMMdd-HHmmss').withZone(ZoneOffset.UTC)
+def commitShaPattern = ~/^[0-9a-f]{40}$/
+def semanticSnapshotPattern = ~/^(\d+)\.(\d+)\.(\d+)-SNAPSHOT$/
+def stripSnapshotSuffix = { String version ->
+    version.endsWith(snapshotSuffix) ? version[0..<version.length() - snapshotSuffix.length()] : version
+}
+def jpackageAppVersion = project.findProperty('jpackage.app.version') ?: stripSnapshotSuffix(projectVersion)
+
+def isReleaseDryRun = (project.findProperty('release.dryRun') ?: 'false').toString().toBoolean()
+
+def runGit = { List<String> arguments, boolean captureOutput = false ->
+    def stdout = new ByteArrayOutputStream()
+    def result = exec {
+        commandLine(['git'] + arguments)
+        if (captureOutput) {
+            standardOutput = stdout
+        }
+    }
+    captureOutput ? stdout.toString().trim() : result
+}
+
+def runGitIgnoringExitValue = { List<String> arguments ->
+    exec {
+        commandLine(['git'] + arguments)
+        ignoreExitValue = true
+    }
+}
+
+def ensureCleanGitState = {
+    def status = runGit(['status', '--porcelain'], true)
+    if (status) {
+        throw new GradleException('Release preparation requires a clean git working tree with no uncommitted changes or untracked files.')
+    }
+}
+
+def ensureTagMissing = { String tagName ->
+    def result = runGitIgnoringExitValue(['rev-parse', '--verify', '--quiet', "refs/tags/${tagName}"])
+    if (result.exitValue == 0) {
+        throw new GradleException("Git tag '${tagName}' already exists.")
+    }
+}
+
+def ensureCommitExists = { String commitSha ->
+    if (!commitSha || !commitShaPattern.matcher(commitSha).matches()) {
+        throw new GradleException("Unable to determine a valid release commit SHA (expected 40-character hex string, got '${commitSha ?: 'null or empty'}').")
+    }
+
+    def result = runGitIgnoringExitValue(['cat-file', '-e', "${commitSha}^{commit}"])
+    if (result.exitValue != 0) {
+        throw new GradleException("Git commit '${commitSha}' could not be verified for tagging.")
+    }
+}
+
+def ensureSnapshotVersion = { String version ->
+    if (!semanticSnapshotPattern.matcher(version).matches()) {
+        throw new GradleException("Version '${version}' must match the semantic snapshot format x.y.z-SNAPSHOT.")
+    }
+}
+
+def writeProjectVersion = { String newVersion ->
+    def updatedContents
+    def currentContents = versionFile.exists() ? versionFile.text : ''
+
+    if (currentContents == '') {
+        updatedContents = "version=${newVersion}\n"
+    } else if (currentContents =~ /(?m)^version=.*/) {
+        updatedContents = currentContents.replaceFirst(/(?m)^version=.*/, "version=${newVersion}")
+        if (!updatedContents.endsWith('\n')) {
+            updatedContents += '\n'
+        }
+    } else {
+        updatedContents = currentContents
+        if (!updatedContents.endsWith('\n')) {
+            updatedContents += '\n'
+        }
+        updatedContents += "version=${newVersion}\n"
+    }
+
+    versionFile.text = updatedContents
+}
+
+def createReleasePlan = { String releaseKind, String snapshotTimestamp = null ->
+    def currentVersion = project.version.toString()
+
+    if (releaseKind == 'snapshot') {
+        return [
+            releaseKind   : releaseKind,
+            releaseVersion: snapshotTimestamp,
+            nextVersion   : null
+        ]
+    }
+
+    def matcher = currentVersion =~ semanticSnapshotPattern
+    if (!matcher.matches()) {
+        throw new GradleException("Release kind '${releaseKind}' requires a semantic snapshot version like 1.0.0-SNAPSHOT, but found '${currentVersion}'.")
+    }
+
+    def major = matcher[0][1].toInteger()
+    def minor = matcher[0][2].toInteger()
+    def patch = matcher[0][3].toInteger()
+    def releaseVersion = stripSnapshotSuffix(currentVersion)
+    def nextVersion = releaseKind == 'minor'
+        ? "${major}.${minor + 1}.0-SNAPSHOT"
+        : "${major}.${minor}.${patch + 1}-SNAPSHOT"
+
+    [
+        releaseKind   : releaseKind,
+        releaseVersion: releaseVersion,
+        nextVersion   : nextVersion
+    ]
+}
+
+def prepareRelease = { String releaseKind ->
+    def snapshotTimestamp = releaseKind == 'snapshot'
+        ? snapshotTagFormatter.format(Instant.now())
+        : null
+    def plan = createReleasePlan(releaseKind, snapshotTimestamp)
+    def tagName = "v${plan.releaseVersion}"
+
+    logger.lifecycle("Preparing ${plan.releaseKind} release tag ${tagName}")
+    if (plan.nextVersion) {
+        logger.lifecycle("Next development version will be ${plan.nextVersion}")
+    }
+
+    if (isReleaseDryRun) {
+        logger.lifecycle('Dry run enabled; skipping git tag creation and version updates.')
+        return
+    }
+
+    ensureCleanGitState()
+    ensureTagMissing(tagName)
+
+    // Tag the current releasable commit SHA, then move the branch forward to the next snapshot version.
+    def tagCommitSha = runGit(['rev-parse', 'HEAD'], true)
+    ensureCommitExists(tagCommitSha)
+
+    if (plan.nextVersion) {
+        ensureSnapshotVersion(plan.nextVersion)
+        writeProjectVersion(plan.nextVersion)
+        runGit(['add', versionFilePath])
+        runGit(['commit', '-m', "Bump version to ${plan.nextVersion}"])
+    }
+
+    // Keep the release tag on the pre-bump commit so the tagged source matches the released version.
+    runGit(['tag', '-a', tagName, '-m', "Release ${tagName}", tagCommitSha])
+}
+
+tasks.register('prepareJpackageInput', Sync) {
+    description = 'Copies the boot jar into a clean staging directory for jpackage.'
+    group = 'distribution'
+    dependsOn(tasks.named('bootJar'))
+
+    into(jpackageInputDir)
+    from(tasks.named('bootJar').map { it.archiveFile })
+}
+
+tasks.register('jpackageAppImage', Exec) {
+    description = 'Creates a self-contained application image using jpackage.'
+    group = 'distribution'
+    dependsOn(tasks.named('prepareJpackageInput'))
+
+    def inputDir = jpackageInputDir.get().asFile
+    def outputDir = jpackageOutputDir.get().asFile
+
+    doFirst {
+        def bootJarTask = tasks.named('bootJar').get()
+        outputDir.mkdirs()
+
+        def command = [
+            'jpackage',
+            '--type', 'app-image',
+            '--name', jpackageAppName,
+            '--app-version', jpackageAppVersion,
+            '--vendor', jpackageVendor,
+            '--description', 'Golf Club Handicap Committee Desktop Application',
+            '--input', inputDir.absolutePath,
+            '--main-jar', bootJarTask.archiveFileName.get(),
+            '--main-class', 'org.springframework.boot.loader.launch.JarLauncher',
+            '--dest', outputDir.absolutePath
+        ]
+
+        if (isWindows) {
+            command.addAll([
+                '--win-shortcut',
+                '--win-menu',
+                '--win-menu-group', 'Golf Club'
+            ])
+        }
+
+        commandLine(command)
+    }
+}
+
+tasks.register('jpackageAppArchive', Zip) {
+    description = 'Packages the self-contained jpackage application image into a zip archive.'
+    group = 'distribution'
+    dependsOn(tasks.named('jpackageAppImage'))
+
+    destinationDirectory.set(layout.buildDirectory.dir('distributions'))
+    archiveBaseName.set('handicap-committee-app')
+    archiveVersion.set(jpackageAppVersion)
+    archiveClassifier.set(jpackageArchiveClassifier)
+
+    from(jpackageOutputDir.map { it.dir(jpackageImageName) }) {
+        into(jpackageImageName)
+    }
+}
+
+tasks.register('jpackageInstaller', Exec) {
+    description = 'Creates a self-contained Windows .exe installer using jpackage.'
+    group = 'distribution'
+    dependsOn(tasks.named('prepareJpackageInput'))
+
+    def inputDir = jpackageInputDir.get().asFile
+    def outputDir = layout.buildDirectory.dir('jpackage').get().asFile
+
+    doFirst {
+        def bootJarTask = tasks.named('bootJar').get()
+        outputDir.mkdirs()
+
+        commandLine(
+            'jpackage',
+            '--type', 'exe',
+            '--name', jpackageAppName,
+            '--app-version', jpackageAppVersion,
+            '--vendor', jpackageVendor,
+            '--description', 'Golf Club Handicap Committee Desktop Application',
+            '--input', inputDir.absolutePath,
+            '--main-jar', bootJarTask.archiveFileName.get(),
+            '--main-class', 'org.springframework.boot.loader.launch.JarLauncher',
+            '--dest', outputDir.absolutePath,
+            '--win-shortcut',
+            '--win-menu',
+            '--win-menu-group', 'Golf Club'
+        )
+    }
+}
+
+tasks.register('prepareSnapshotRelease') {
+    group = 'release'
+    description = 'Creates a UTC date-based git tag from the current commit without changing gradle.properties.'
+
+    doLast {
+        prepareRelease('snapshot')
+    }
+}
+
+tasks.register('preparePatchRelease') {
+    group = 'release'
+    description = 'Tags the current semantic snapshot version and bumps gradle.properties to the next patch snapshot.'
+
+    doLast {
+        prepareRelease('patch')
+    }
+}
+
+tasks.register('prepareMinorRelease') {
+    group = 'release'
+    description = 'Tags the current semantic snapshot version and bumps gradle.properties to the next minor snapshot.'
+
+    doLast {
+        prepareRelease('minor')
+    }
+}

@@ -11,7 +11,9 @@ plugins {
 }
 
 group = "com.kenjdavidson.golf"
-version = "1.0.0-SNAPSHOT"
+version = (project.findProperty("release.version") as String?) ?: project.version.toString()
+
+apply(from = "$rootDir/gradle/release.gradle")
 
 java {
     toolchain {
@@ -180,40 +182,4 @@ tasks.register<org.springframework.boot.gradle.tasks.run.BootRun>("debugApp") {
         languageVersion.set(JavaLanguageVersion.of(21))
     })
     jvmArgs = listOf("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005")
-}
-
-// ── jpackage installer ─────────────────────────────────────────────────────────
-// Creates a self-contained Windows .exe installer.
-// Activate with: ./gradlew -Pproduction jpackageInstaller
-// Requires JDK 21+ with jpackage on PATH.
-val jpackageAppName = project.findProperty("jpackage.app.name") as String? ?: "HandicapCommitteeApp"
-val jpackageAppVersion = project.findProperty("jpackage.app.version") as String? ?: "1.0.0"
-val jpackageVendor = project.findProperty("jpackage.vendor") as String? ?: "Golf Club Handicap Committee"
-
-tasks.register<Exec>("jpackageInstaller") {
-    description = "Creates a self-contained Windows .exe installer using jpackage."
-    group = "distribution"
-    dependsOn("bootJar")
-
-    val bootJar = tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar").get()
-    val inputDir = bootJar.archiveFile.get().asFile.parentFile
-    val outputDir = layout.buildDirectory.dir("jpackage").get().asFile
-
-    doFirst { outputDir.mkdirs() }
-
-    commandLine(
-        "jpackage",
-        "--type", "exe",
-        "--name", jpackageAppName,
-        "--app-version", jpackageAppVersion,
-        "--vendor", jpackageVendor,
-        "--description", "Golf Club Handicap Committee Desktop Application",
-        "--input", inputDir.absolutePath,
-        "--main-jar", bootJar.archiveFileName.get(),
-        "--main-class", "org.springframework.boot.loader.JarLauncher",
-        "--dest", outputDir.absolutePath,
-        "--win-shortcut",
-        "--win-menu",
-        "--win-menu-group", "Golf Club"
-    )
 }
