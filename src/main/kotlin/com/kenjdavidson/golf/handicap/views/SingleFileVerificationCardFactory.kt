@@ -11,9 +11,10 @@ import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.VaadinIcon
+import com.vaadin.flow.component.orderedlayout.FlexComponent
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.upload.Upload
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer
-import com.vaadin.flow.theme.lumo.LumoUtility
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
 import java.time.format.DateTimeFormatter
@@ -25,11 +26,16 @@ class SingleFileVerificationCardFactory(
 ) {
     fun create(authenticatedUser: GolfCanadaAuthenticatedUser): Div {
         val uploadBuffer = MemoryBuffer()
+        val uploadButton = Button("Upload file", VaadinIcon.UPLOAD.create())
         val upload = Upload(uploadBuffer).apply {
             setAcceptedFileTypes(".pdf")
             isAutoUpload = true
+            setUploadButton(uploadButton)
+            setDropAllowed(false)
+            style["padding"] = "0"
+            style["border"] = "none"
+            style["min-height"] = "0"
         }
-        val uploadStatus = Span("Upload a PDF and click Verify.")
         val verificationResult = Div()
         var uploadedBytes: ByteArray? = null
         var uploadedFileName: String? = null
@@ -44,12 +50,9 @@ class SingleFileVerificationCardFactory(
                     publishStatus("Verifying $fileName...")
                     val result = singleFileVerificationService.verify(fileName, fileBytes, authenticatedUser)
                     renderResult(result, verificationResult)
-                    val statusMessage = statusText(result.status)
-                    uploadStatus.text = statusMessage
-                    publishStatus(statusMessage)
+                    publishStatus(statusText(result.status))
                 } catch (exception: VerificationProcessingException) {
                     val message = exception.message ?: "Verification failed."
-                    uploadStatus.text = message
                     publishStatus(message)
                     verificationResult.removeAll()
                 }
@@ -60,37 +63,35 @@ class SingleFileVerificationCardFactory(
             uploadedBytes = uploadBuffer.inputStream.readBytes()
             uploadedFileName = event.fileName
             verifyButton.isEnabled = uploadedBytes?.isNotEmpty() == true
-            val message = "Uploaded ${event.fileName}"
-            uploadStatus.text = message
-            publishStatus(message)
+            publishStatus("Uploaded ${event.fileName}")
         }
 
         upload.addFileRejectedListener { event ->
             uploadedBytes = null
             uploadedFileName = null
             verifyButton.isEnabled = false
-            uploadStatus.text = event.errorMessage
             publishStatus(event.errorMessage)
             verificationResult.removeAll()
         }
 
+        val controls = HorizontalLayout(upload, verifyButton).apply {
+            setWidthFull()
+            isPadding = false
+            isSpacing = true
+            defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
+        }
+
         return Div(
-            Span("Single File Verification").apply {
-                addClassNames(LumoUtility.FontSize.MEDIUM, LumoUtility.FontWeight.SEMIBOLD)
-            },
-            upload,
-            verifyButton,
-            uploadStatus,
+            controls,
             verificationResult
         ).apply {
             style["display"] = "flex"
             style["flex-direction"] = "column"
             style["gap"] = "var(--lumo-space-s)"
             style["padding"] = "var(--lumo-space-m)"
-            style["background"] = "var(--lumo-base-color)"
-            style["border"] = "1px solid var(--lumo-primary-color-10pct)"
-            style["border-radius"] = "var(--lumo-border-radius-m)"
-            style["box-shadow"] = "var(--lumo-box-shadow-xs)"
+            style["background"] = "var(--lumo-contrast-5pct)"
+            style["border"] = "1px solid var(--lumo-contrast-10pct)"
+            style["border-radius"] = "var(--lumo-border-radius-l)"
         }
     }
 

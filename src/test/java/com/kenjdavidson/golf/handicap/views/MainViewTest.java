@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 class MainViewTest {
 
     @Test
-    void rendersAuthenticatedUserAndWorkspaceControls() {
+    void rendersAuthenticatedUserAndNavigationShell() {
         AuthenticationContext authenticationContext = mock(AuthenticationContext.class);
         GolfCanadaAuthenticatedUser user = new GolfCanadaAuthenticatedUser(
             new AuthToken().accessToken("access-token").user(new User()
@@ -58,16 +58,16 @@ class MainViewTest {
 
         assertTrue(containsText(view, "Committee User"));
         assertTrue(containsText(view, "Member #1234567"));
-        assertTrue(containsText(view, "Select folder"));
         assertTrue(containsText(view, "Verify"));
         assertTrue(containsText(view, "Status: Ready"));
         assertTrue(containsText(view, "Logged in as Committee User"));
-        assertTrue(containsText(view, "Dashboard"));
-        assertTrue(containsText(view, "Workspace"));
+        assertTrue(containsText(view, "Lookup"));
         assertTrue(containsText(view, "Settings"));
         assertFalse(containsText(view, "Golf Club Handicap Committee"));
         assertFalse(containsText(view, "committee.user@example.com • HCP 8.4 • Gold"));
-        assertTrue(containsTextFieldValue(view, "No folder selected"));
+        assertFalse(containsText(view, "Workspace Folder"));
+        assertFalse(containsText(view, "Welcome to the Handicap Committee App"));
+        assertFalse(containsTextFieldValue(view, "No folder selected"));
     }
 
     private boolean containsText(Component component, String expected) {

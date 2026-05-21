@@ -3,6 +3,7 @@ package com.kenjdavidson.golf.handicap.components
 import com.kenjdavidson.golf.handicap.views.UserProfileResolver
 import com.vaadin.flow.component.avatar.Avatar
 import com.vaadin.flow.component.button.Button
+import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.contextmenu.ContextMenu
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.VaadinIcon
@@ -63,12 +64,17 @@ class Navbar(
         val avatar = Avatar(userProfile.displayName).apply {
             abbreviation = userProfile.initials
         }
-        ContextMenu(avatar).apply {
+        val avatarButton = Button(avatar).apply {
+            addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_ICON)
+            element.setAttribute("aria-label", "Open user menu")
+        }
+
+        ContextMenu(avatarButton).apply {
             isOpenOnClick = true
             addItem("Log out") { authenticationContext.logout() }
         }
 
-        return HorizontalLayout(avatar).apply {
+        return HorizontalLayout(avatarButton).apply {
             isSpacing = false
             defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
         }
