@@ -17,10 +17,11 @@ def jpackageImageName = isMac ? "${jpackageAppName}.app" : jpackageAppName
 def jpackageArchiveClassifier = isWindows ? 'windows' : (isMac ? 'macos' : 'linux')
 def versionFile = rootProject.file('gradle.properties')
 def versionFilePath = rootProject.relativePath(versionFile)
+def snapshotSuffix = '-SNAPSHOT'
 def snapshotTagFormatter = DateTimeFormatter.ofPattern('yyyyMMdd-HHmmss').withZone(ZoneOffset.UTC)
 def semanticSnapshotPattern = ~/^(\d+)\.(\d+)\.(\d+)-SNAPSHOT$/
 def stripSnapshotSuffix = { String version ->
-    version.endsWith('-SNAPSHOT') ? version[0..<version.length() - '-SNAPSHOT'.length()] : version
+    version.endsWith(snapshotSuffix) ? version[0..<version.length() - snapshotSuffix.length()] : version
 }
 def jpackageAppVersion = project.findProperty('jpackage.app.version') ?: stripSnapshotSuffix(projectVersion)
 
@@ -39,6 +40,13 @@ def runGit = { List<String> arguments, boolean captureOutput = false ->
     captureOutput ? stdout.toString().trim() : result
 }
 
+def runGitIgnoringExitValue = { List<String> arguments ->
+    exec {
+        commandLine(['git'] + arguments)
+        ignoreExitValue = true
+    }
+}
+
 def ensureCleanGitState = {
     if (isReleaseDryRun()) {
         return
@@ -51,12 +59,20 @@ def ensureCleanGitState = {
 }
 
 def ensureTagMissing = { String tagName ->
-    def result = exec {
-        commandLine('git', 'rev-parse', '--verify', '--quiet', "refs/tags/${tagName}")
-        ignoreExitValue = true
-    }
+    def result = runGitIgnoringExitValue(['rev-parse', '--verify', '--quiet', "refs/tags/${tagName}"])
     if (result.exitValue == 0) {
         throw new GradleException("Git tag '${tagName}' already exists.")
+    }
+}
+
+def ensureCommitExists = { String commitSha ->
+    if (!commitSha) {
+        throw new GradleException('Unable to determine the release commit SHA.')
+    }
+
+    def result = runGitIgnoringExitValue(['cat-file', '-e', "${commitSha}^{commit}"])
+    if (result.exitValue != 0) {
+        throw new GradleException("Git commit '${commitSha}' could not be verified for tagging.")
     }
 }
 
@@ -134,6 +150,7 @@ def prepareRelease = { String releaseKind ->
     ensureTagMissing(tagName)
 
     def releaseCommit = runGit(['rev-parse', 'HEAD'], true)
+    ensureCommitExists(releaseCommit)
 
     if (plan.nextVersion) {
         writeProjectVersion(plan.nextVersion)
