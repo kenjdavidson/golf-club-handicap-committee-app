@@ -1,0 +1,148 @@
+name: Prepare Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: Release flow to prepare and publish
+        required: true
+        type: choice
+        options:
+          - snapshot
+          - patch
+          - minor
+
+permissions:
+  contents: write
+
+jobs:
+  prepare-release:
+    name: Prepare ${{ inputs.release_type }} release
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.prepare.outputs.tag_name }}
+      release_version: ${{ steps.prepare.outputs.release_version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Configure git author
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Prepare release
+        id: prepare
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          before_tags="$(mktemp)"
+          after_tags="$(mktemp)"
+
+          git tag --list | sort > "${before_tags}"
+
+          case "${{ inputs.release_type }}" in
+            snapshot)
+              ./gradlew --no-daemon prepareSnapshotRelease
+              ;;
+            patch)
+              ./gradlew --no-daemon preparePatchRelease
+              ;;
+            minor)
+              ./gradlew --no-daemon prepareMinorRelease
+              ;;
+            *)
+              echo "Unsupported release type: ${{ inputs.release_type }}" >&2
+              exit 1
+              ;;
+          esac
+
+          git tag --list | sort > "${after_tags}"
+          tag_name="$(comm -13 "${before_tags}" "${after_tags}" | tail -n 1)"
+
+          if [ -z "${tag_name}" ]; then
+            echo "No release tag was created" >&2
+            exit 1
+          fi
+
+          git push origin HEAD --follow-tags
+
+          echo "tag_name=${tag_name}" >> "$GITHUB_OUTPUT"
+          echo "release_version=${tag_name#v}" >> "$GITHUB_OUTPUT"
+
+  build-release:
+    name: Build ${{ matrix.platform.name }} bundle
+    needs: prepare-release
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - name: macOS
+            runner: macos-latest
+          - name: Windows
+            runner: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare-release.outputs.tag_name }}
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Build release archive
+        shell: bash
+        env:
+          GOLFCANADA_USERNAME: ${{ secrets.GOLFCANADA_USERNAME }}
+          GOLFCANADA_PASSWORD: ${{ secrets.GOLFCANADA_PASSWORD }}
+        run: >
+          ./gradlew --no-daemon clean build jpackageAppArchive
+          -Pproduction
+          -Prelease.version=${{ needs.prepare-release.outputs.release_version }}
+          -Pjpackage.app.version=${{ needs.prepare-release.outputs.release_version }}
+
+      - name: Upload release archive
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: release-${{ matrix.platform.name }}
+          path: build/distributions/*.zip
+          if-no-files-found: error
+
+  publish-release:
+    name: Publish GitHub release
+    needs:
+      - prepare-release
+      - build-release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download release archives
+        uses: actions/download-artifact@v8.0.1
+        with:
+          path: dist
+          pattern: release-*
+          merge-multiple: true
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v3.0.0
+        with:
+          tag_name: ${{ needs.prepare-release.outputs.tag_name }}
+          files: dist/*.zip
+          generate_release_notes: true
