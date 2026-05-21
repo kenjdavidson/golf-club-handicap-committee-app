@@ -19,6 +19,7 @@ def versionFile = rootProject.file('gradle.properties')
 def versionFilePath = rootProject.relativePath(versionFile)
 def snapshotSuffix = '-SNAPSHOT'
 def snapshotTagFormatter = DateTimeFormatter.ofPattern('yyyyMMdd-HHmmss').withZone(ZoneOffset.UTC)
+def commitShaPattern = ~/^[0-9a-f]{40}$/
 def semanticSnapshotPattern = ~/^(\d+)\.(\d+)\.(\d+)-SNAPSHOT$/
 def stripSnapshotSuffix = { String version ->
     version.endsWith(snapshotSuffix) ? version[0..<version.length() - snapshotSuffix.length()] : version
@@ -66,13 +67,19 @@ def ensureTagMissing = { String tagName ->
 }
 
 def ensureCommitExists = { String commitSha ->
-    if (!commitSha) {
-        throw new GradleException('Unable to determine the release commit SHA.')
+    if (!commitSha || !(commitSha ==~ commitShaPattern)) {
+        throw new GradleException("Unable to determine a valid release commit SHA from '${commitSha ?: 'empty'}'.")
     }
 
     def result = runGitIgnoringExitValue(['cat-file', '-e', "${commitSha}^{commit}"])
     if (result.exitValue != 0) {
         throw new GradleException("Git commit '${commitSha}' could not be verified for tagging.")
+    }
+}
+
+def ensureSnapshotVersion = { String version ->
+    if (!(version ==~ semanticSnapshotPattern)) {
+        throw new GradleException("Version '${version}' must match the semantic snapshot format x.y.z-SNAPSHOT.")
     }
 }
 
@@ -153,6 +160,7 @@ def prepareRelease = { String releaseKind ->
     ensureCommitExists(releaseCommit)
 
     if (plan.nextVersion) {
+        ensureSnapshotVersion(plan.nextVersion)
         writeProjectVersion(plan.nextVersion)
         runGit(['add', versionFilePath])
         runGit(['commit', '-m', "Bump version to ${plan.nextVersion}"])
