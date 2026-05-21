@@ -156,9 +156,9 @@ def prepareRelease = { String releaseKind ->
     ensureCleanGitState()
     ensureTagMissing(tagName)
 
-    // Tag the current releasable commit, then move the branch forward to the next snapshot version.
-    def releaseCommit = runGit(['rev-parse', 'HEAD'], true)
-    ensureCommitExists(releaseCommit)
+    // Tag the current releasable commit SHA, then move the branch forward to the next snapshot version.
+    def releaseCommitSha = runGit(['rev-parse', 'HEAD'], true)
+    ensureCommitExists(releaseCommitSha)
 
     if (plan.nextVersion) {
         ensureSnapshotVersion(plan.nextVersion)
@@ -167,7 +167,8 @@ def prepareRelease = { String releaseKind ->
         runGit(['commit', '-m', "Bump version to ${plan.nextVersion}"])
     }
 
-    runGit(['tag', '-a', tagName, '-m', "Release ${tagName}", releaseCommit])
+    // Keep the release tag on the pre-bump commit so the tagged source matches the released version.
+    runGit(['tag', '-a', tagName, '-m', "Release ${tagName}", releaseCommitSha])
 }
 
 tasks.register('prepareJpackageInput', Sync) {
