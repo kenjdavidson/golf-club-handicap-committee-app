@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("org.springframework.boot") version "4.0.0"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.vaadin") version "25.0.11"
+    id("com.vaadin") version "25.1.5"
     id("org.openapi.generator") version "7.14.0"
     id("org.graalvm.buildtools.native") version "0.10.3" apply false
     kotlin("jvm") version "2.2.0"
@@ -33,7 +33,8 @@ vaadin {
 
 dependencyManagement {
     imports {
-        mavenBom("com.vaadin:vaadin-bom:25.0.11")
+        mavenBom("com.vaadin:vaadin-bom:25.1.5")
+        mavenBom("tools.jackson:jackson-bom:3.1.2")
     }
 }
 
@@ -51,7 +52,6 @@ dependencies {
     // Vaadin Flow UI
     implementation("com.vaadin:vaadin-spring-boot-starter")
     implementation("com.vaadin:vaadin-dev-server")
-    implementation("com.vaadin:signals:25.0.12")
 
     // Apache PDFBox – PDF scorecard parsing
     implementation("org.apache.pdfbox:pdfbox:3.0.3")

@@ -4,9 +4,9 @@ import com.kenjdavidson.golf.handicap.views.UserProfileResolver
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.html.Span
+import com.vaadin.flow.signals.local.ValueSignal
 import com.vaadin.flow.spring.security.AuthenticationContext
 import com.vaadin.flow.theme.lumo.LumoUtility
-import com.vaadin.signals.ValueSignal
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.annotation.Scope
 import org.springframework.context.event.EventListener
@@ -20,7 +20,6 @@ class StatusBar(
 ) : HorizontalLayout() {
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
     private val statusSignal = ValueSignal("Status: Ready")
-    private var signalBindingInitialized = false
 
     private val status = Span().apply {
         addClassNames(
@@ -37,10 +36,7 @@ class StatusBar(
     }
 
     init {
-        status.text = statusSignal.value()
-        addAttachListener {
-            ensureSignalBinding()
-        }
+        status.bindText(statusSignal)
         add(status, context)
         setWidthFull()
         defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
@@ -53,22 +49,11 @@ class StatusBar(
     }
 
     fun updateStatus(statusText: String) {
-        statusSignal.value(statusText)
-        if (!signalBindingInitialized) {
-            status.text = statusText
-        }
+        statusSignal.set(statusText)
     }
 
     @EventListener
     fun onStatusUpdate(event: StatusUpdateEvent) {
         updateStatus(event.message)
-    }
-
-    private fun ensureSignalBinding() {
-        if (signalBindingInitialized) {
-            return
-        }
-        status.element.bindText(statusSignal)
-        signalBindingInitialized = true
     }
 }

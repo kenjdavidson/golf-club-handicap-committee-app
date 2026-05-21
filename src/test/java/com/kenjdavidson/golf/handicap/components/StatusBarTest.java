@@ -7,6 +7,7 @@ import com.kenjdavidson.golf.handicap.views.UserProfile;
 import com.kenjdavidson.golf.handicap.views.UserProfileResolver;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -32,11 +34,17 @@ class StatusBarTest {
             new UserProfile("Committee User", "committee.user@example.com • HCP 8.4 • Gold", "CU")
         );
         StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver);
+        UI ui = attachToUi(statusBar);
 
-        statusBar.updateStatus("Status: Processing");
+        try {
+            assertDoesNotThrow(() -> statusBar.updateStatus("Status: Processing"));
+            ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertTrue(containsText(statusBar, "Status: Processing"));
-        assertTrue(containsText(statusBar, "Logged in as Committee User"));
+            assertTrue(statusBar.getElement().getTextRecursively().contains("Status: Processing"));
+            assertTrue(containsText(statusBar, "Logged in as Committee User"));
+        } finally {
+            UI.setCurrent(null);
+        }
     }
 
     @Test
@@ -50,10 +58,16 @@ class StatusBarTest {
             new UserProfile("Committee User", "committee.user@example.com • HCP 8.4 • Gold", "CU")
         );
         StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver);
+        UI ui = attachToUi(statusBar);
 
-        statusBar.onStatusUpdate(new StatusUpdateEvent("Status: Event Processing"));
+        try {
+            assertDoesNotThrow(() -> statusBar.onStatusUpdate(new StatusUpdateEvent("Status: Event Processing")));
+            ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertTrue(containsText(statusBar, "Status: Event Processing"));
+            assertTrue(statusBar.getElement().getTextRecursively().contains("Status: Event Processing"));
+        } finally {
+            UI.setCurrent(null);
+        }
     }
 
     private boolean containsText(Component component, String expected) {
@@ -64,6 +78,13 @@ class StatusBarTest {
 
     private boolean matchesComponent(Component component, Predicate<Component> predicate) {
         return predicate.test(component) || component.getChildren().anyMatch(child -> matchesComponent(child, predicate));
+    }
+
+    private UI attachToUi(Component component) {
+        UI ui = new UI();
+        UI.setCurrent(ui);
+        ui.add(component);
+        return ui;
     }
 
     private GolfCanadaAuthenticatedUser authenticatedUser() {
