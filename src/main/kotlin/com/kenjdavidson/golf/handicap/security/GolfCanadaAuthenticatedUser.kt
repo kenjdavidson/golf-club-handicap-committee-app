@@ -62,7 +62,7 @@ data class GolfCanadaAuthenticatedUser(
             )
         }
 
-        private fun buildAuthorities(user: com.kenjdavidson.golf.handicap.golfcanada.model.User): Collection<GrantedAuthority> {
+        private fun buildAuthorities(user: User): Collection<GrantedAuthority> {
             val authorities = linkedSetOf<GrantedAuthority>()
             authorities += SimpleGrantedAuthority("ROLE_USER")
 

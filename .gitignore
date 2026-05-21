@@ -15,6 +15,7 @@ pnpm-lock.yaml
 webpack.generated.js
 vite.generated.ts
 frontend/generated/
+src/main/bundles
 
 # IDEs
 .idea/

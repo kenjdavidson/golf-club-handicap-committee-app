@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class GolfCanadaApiConfig(
-    @Value("\${app.golf-canada.base-url:https://scg.golfcanada.ca}") private val golfCanadaBaseUrl: String
+    @Value($$"${app.golf-canada.base-url:https://scg.golfcanada.ca}") private val golfCanadaBaseUrl: String
 ) {
     @Bean
     fun golfCanadaApiClient(): ApiClient = ApiClient().setBasePath(golfCanadaBaseUrl.removeSuffix("/"))

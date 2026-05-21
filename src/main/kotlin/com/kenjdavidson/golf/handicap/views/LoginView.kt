@@ -22,7 +22,7 @@ class LoginView : VerticalLayout(), BeforeEnterObserver {
         setSizeFull()
         isPadding = true
         isSpacing = true
-        setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.CENTER)
+        defaultHorizontalComponentAlignment = FlexComponent.Alignment.CENTER
         style["justify-content"] = "center"
         style["background"] = "var(--lumo-contrast-5pct)"
 
@@ -40,7 +40,7 @@ class LoginView : VerticalLayout(), BeforeEnterObserver {
         loginForm.action = "login"
 
         val card = VerticalLayout(heading, message, loginForm).apply {
-            setAlignItems(FlexComponent.Alignment.STRETCH)
+            alignItems = FlexComponent.Alignment.STRETCH
             isSpacing = true
             isPadding = true
             maxWidth = "420px"
