@@ -1,9 +1,12 @@
+import org.gradle.api.GradleException
 import org.gradle.api.tasks.Sync
 import org.gradle.api.tasks.bundling.Zip
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 def jpackageAppName = project.findProperty('jpackage.app.name') ?: 'HandicapCommitteeApp'
 def projectVersion = project.version.toString()
-def jpackageAppVersion = project.findProperty('jpackage.app.version') ?: projectVersion.replaceAll('-SNAPSHOT$', '')
 def jpackageVendor = project.findProperty('jpackage.vendor') ?: 'Golf Club Handicap Committee'
 def jpackageInputDir = layout.buildDirectory.dir('jpackage-input')
 def jpackageOutputDir = layout.buildDirectory.dir('jpackage')
@@ -12,6 +15,112 @@ def isWindows = osName.contains('windows')
 def isMac = osName.contains('mac')
 def jpackageImageName = isMac ? "${jpackageAppName}.app" : jpackageAppName
 def jpackageArchiveClassifier = isWindows ? 'windows' : (isMac ? 'macos' : 'linux')
+def versionFile = rootProject.file('gradle.properties')
+def snapshotTagFormatter = DateTimeFormatter.ofPattern('yyyyMMdd-HHmmss').withZone(ZoneOffset.UTC)
+def semanticSnapshotPattern = ~/^(\d+)\.(\d+)\.(\d+)-SNAPSHOT$/
+def stripSnapshotSuffix = { String version ->
+    version.endsWith('-SNAPSHOT') ? version[0..<version.length() - '-SNAPSHOT'.length()] : version
+}
+def jpackageAppVersion = project.findProperty('jpackage.app.version') ?: stripSnapshotSuffix(projectVersion)
+
+def isReleaseDryRun = {
+    (project.findProperty('release.dryRun') ?: 'false').toString().toBoolean()
+}
+
+def runGit = { List<String> arguments, boolean captureOutput = false ->
+    def stdout = new ByteArrayOutputStream()
+    def result = exec {
+        commandLine(['git'] + arguments)
+        if (captureOutput) {
+            standardOutput = stdout
+        }
+    }
+    captureOutput ? stdout.toString().trim() : result
+}
+
+def ensureCleanGitState = {
+    if (isReleaseDryRun()) {
+        return
+    }
+
+    def status = runGit(['status', '--porcelain'], true)
+    if (status) {
+        throw new GradleException('Release preparation requires a clean git working tree.')
+    }
+}
+
+def ensureTagMissing = { String tagName ->
+    def result = exec {
+        commandLine('git', 'rev-parse', '--verify', '--quiet', "refs/tags/${tagName}")
+        ignoreExitValue = true
+    }
+    if (result.exitValue == 0) {
+        throw new GradleException("Git tag '${tagName}' already exists.")
+    }
+}
+
+def writeProjectVersion = { String newVersion ->
+    versionFile.text = "version=${newVersion}\n"
+}
+
+def createReleasePlan = { String releaseKind ->
+    def currentVersion = project.version.toString()
+
+    if (releaseKind == 'snapshot') {
+        return [
+            releaseKind   : releaseKind,
+            releaseVersion: snapshotTagFormatter.format(ZonedDateTime.now(ZoneOffset.UTC)),
+            nextVersion   : null
+        ]
+    }
+
+    def matcher = currentVersion =~ semanticSnapshotPattern
+    if (!matcher.matches()) {
+        throw new GradleException("Release kind '${releaseKind}' requires a semantic snapshot version like 1.0.0-SNAPSHOT, but found '${currentVersion}'.")
+    }
+
+    def major = matcher[0][1].toInteger()
+    def minor = matcher[0][2].toInteger()
+    def patch = matcher[0][3].toInteger()
+    def releaseVersion = stripSnapshotSuffix(currentVersion)
+    def nextVersion = releaseKind == 'minor'
+        ? "${major}.${minor + 1}.0-SNAPSHOT"
+        : "${major}.${minor}.${patch + 1}-SNAPSHOT"
+
+    [
+        releaseKind   : releaseKind,
+        releaseVersion: releaseVersion,
+        nextVersion   : nextVersion
+    ]
+}
+
+def prepareRelease = { String releaseKind ->
+    def plan = createReleasePlan(releaseKind)
+    def tagName = "v${plan.releaseVersion}"
+
+    logger.lifecycle("Preparing ${plan.releaseKind} release tag ${tagName}")
+    if (plan.nextVersion) {
+        logger.lifecycle("Next development version will be ${plan.nextVersion}")
+    }
+
+    if (isReleaseDryRun()) {
+        logger.lifecycle('Dry run enabled; skipping git tag creation and version updates.')
+        return
+    }
+
+    ensureCleanGitState()
+    ensureTagMissing(tagName)
+
+    def releaseCommit = runGit(['rev-parse', 'HEAD'], true)
+
+    if (plan.nextVersion) {
+        writeProjectVersion(plan.nextVersion)
+        runGit(['add', versionFile.name])
+        runGit(['commit', '-m', "Bump version to ${plan.nextVersion}"])
+    }
+
+    runGit(['tag', '-a', tagName, '-m', "Release ${tagName}", releaseCommit])
+}
 
 tasks.register('prepareJpackageInput', Sync) {
     description = 'Copies the boot jar into a clean staging directory for jpackage.'
@@ -101,5 +210,32 @@ tasks.register('jpackageInstaller', Exec) {
             '--win-menu',
             '--win-menu-group', 'Golf Club'
         )
+    }
+}
+
+tasks.register('prepareSnapshotRelease') {
+    group = 'release'
+    description = 'Creates a UTC date-based git tag from the current commit without changing gradle.properties.'
+
+    doLast {
+        prepareRelease('snapshot')
+    }
+}
+
+tasks.register('preparePatchRelease') {
+    group = 'release'
+    description = 'Tags the current semantic snapshot version and bumps gradle.properties to the next patch snapshot.'
+
+    doLast {
+        prepareRelease('patch')
+    }
+}
+
+tasks.register('prepareMinorRelease') {
+    group = 'release'
+    description = 'Tags the current semantic snapshot version and bumps gradle.properties to the next minor snapshot.'
+
+    doLast {
+        prepareRelease('minor')
     }
 }

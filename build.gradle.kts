@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "com.kenjdavidson.golf"
-version = (project.findProperty("release.version") as String?) ?: "1.0.0-SNAPSHOT"
+version = (project.findProperty("release.version") as String?) ?: project.version.toString()
 
 apply(from = "$rootDir/gradle/release.gradle")
 

@@ -17,6 +17,11 @@ For local development or testing against a mock auth endpoint, the Golf Canada b
 
 - Build a self-contained zip for the current platform: `./gradlew -Pproduction jpackageAppArchive`
 - Create a Windows installer locally: `./gradlew -Pproduction jpackageInstaller`
+- Prepare a date-based snapshot tag without bumping the project version: `./gradlew prepareSnapshotRelease`
+- Prepare a semantic patch release and bump to the next patch snapshot: `./gradlew preparePatchRelease`
+- Prepare a semantic minor release and bump to the next minor snapshot: `./gradlew prepareMinorRelease`
+- Preview any release task without changing git state: append `-Prelease.dryRun=true`
+- After preparing a release locally, push the version bump commit and tag with: `git push origin HEAD --follow-tags`
 - Pushing a tag such as `v1.2.3` triggers the `Release` workflow, which:
   - builds zipped application bundles for macOS and Windows
   - publishes both zip files to the matching GitHub Release
