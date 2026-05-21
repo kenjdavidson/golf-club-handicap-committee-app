@@ -26,9 +26,7 @@ def stripSnapshotSuffix = { String version ->
 }
 def jpackageAppVersion = project.findProperty('jpackage.app.version') ?: stripSnapshotSuffix(projectVersion)
 
-def isReleaseDryRun = {
-    (project.findProperty('release.dryRun') ?: 'false').toString().toBoolean()
-}
+def isReleaseDryRun = (project.findProperty('release.dryRun') ?: 'false').toString().toBoolean()
 
 def runGit = { List<String> arguments, boolean captureOutput = false ->
     def stdout = new ByteArrayOutputStream()
@@ -49,10 +47,6 @@ def runGitIgnoringExitValue = { List<String> arguments ->
 }
 
 def ensureCleanGitState = {
-    if (isReleaseDryRun()) {
-        return
-    }
-
     def status = runGit(['status', '--porcelain'], true)
     if (status) {
         throw new GradleException('Release preparation requires a clean git working tree with no uncommitted changes or untracked files.')
@@ -68,7 +62,7 @@ def ensureTagMissing = { String tagName ->
 
 def ensureCommitExists = { String commitSha ->
     if (!commitSha || !commitShaPattern.matcher(commitSha).matches()) {
-        throw new GradleException("Unable to determine a valid release commit SHA (expected 40-character hex string, got '${commitSha ?: 'empty'}').")
+        throw new GradleException("Unable to determine a valid release commit SHA (expected 40-character hex string, got '${commitSha ?: 'null or empty'}').")
     }
 
     def result = runGitIgnoringExitValue(['cat-file', '-e', "${commitSha}^{commit}"])
@@ -148,7 +142,7 @@ def prepareRelease = { String releaseKind ->
         logger.lifecycle("Next development version will be ${plan.nextVersion}")
     }
 
-    if (isReleaseDryRun()) {
+    if (isReleaseDryRun) {
         logger.lifecycle('Dry run enabled; skipping git tag creation and version updates.')
         return
     }
@@ -157,8 +151,8 @@ def prepareRelease = { String releaseKind ->
     ensureTagMissing(tagName)
 
     // Tag the current releasable commit SHA, then move the branch forward to the next snapshot version.
-    def releaseCommitSha = runGit(['rev-parse', 'HEAD'], true)
-    ensureCommitExists(releaseCommitSha)
+    def tagCommitSha = runGit(['rev-parse', 'HEAD'], true)
+    ensureCommitExists(tagCommitSha)
 
     if (plan.nextVersion) {
         ensureSnapshotVersion(plan.nextVersion)
@@ -168,7 +162,7 @@ def prepareRelease = { String releaseKind ->
     }
 
     // Keep the release tag on the pre-bump commit so the tagged source matches the released version.
-    runGit(['tag', '-a', tagName, '-m', "Release ${tagName}", releaseCommitSha])
+    runGit(['tag', '-a', tagName, '-m', "Release ${tagName}", tagCommitSha])
 }
 
 tasks.register('prepareJpackageInput', Sync) {
