@@ -59,7 +59,7 @@ class Navbar(
         val navButtons = HorizontalLayout(dashboardButton, workspaceButton).apply {
             isPadding = false
             isSpacing = true
-            setMargin(false)
+            isMargin = false
         }
 
         add(brand, navButtons, buildUserSection())
@@ -97,7 +97,7 @@ class Navbar(
         val info = VerticalLayout(name, details).apply {
             isPadding = false
             isSpacing = false
-            setMargin(false)
+            isMargin = false
         }
 
         return HorizontalLayout(menuBar, avatar, info).apply {

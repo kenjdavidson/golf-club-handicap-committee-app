@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 class StatusBar(
-    private val authenticationContext: AuthenticationContext,
+    authenticationContext: AuthenticationContext,
     userProfileResolver: UserProfileResolver
 ) : HorizontalLayout() {
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
