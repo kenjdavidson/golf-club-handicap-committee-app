@@ -22,7 +22,9 @@ For local development or testing against a mock auth endpoint, the Golf Canada b
 - Prepare a semantic minor release and bump to the next minor snapshot: `./gradlew prepareMinorRelease`
 - Preview any release task without changing git state: append `-Prelease.dryRun=true`
 - After preparing a release locally, push the version bump commit and tag with: `git push origin HEAD --follow-tags`
-- GitHub-hosted release preparation is also available from the **Prepare Release** workflow via Actions → Run workflow with `snapshot`, `patch`, or `minor`
+- GitHub-hosted release preparation is also available from the **Prepare Release** workflow via Actions → Run workflow and choose both the target branch and `snapshot`, `patch`, or `minor`
+  - Use `main` for snapshot and minor releases
+  - Use the matching `releases/patch/...` branch for patch releases
 - Pushing a tag such as `v1.2.3` triggers the `Release` workflow, which:
   - builds zipped application bundles for macOS and Windows
   - publishes both zip files to the matching GitHub Release

@@ -3,6 +3,11 @@ name: Prepare Release
 on:
   workflow_dispatch:
     inputs:
+      target_branch:
+        description: Branch to prepare and push (for example main or releases/patch/1.2.3-SNAPSHOT)
+        required: true
+        default: main
+        type: string
       release_type:
         description: Release flow to prepare and publish
         required: true
@@ -17,7 +22,7 @@ permissions:
 
 jobs:
   prepare-release:
-    name: Prepare ${{ inputs.release_type }} release
+    name: Prepare ${{ inputs.release_type }} release from ${{ inputs.target_branch }}
     runs-on: ubuntu-latest
     outputs:
       tag_name: ${{ steps.prepare.outputs.tag_name }}
@@ -28,6 +33,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ inputs.target_branch }}
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -76,7 +82,7 @@ jobs:
             exit 1
           fi
 
-          git push origin HEAD --follow-tags
+          git push origin HEAD:refs/heads/${{ inputs.target_branch }} --follow-tags
 
           echo "tag_name=${tag_name}" >> "$GITHUB_OUTPUT"
           echo "release_version=${tag_name#v}" >> "$GITHUB_OUTPUT"
