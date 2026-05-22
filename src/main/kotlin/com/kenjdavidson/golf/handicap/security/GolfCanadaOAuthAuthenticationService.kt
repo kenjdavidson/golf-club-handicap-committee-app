@@ -1,6 +1,7 @@
 package com.kenjdavidson.golf.handicap.security
 
 import com.kenjdavidson.golf.handicap.golfcanada.api.AuthenticationApi
+import com.kenjdavidson.golf.handicap.util.operation
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationServiceException
 import org.springframework.security.authentication.BadCredentialsException
@@ -13,31 +14,32 @@ class GolfCanadaOAuthAuthenticationService(
     private val authenticationApi: AuthenticationApi
 ) : GolfCanadaAuthenticationService {
 
-    override fun authenticate(username: String, password: String): GolfCanadaAuthenticatedUser {
-        try {
-            val authToken = authenticationApi.authenticate(
-                GRANT_TYPE,
-                username,
-                password,
-                false,
-                SCOPE,
-                null,
-                null
-            )
+    override fun authenticate(username: String, password: String): GolfCanadaAuthenticatedUser =
+        operation("Authenticating with Golf Canada") {
+            try {
+                val authToken = authenticationApi.authenticate(
+                    GRANT_TYPE,
+                    username,
+                    password,
+                    false,
+                    SCOPE,
+                    null,
+                    null
+                )
 
-            return GolfCanadaAuthenticatedUser.from(authToken)
-        } catch (exception: HttpClientErrorException) {
-            if (exception.statusCode == HttpStatus.BAD_REQUEST || exception.statusCode == HttpStatus.UNAUTHORIZED) {
-                throw BadCredentialsException("Invalid Golf Canada credentials.", exception)
+                GolfCanadaAuthenticatedUser.from(authToken)
+            } catch (exception: HttpClientErrorException) {
+                if (exception.statusCode == HttpStatus.BAD_REQUEST || exception.statusCode == HttpStatus.UNAUTHORIZED) {
+                    throw BadCredentialsException("Invalid Golf Canada credentials.", exception)
+                }
+
+                throw AuthenticationServiceException("Golf Canada authentication failed.", exception)
+            } catch (exception: RestClientException) {
+                throw AuthenticationServiceException("Golf Canada authentication failed.", exception)
+            } catch (exception: IncompleteGolfCanadaAuthenticationException) {
+                throw AuthenticationServiceException("Golf Canada authentication returned an incomplete response.", exception)
             }
-
-            throw AuthenticationServiceException("Golf Canada authentication failed.", exception)
-        } catch (exception: RestClientException) {
-            throw AuthenticationServiceException("Golf Canada authentication failed.", exception)
-        } catch (exception: IncompleteGolfCanadaAuthenticationException) {
-            throw AuthenticationServiceException("Golf Canada authentication returned an incomplete response.", exception)
         }
-    }
 
     private companion object {
         const val GRANT_TYPE = "password"
