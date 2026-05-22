@@ -1,7 +1,6 @@
 package com.kenjdavidson.golf.handicap.views
 
 import com.vaadin.flow.component.button.Button
-import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.FlexComponent
@@ -40,7 +39,6 @@ class SingleFileUploadCard : HorizontalLayout() {
                     clearFile()
                     fileRejectedListener?.invoke(UPLOAD_FAILED)
                 }
-                throw exception
             }
         }
     )
@@ -77,12 +75,11 @@ class SingleFileUploadCard : HorizontalLayout() {
             clearFile()
         }
 
-        val uploadPanel = Div(fileName, upload).apply {
+        val uploadPanel = HorizontalLayout(fileName, upload).apply {
             setWidthFull()
-            style["display"] = "flex"
-            style["align-items"] = "center"
-            style["gap"] = "var(--lumo-space-s)"
-            style["padding"] = "var(--lumo-space-s) var(--lumo-space-m)"
+            isPadding = true
+            isSpacing = true
+            defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
             style["border"] = "1px dotted var(--lumo-primary-color-50pct)"
             style["border-radius"] = "var(--lumo-border-radius-m)"
             style["background"] = "var(--lumo-primary-color-10pct)"
