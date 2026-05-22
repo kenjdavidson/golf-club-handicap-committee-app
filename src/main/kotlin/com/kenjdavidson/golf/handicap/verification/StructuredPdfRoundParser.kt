@@ -1,5 +1,6 @@
 package com.kenjdavidson.golf.handicap.verification
 
+import com.kenjdavidson.golf.handicap.util.operation
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.format.DateTimeFormatterBuilder
@@ -12,7 +13,7 @@ class StructuredPdfRoundParser(
     private val verificationProperties: VerificationProperties
 ) : PdfRoundParser {
 
-    override fun parse(pdfBytes: ByteArray): ParsedPlayerHistory {
+    override fun parse(pdfBytes: ByteArray): ParsedPlayerHistory = operation("Parsing PDF rounds") {
         val rawText = textExtractor.extract(pdfBytes)
         val normalizedLines = rawText.lines().map(String::trim).filter(String::isNotBlank)
         val ownerName = OWNER_NAME_REGEX.find(rawText)?.value
@@ -32,7 +33,7 @@ class StructuredPdfRoundParser(
 
         val firstRow = rowChunks.firstOrNull()?.let(::splitCsvRespectingQuotes).orEmpty()
 
-        return ParsedPlayerHistory(
+        ParsedPlayerHistory(
             playerName = firstRow.getOrNull(1)?.takeIf { it.isNotBlank() } ?: ownerName,
             memberId = firstRow.getOrNull(0)?.takeIf { it.isNotBlank() },
             homeCourse = firstRow.getOrNull(10)?.takeIf { it.isNotBlank() },
