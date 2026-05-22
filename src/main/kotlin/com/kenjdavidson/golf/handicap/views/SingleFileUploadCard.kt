@@ -7,8 +7,6 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.upload.Upload
 import com.vaadin.flow.server.streams.UploadHandler
-import java.io.IOException
-
 class SingleFileUploadCard : HorizontalLayout() {
     private var uploadedBytes: ByteArray? = null
     private var uploadedFileName: String? = null
@@ -33,8 +31,8 @@ class SingleFileUploadCard : HorizontalLayout() {
                     syncVerifyEnabled()
                     fileSelectedListener?.invoke(event.fileName)
                 }
-            } catch (exception: IOException) {
-                val message = "$UPLOAD_FAILED ${exception.message ?: UNKNOWN_ERROR}"
+            } catch (exception: Exception) {
+                val message = "$UPLOAD_FAILED: ${exception.message ?: UNKNOWN_ERROR}"
                 event.reject(message)
                 event.ui.access {
                     clearFile()
@@ -125,7 +123,7 @@ class SingleFileUploadCard : HorizontalLayout() {
 
     private companion object {
         const val NO_FILE_SELECTED = "No file selected"
-        const val UPLOAD_FAILED = "Upload failed:"
+        const val UPLOAD_FAILED = "Upload failed"
         const val UNKNOWN_ERROR = "Unknown error"
     }
 }
