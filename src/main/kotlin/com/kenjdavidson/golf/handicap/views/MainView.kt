@@ -26,7 +26,9 @@ class MainView(
 ) : VerticalLayout() {
 
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
-    private val verificationResult = Div()
+    private val verificationResult = Div().apply {
+        setWidthFull()
+    }
 
     init {
         val uploadCard = SingleFileUploadCard()
@@ -49,11 +51,11 @@ class MainView(
         element.setAttribute("tabindex", "0")
         element.setAttribute("aria-label", "Main content")
         add(
-            Div(uploadCard, verificationResult).apply {
-                style["display"] = "flex"
-                style["flex-direction"] = "column"
-                style["gap"] = "var(--lumo-space-s)"
-                style["padding"] = "var(--lumo-space-m)"
+            VerticalLayout(uploadCard, verificationResult).apply {
+                setWidthFull()
+                isPadding = true
+                isSpacing = true
+                style["box-sizing"] = "border-box"
                 style["background"] = "var(--lumo-contrast-5pct)"
                 style["border"] = "1px solid var(--lumo-contrast-10pct)"
                 style["border-radius"] = "var(--lumo-border-radius-l)"
