@@ -1,6 +1,7 @@
 package com.kenjdavidson.golf.handicap.views
 
 import com.kenjdavidson.golf.handicap.components.StatusUpdateEvent
+import com.kenjdavidson.golf.handicap.i18n.AppMessages
 import com.kenjdavidson.golf.handicap.verification.FileVerificationResult
 import com.kenjdavidson.golf.handicap.verification.SingleFileVerificationService
 import com.kenjdavidson.golf.handicap.verification.VerificationProcessingException
@@ -8,6 +9,8 @@ import com.kenjdavidson.golf.handicap.verification.VerificationStatus
 import com.vaadin.flow.component.Html
 import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
+import com.vaadin.flow.i18n.LocaleChangeEvent
+import com.vaadin.flow.i18n.LocaleChangeObserver
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
 import com.vaadin.flow.spring.security.AuthenticationContext
@@ -23,7 +26,7 @@ class MainView(
     private val userProfileResolver: UserProfileResolver,
     private val singleFileVerificationService: SingleFileVerificationService,
     private val eventPublisher: ApplicationEventPublisher
-) : VerticalLayout() {
+) : VerticalLayout(), LocaleChangeObserver {
 
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
     private val verificationResult = Div().apply {
@@ -33,7 +36,7 @@ class MainView(
     init {
         val uploadCard = SingleFileUploadCard()
         uploadCard.setFileSelectedListener { fileName ->
-            publishStatus("Uploaded $fileName")
+            publishStatus(AppMessages.translateCurrent("main.status.uploaded", fileName))
         }
         uploadCard.setFileRejectedListener { message ->
             publishStatus(message)
@@ -49,7 +52,7 @@ class MainView(
         style["overflow"] = "auto"
         style["min-height"] = "0"
         element.setAttribute("tabindex", "0")
-        element.setAttribute("aria-label", "Main content")
+        element.setAttribute("aria-label", AppMessages.translateCurrent("main.aria.mainContent"))
         add(
             VerticalLayout(uploadCard, verificationResult).apply {
                 setWidthFull()
@@ -63,14 +66,18 @@ class MainView(
         )
     }
 
+    override fun localeChange(event: LocaleChangeEvent) {
+        element.setAttribute("aria-label", AppMessages.translate(event.locale, "main.aria.mainContent"))
+    }
+
     private fun verifyFile(fileName: String, fileBytes: ByteArray) {
         try {
-            publishStatus("Verifying $fileName...")
+            publishStatus(AppMessages.translateCurrent("main.status.verifying", fileName))
             val result = singleFileVerificationService.verify(fileName, fileBytes, authenticatedUser)
             renderResult(result)
             publishStatus(statusText(result.status))
         } catch (exception: VerificationProcessingException) {
-            val message = exception.message ?: "Verification failed."
+            val message = exception.message ?: AppMessages.translateCurrent("main.status.failed")
             publishStatus(message)
             verificationResult.removeAll()
         }
@@ -78,24 +85,24 @@ class MainView(
 
     private fun renderResult(result: FileVerificationResult) {
         val mismatches = if (result.mismatchedDates.isEmpty()) {
-            "None"
+            AppMessages.translateCurrent("main.result.none")
         } else {
             result.mismatchedDates.joinToString(", ") { it.format(DATE_FORMATTER) }
         }
         val notes = if (result.notes.isEmpty()) {
             ""
         } else {
-            "<br/><strong>Notes:</strong> ${result.notes.joinToString("; ")}"
+            "<br/><strong>${AppMessages.translateCurrent("main.result.notes")}:</strong> ${result.notes.joinToString("; ")}"
         }
 
         verificationResult.removeAll()
         verificationResult.add(
             Html(
                 "<div>" +
-                    "<strong>Status:</strong> ${result.status}<br/>" +
-                    "<strong>Date Match:</strong> ${result.matchPercentage}% " +
+                    "<strong>${AppMessages.translateCurrent("main.result.status")}:</strong> ${result.status}<br/>" +
+                    "<strong>${AppMessages.translateCurrent("main.result.dateMatch")}:</strong> ${result.matchPercentage}% " +
                     "(${result.matchedCount}/${result.comparedCount})<br/>" +
-                    "<strong>Mismatched Dates:</strong> $mismatches" +
+                    "<strong>${AppMessages.translateCurrent("main.result.mismatchedDates")}:</strong> $mismatches" +
                     notes +
                     "</div>"
             )
@@ -104,9 +111,9 @@ class MainView(
 
     private fun statusText(status: VerificationStatus): String {
         return when (status) {
-            VerificationStatus.PASS -> "Verification complete: pass."
-            VerificationStatus.WARNING -> "Verification complete: warning."
-            VerificationStatus.ALERT -> "Verification complete: alert."
+            VerificationStatus.PASS -> AppMessages.translateCurrent("main.status.complete.pass")
+            VerificationStatus.WARNING -> AppMessages.translateCurrent("main.status.complete.warning")
+            VerificationStatus.ALERT -> AppMessages.translateCurrent("main.status.complete.alert")
         }
     }
 

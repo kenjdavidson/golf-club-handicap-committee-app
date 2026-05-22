@@ -1,11 +1,14 @@
 package com.kenjdavidson.golf.handicap.views
 
+import com.kenjdavidson.golf.handicap.i18n.AppMessages
 import com.vaadin.flow.component.dependency.StyleSheet
 import com.vaadin.flow.component.html.H2
 import com.vaadin.flow.component.html.Paragraph
 import com.vaadin.flow.component.login.LoginForm
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
+import com.vaadin.flow.i18n.LocaleChangeEvent
+import com.vaadin.flow.i18n.LocaleChangeObserver
 import com.vaadin.flow.router.BeforeEnterEvent
 import com.vaadin.flow.router.BeforeEnterObserver
 import com.vaadin.flow.router.PageTitle
@@ -23,8 +26,17 @@ import org.springframework.beans.factory.annotation.Value
 @StyleSheet("context://styles/global.css")
 class LoginView(
     @Value("\${app.ui.title:Handicap Committee App}") private val appTitle: String,
-) : VerticalLayout(), BeforeEnterObserver {
+) : VerticalLayout(), BeforeEnterObserver, LocaleChangeObserver {
     private val loginForm = LoginForm()
+    private val heading = H2("⛳ $appTitle").apply {
+        addClassNames(LumoUtility.Margin.Bottom.XSMALL)
+    }
+    private val message = Paragraph().apply {
+        addClassNames(
+            LumoUtility.Margin.Top.NONE,
+            LumoUtility.TextColor.SECONDARY
+        )
+    }
 
     init {
         setSizeFull()
@@ -34,18 +46,8 @@ class LoginView(
         style["justify-content"] = "center"
         style["background"] = "var(--lumo-contrast-5pct)"
 
-        val heading = H2("⛳ $appTitle").apply {
-            addClassNames(LumoUtility.Margin.Bottom.XSMALL)
-        }
-
-        val message = Paragraph("Sign in with your Golf Canada email and password to access the committee workspace.").apply {
-            addClassNames(
-                LumoUtility.Margin.Top.NONE,
-                LumoUtility.TextColor.SECONDARY
-            )
-        }
-
         loginForm.action = "login"
+        message.text = AppMessages.translateCurrent("login.signInMessage")
 
         val card = VerticalLayout(heading, message, loginForm).apply {
             alignItems = FlexComponent.Alignment.STRETCH
@@ -58,6 +60,10 @@ class LoginView(
         }
 
         add(card)
+    }
+
+    override fun localeChange(event: LocaleChangeEvent) {
+        message.text = AppMessages.translate(event.locale, "login.signInMessage")
     }
 
     override fun beforeEnter(event: BeforeEnterEvent) {
