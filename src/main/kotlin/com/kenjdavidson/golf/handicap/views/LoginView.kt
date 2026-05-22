@@ -11,12 +11,15 @@ import com.vaadin.flow.router.BeforeEnterObserver
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
 import com.vaadin.flow.server.auth.AnonymousAllowed
+import com.vaadin.flow.theme.lumo.Lumo
 import com.vaadin.flow.theme.lumo.LumoUtility
 import org.springframework.beans.factory.annotation.Value
 
 @Route("login")
 @PageTitle("Login | Handicap Committee App")
 @AnonymousAllowed
+@StyleSheet(Lumo.STYLESHEET)
+@StyleSheet(Lumo.UTILITY_STYLESHEET)
 @StyleSheet("context://styles/global.css")
 class LoginView(
     @Value("\${app.ui.title:Handicap Committee App}") private val appTitle: String,

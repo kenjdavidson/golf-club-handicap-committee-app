@@ -1,5 +1,5 @@
 
-/* 1. Kill the harsh default blue border ring */
+/* Kill the harsh default blue border ring */
 vaadin-context-menu-item:focus,
 vaadin-context-menu-item:focus-visible,
 vaadin-context-menu-item[focus-ring],
@@ -8,7 +8,7 @@ vaadin-context-menu-item[focused] {
     box-shadow: none !important;
 }
 
-/* 2. Apply a soft blue background tint on keyboard focus OR mouse hover */
+/* Apply a soft blue background tint on keyboard focus OR mouse hover */
 vaadin-context-menu-item:focus-visible,
 vaadin-context-menu-item[focus-ring],
 vaadin-context-menu-item[focused],

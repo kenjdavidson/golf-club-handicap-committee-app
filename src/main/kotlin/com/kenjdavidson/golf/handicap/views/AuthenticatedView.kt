@@ -9,9 +9,12 @@ import com.vaadin.flow.component.dependency.StyleSheet
 import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.router.RouterLink
+import com.vaadin.flow.theme.lumo.Lumo
 import jakarta.annotation.security.PermitAll
 
 @PermitAll
+@StyleSheet(Lumo.STYLESHEET)
+@StyleSheet(Lumo.UTILITY_STYLESHEET)
 @StyleSheet("context://styles/global.css")
 class AuthenticatedView(
     navbar: Navbar,

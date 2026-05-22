@@ -6,7 +6,10 @@ import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.upload.Upload
+import com.vaadin.flow.component.upload.UploadButton
+import com.vaadin.flow.component.upload.UploadManager
 import com.vaadin.flow.server.streams.UploadHandler
+
 class SingleFileUploadCard : HorizontalLayout() {
     private var uploadedBytes: ByteArray? = null
     private var uploadedFileName: String? = null
@@ -20,8 +23,8 @@ class SingleFileUploadCard : HorizontalLayout() {
         style["flex-grow"] = "1"
     }
 
-    private val upload = Upload(
-        UploadHandler { event ->
+    private val upload = UploadButton(
+        UploadManager(this, UploadHandler { event ->
             try {
                 val bytes = event.inputStream.readBytes()
                 event.ui.access {
@@ -39,8 +42,10 @@ class SingleFileUploadCard : HorizontalLayout() {
                     fileRejectedListener?.invoke(message)
                 }
             }
-        }
-    )
+        })
+    ).apply {
+        text = "Upload file"
+    }
 
     private val verifyButton = Button("Verify", VaadinIcon.CHECK.create()).apply {
         isEnabled = false
@@ -52,34 +57,14 @@ class SingleFileUploadCard : HorizontalLayout() {
     }
 
     init {
-        upload.apply {
-            setAcceptedFileTypes(".pdf")
-            isAutoUpload = true
-            setDropAllowed(false)
-            setUploadButton(Button("Upload file", VaadinIcon.UPLOAD.create()))
-            setDropLabel(Span())
-            setDropLabelIcon(Span())
-            style["padding"] = "0"
-            style["border"] = "none"
-            style["min-height"] = "0"
-            style["background"] = "transparent"
-        }
-
-        upload.addFileRejectedListener { event ->
-            clearFile()
-            fileRejectedListener?.invoke(event.errorMessage)
-        }
-
-        upload.addFileRemovedListener {
-            clearFile()
-        }
-
         val uploadPanel = HorizontalLayout(fileName, upload).apply {
             setWidthFull()
             isPadding = true
             isSpacing = true
             defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
-            style["border"] = "1px dotted var(--lumo-primary-color-50pct)"
+            style["border-width"] = "1px"
+            style["border-style"] = "dashed"
+            style["border-color"] = "var(--lumo-primary-color-50pct)"
             style["border-radius"] = "var(--lumo-border-radius-m)"
             style["background"] = "var(--lumo-primary-color-10pct)"
             style["box-sizing"] = "border-box"
