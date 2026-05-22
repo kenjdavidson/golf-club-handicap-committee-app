@@ -34,10 +34,11 @@ class SingleFileUploadCard : HorizontalLayout() {
                     fileSelectedListener?.invoke(event.fileName)
                 }
             } catch (exception: IOException) {
-                event.reject(UPLOAD_FAILED)
+                val message = "$UPLOAD_FAILED ${exception.message ?: UNKNOWN_ERROR}"
+                event.reject(message)
                 event.ui.access {
                     clearFile()
-                    fileRejectedListener?.invoke(UPLOAD_FAILED)
+                    fileRejectedListener?.invoke(message)
                 }
             }
         }
@@ -124,6 +125,7 @@ class SingleFileUploadCard : HorizontalLayout() {
 
     private companion object {
         const val NO_FILE_SELECTED = "No file selected"
-        const val UPLOAD_FAILED = "Upload failed."
+        const val UPLOAD_FAILED = "Upload failed:"
+        const val UNKNOWN_ERROR = "Unknown error"
     }
 }
