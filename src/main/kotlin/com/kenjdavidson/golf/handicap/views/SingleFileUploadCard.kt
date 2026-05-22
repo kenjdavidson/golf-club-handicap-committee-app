@@ -12,6 +12,7 @@ import com.vaadin.flow.component.upload.UploadManager
 import com.vaadin.flow.i18n.LocaleChangeEvent
 import com.vaadin.flow.i18n.LocaleChangeObserver
 import com.vaadin.flow.server.streams.UploadHandler
+import java.util.Locale
 
 class SingleFileUploadCard : HorizontalLayout(), LocaleChangeObserver {
     private var uploadedBytes: ByteArray? = null
@@ -79,7 +80,6 @@ class SingleFileUploadCard : HorizontalLayout(), LocaleChangeObserver {
         isSpacing = true
         defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
         expand(uploadPanel)
-        refreshLocalizedText()
     }
 
     override fun localeChange(event: LocaleChangeEvent) {
@@ -114,7 +114,7 @@ class SingleFileUploadCard : HorizontalLayout(), LocaleChangeObserver {
         verifyButton.isEnabled = verifyHandler != null && uploadedBytes?.isNotEmpty() == true
     }
 
-    private fun refreshLocalizedText(locale: java.util.Locale? = null) {
+    private fun refreshLocalizedText(locale: Locale) {
         upload.text = AppMessages.translate(locale, "upload.button")
         verifyButton.text = AppMessages.translate(locale, "upload.verify")
         if (uploadedFileName == null) {

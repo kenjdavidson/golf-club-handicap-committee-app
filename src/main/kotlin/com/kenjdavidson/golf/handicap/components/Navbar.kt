@@ -6,6 +6,7 @@ import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.avatar.Avatar
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.contextmenu.ContextMenu
+import com.vaadin.flow.component.contextmenu.MenuItem
 import com.vaadin.flow.component.html.H2
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.VaadinIcon
@@ -77,13 +78,7 @@ class Navbar(
     }
 
     private fun buildUserSection(): HorizontalLayout {
-        userMenu.addItem(userMenuInfo).apply {
-            isEnabled = false
-            style["color"] = "var(--lumo-secondary-text-color)"
-            style["font-weight"] = "600"
-            style["font-size"] = "var(--lumo-font-size-s)"
-            style["opacity"] = "1"
-        }
+        styleProfileMenuItem(userMenu.addItem(userMenuInfo))
         userMenu.addSeparator()
 
         return HorizontalLayout(avatar).apply {
@@ -137,13 +132,7 @@ class Navbar(
 
     private fun refreshUserMenu(locale: Locale) {
         userMenu.removeAll()
-        userMenu.addItem(userMenuInfo).apply {
-            isEnabled = false
-            style["color"] = "var(--lumo-secondary-text-color)"
-            style["font-weight"] = "600"
-            style["font-size"] = "var(--lumo-font-size-s)"
-            style["opacity"] = "1"
-        }
+        styleProfileMenuItem(userMenu.addItem(userMenuInfo))
         userMenu.addSeparator()
 
         val languageItem = userMenu.addItem(AppMessages.translate(locale, "menu.language"))
@@ -164,5 +153,13 @@ class Navbar(
             ?.takeIf { it.isNotBlank() }
             ?: AppMessages.translate(locale, "member.notAvailable")
         return AppMessages.translate(locale, "member.number", memberNumberText)
+    }
+
+    private fun styleProfileMenuItem(menuItem: MenuItem) {
+        menuItem.isEnabled = false
+        menuItem.style["color"] = "var(--lumo-secondary-text-color)"
+        menuItem.style["font-weight"] = "600"
+        menuItem.style["font-size"] = "var(--lumo-font-size-s)"
+        menuItem.style["opacity"] = "1"
     }
 }
