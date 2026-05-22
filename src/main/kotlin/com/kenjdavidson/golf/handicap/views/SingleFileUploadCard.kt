@@ -8,6 +8,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.upload.Upload
 import com.vaadin.flow.server.streams.UploadHandler
+import java.io.IOException
 
 class SingleFileUploadCard : HorizontalLayout() {
     private var uploadedBytes: ByteArray? = null
@@ -23,12 +24,24 @@ class SingleFileUploadCard : HorizontalLayout() {
     }
 
     private val upload = Upload(
-        UploadHandler.inMemory { metadata, data ->
-            uploadedBytes = data
-            uploadedFileName = metadata.fileName()
-            fileName.text = metadata.fileName()
-            syncVerifyEnabled()
-            fileSelectedListener?.invoke(metadata.fileName())
+        UploadHandler { event ->
+            try {
+                val bytes = event.inputStream.readBytes()
+                event.ui.access {
+                    uploadedBytes = bytes
+                    uploadedFileName = event.fileName
+                    fileName.text = event.fileName
+                    syncVerifyEnabled()
+                    fileSelectedListener?.invoke(event.fileName)
+                }
+            } catch (exception: IOException) {
+                event.reject(UPLOAD_FAILED)
+                event.ui.access {
+                    clearFile()
+                    fileRejectedListener?.invoke(UPLOAD_FAILED)
+                }
+                throw exception
+            }
         }
     )
 
@@ -114,5 +127,6 @@ class SingleFileUploadCard : HorizontalLayout() {
 
     private companion object {
         const val NO_FILE_SELECTED = "No file selected"
+        const val UPLOAD_FAILED = "Upload failed."
     }
 }
