@@ -3,15 +3,16 @@ package com.kenjdavidson.golf.handicap.components
 import com.kenjdavidson.golf.handicap.views.UserProfileResolver
 import com.vaadin.flow.component.avatar.Avatar
 import com.vaadin.flow.component.button.Button
+import com.vaadin.flow.component.contextmenu.ContextMenu
 import com.vaadin.flow.component.html.H2
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.VaadinIcon
-import com.vaadin.flow.component.menubar.MenuBar
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.spring.security.AuthenticationContext
 import com.vaadin.flow.theme.lumo.LumoUtility
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
@@ -19,90 +20,91 @@ import org.springframework.stereotype.Component
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 class Navbar(
+    @Value("\${app.ui.title: Golf Handicap App}") appTitle: String,
     private val authenticationContext: AuthenticationContext,
     userProfileResolver: UserProfileResolver
 ) : HorizontalLayout() {
-    private companion object {
-        const val DASHBOARD_ROUTE = ""
-    }
-
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
     private val userProfile = userProfileResolver.buildUserProfile(authenticatedUser)
+    private var menuToggleListener: (() -> Unit)? = null
 
     init {
-        val title = H2("Golf Club Handicap Committee").apply {
-            addClassNames(
-                LumoUtility.FontSize.MEDIUM,
-                LumoUtility.Margin.NONE
-            )
+        val menuButton = Button(VaadinIcon.MENU.create()).apply {
+            element.setAttribute("aria-label", "Toggle navigation menu")
+            addClickListener { menuToggleListener?.invoke() }
         }
 
-        val icon = Span("⛳").apply {
-            addClassNames(
-                LumoUtility.FontSize.LARGE,
-                LumoUtility.Margin.Right.SMALL
-            )
+        val heading = H2("⛳ $appTitle").apply {
+            addClassNames(LumoUtility.Margin.Bottom.XSMALL)
         }
 
-        val brand = HorizontalLayout(icon, title).apply {
-            isSpacing = false
-            defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
-        }
+        add(menuButton, heading, buildUserSection())
 
-        val dashboardButton = Button("Dashboard").apply {
-            addClickListener { getUI().ifPresent { currentUi -> currentUi.navigate(DASHBOARD_ROUTE) } }
-        }
-        val workspaceButton = Button("Workspace").apply {
-            isEnabled = false
-        }
-
-        val navButtons = HorizontalLayout(dashboardButton, workspaceButton).apply {
-            isPadding = false
-            isSpacing = true
-            isMargin = false
-        }
-
-        add(brand, navButtons, buildUserSection())
         setWidthFull()
         isPadding = true
         isSpacing = true
         defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
-        expand(brand)
     }
 
     private fun buildUserSection(): HorizontalLayout {
-        val menuBar = MenuBar().apply {
-            element.setAttribute("aria-label", "User menu")
-        }
-        menuBar.addItem(VaadinIcon.CHEVRON_DOWN_SMALL.create()).apply {
-            element.setAttribute("aria-label", "Open user menu")
-            subMenu.addItem("Log out") { authenticationContext.logout() }
-        }
-
         val avatar = Avatar(userProfile.displayName).apply {
             abbreviation = userProfile.initials
+            style["cursor"] = "pointer"
+            element.setAttribute("aria-label", "Open user menu")
+            element.setAttribute("role", "button") // Keeps it accessible for screen readers
         }
 
         val name = Span(userProfile.displayName).apply {
-            addClassNames(LumoUtility.FontWeight.MEDIUM)
+            addClassNames(
+                LumoUtility.FontSize.LARGE,
+                LumoUtility.FontWeight.BOLD
+            )
         }
 
-        val details = Span(userProfile.details).apply {
+        val memberNumber = Span(buildMemberNumber()).apply {
             addClassNames(
                 LumoUtility.FontSize.SMALL,
                 LumoUtility.TextColor.SECONDARY
             )
         }
 
-        val info = VerticalLayout(name, details).apply {
+        val info = VerticalLayout(name, memberNumber).apply {
             isPadding = false
             isSpacing = false
-            isMargin = false
-        }
-
-        return HorizontalLayout(menuBar, avatar, info).apply {
-            isSpacing = true
             defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
         }
+
+        ContextMenu(avatar).apply {
+            isOpenOnClick = true
+
+            addItem(info).apply {
+                isEnabled = false
+
+                style["color"] = "var(--lumo-secondary-text-color)"
+                style["font-weight"] = "600"
+                style["font-size"] = "var(--lumo-font-size-s)"
+                style["opacity"] = "1"
+            }
+            addSeparator()
+            addItem("Logout") {
+                authenticationContext.logout()
+            }
+        }
+
+        return HorizontalLayout(avatar).apply {
+            isSpacing = false
+            defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
+
+            style["margin-left"] = "auto"
+        }
+    }
+
+    private fun buildMemberNumber(): String {
+        val memberNumberText = authenticatedUser.golfCanadaCardId?.takeIf { it.isNotBlank() } ?: "Not Available"
+        return "Member #$memberNumberText"
+    }
+
+    fun setMenuToggleListener(listener: () -> Unit) {
+        menuToggleListener = listener
     }
 }

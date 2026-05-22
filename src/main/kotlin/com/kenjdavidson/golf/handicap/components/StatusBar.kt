@@ -45,7 +45,9 @@ class StatusBar(
             LumoUtility.Padding.Horizontal.MEDIUM,
             LumoUtility.Padding.Vertical.SMALL
         )
+        style["background"] = "var(--lumo-base-color)"
         style["border-top"] = "1px solid var(--lumo-contrast-10pct)"
+        style["flex-shrink"] = "0"
     }
 
     fun updateStatus(statusText: String) {

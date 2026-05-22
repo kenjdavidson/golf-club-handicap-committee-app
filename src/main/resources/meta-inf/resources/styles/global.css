@@ -1,0 +1,19 @@
+
+/* Kill the harsh default blue border ring */
+vaadin-context-menu-item:focus,
+vaadin-context-menu-item:focus-visible,
+vaadin-context-menu-item[focus-ring],
+vaadin-context-menu-item[focused] {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Apply a soft blue background tint on keyboard focus OR mouse hover */
+vaadin-context-menu-item:focus-visible,
+vaadin-context-menu-item[focus-ring],
+vaadin-context-menu-item[focused],
+vaadin-context-menu-item:hover {
+    background-color: var(--lumo-primary-color-10pct) !important;
+    color: var(--lumo-primary-text-color) !important;
+    cursor: pointer;
+}

@@ -4,7 +4,6 @@ import com.kenjdavidson.golf.handicap.config.GolfCanadaSslTrustConfigurator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.core.env.Environment;
 
 /**
  * Entry point for the Golf Club Handicap Committee desktop application.

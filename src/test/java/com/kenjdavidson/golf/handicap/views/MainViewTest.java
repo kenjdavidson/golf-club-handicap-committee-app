@@ -5,20 +5,22 @@ import com.kenjdavidson.golf.handicap.components.StatusBar;
 import com.kenjdavidson.golf.handicap.golfcanada.model.AuthToken;
 import com.kenjdavidson.golf.handicap.golfcanada.model.User;
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser;
+import com.kenjdavidson.golf.handicap.verification.SingleFileVerificationService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -26,7 +28,7 @@ import static org.mockito.Mockito.when;
 class MainViewTest {
 
     @Test
-    void rendersAuthenticatedUserAndWorkspaceControls() {
+    void rendersAuthenticatedUserAndNavigationShell() {
         AuthenticationContext authenticationContext = mock(AuthenticationContext.class);
         GolfCanadaAuthenticatedUser user = new GolfCanadaAuthenticatedUser(
             new AuthToken().accessToken("access-token").user(new User()
@@ -48,20 +50,27 @@ class MainViewTest {
         when(userProfileResolver.buildUserProfile(user)).thenReturn(
             new UserProfile("Committee User", "committee.user@example.com • HCP 8.4 • Gold", "CU")
         );
-        SingleFileVerificationCardFactory cardFactory = mock(SingleFileVerificationCardFactory.class);
-        when(cardFactory.create(user)).thenReturn(new Div(new Span("Verify")));
+        SingleFileVerificationService verificationService = mock(SingleFileVerificationService.class);
+        ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
         Navbar navbar = new Navbar(authenticationContext, userProfileResolver);
         StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver);
 
-        MainView view = new MainView(authenticationContext, userProfileResolver, cardFactory, navbar, statusBar);
+        MainView view = new MainView(authenticationContext, userProfileResolver, verificationService, eventPublisher);
+        AuthenticatedView shell = new AuthenticatedView(navbar, statusBar);
+        shell.showRouterLayoutContent(view);
 
-        assertTrue(containsText(view, "Committee User"));
-        assertTrue(containsText(view, "committee.user@example.com • HCP 8.4 • Gold"));
-        assertTrue(containsText(view, "Select folder"));
-        assertTrue(containsText(view, "Verify"));
-        assertTrue(containsText(view, "Status: Ready"));
-        assertTrue(containsText(view, "Logged in as Committee User"));
-        assertTrue(containsTextFieldValue(view, "No folder selected"));
+        assertTrue(containsText(shell, "Committee User"));
+        assertTrue(containsText(shell, "Member #1234567"));
+        assertTrue(containsText(shell, "Verify"));
+        assertTrue(containsText(shell, "Status: Ready"));
+        assertTrue(containsText(shell, "Logged in as Committee User"));
+        assertTrue(containsText(shell, "Lookup"));
+        assertTrue(containsText(shell, "Settings"));
+        assertFalse(containsText(shell, "Golf Club Handicap Committee"));
+        assertFalse(containsText(shell, "committee.user@example.com • HCP 8.4 • Gold"));
+        assertFalse(containsText(shell, "Workspace Folder"));
+        assertFalse(containsText(shell, "Welcome to the Handicap Committee App"));
+        assertFalse(containsTextFieldValue(shell, "No folder selected"));
     }
 
     private boolean containsText(Component component, String expected) {
