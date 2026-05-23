@@ -14,10 +14,12 @@ class LookupHistoryVerificationStep(
             ?: throw VerificationProcessingException("Verification pipeline missing parsed history before history lookup.")
 
         val matchedMember = memberLookupService.findMember(parsedHistory)
-        val golfCanadaDates = historyLookupService.getHistoryDates(
+        val golfCanadaHistory = historyLookupService.getHistory(
             matchedMember?.individualId
         )
 
-        return context.copy(matchedMember = matchedMember, golfCanadaDates = golfCanadaDates)
+        return context.copy(matchedMember = matchedMember, golfCanadaHistory = golfCanadaHistory)
     }
+
+    override fun statusMessage(): String = "Querying Golf Canada member and history..."
 }

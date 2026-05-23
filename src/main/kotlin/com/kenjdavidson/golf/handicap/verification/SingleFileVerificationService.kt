@@ -1,12 +1,15 @@
 package com.kenjdavidson.golf.handicap.verification
 
+import com.kenjdavidson.golf.handicap.components.StatusUpdateEvent
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser
 import com.kenjdavidson.golf.handicap.util.operation
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 
 @Service
 class SingleFileVerificationService(
-    private val verificationSteps: List<SingleFileVerificationStep>
+    private val verificationSteps: List<SingleFileVerificationStep>,
+    private val eventPublisher: ApplicationEventPublisher
 ) {
     fun verify(
         fileName: String,
@@ -23,7 +26,10 @@ class SingleFileVerificationService(
                 fileBytes = fileBytes,
                 authenticatedUser = authenticatedUser
             )
-        ) { current, step -> step.process(current) }
+        ) { current, step ->
+            eventPublisher.publishEvent(StatusUpdateEvent(step.statusMessage()))
+            step.process(current)
+        }
 
         context.result
             ?: throw VerificationProcessingException("Verification pipeline completed without a verification result.")

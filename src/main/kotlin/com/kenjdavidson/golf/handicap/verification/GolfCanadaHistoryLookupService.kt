@@ -1,7 +1,7 @@
 package com.kenjdavidson.golf.handicap.verification
 
-import java.time.LocalDate
+import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryEntry
 
 interface GolfCanadaHistoryLookupService {
-    fun getHistoryDates(individualId: Long?): Set<LocalDate>
+    fun getHistory(individualId: Long?): List<HistoryEntry>
 }

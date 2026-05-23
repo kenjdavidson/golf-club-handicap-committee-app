@@ -12,10 +12,27 @@ class CompareDatesVerificationStep(
         val parsedHistory = context.parsedHistory
             ?: throw VerificationProcessingException("Verification pipeline missing parsed history before date comparison.")
 
+        val golfCanadaDates = context.golfCanadaHistory
+            .mapNotNull { it.date?.toLocalDate() }
+            .toSet()
+
         val dateResult = dateMatchVerificationService.verify(
             pdfDates = parsedHistory.rounds.map { it.playedDate },
-            golfCanadaDates = context.golfCanadaDates
+            golfCanadaDates = golfCanadaDates
         )
+
+        val entriesByDate = context.golfCanadaHistory
+            .mapNotNull { entry -> entry.date?.toLocalDate()?.let { date -> date to entry } }
+            .groupBy({ it.first }, { it.second })
+
+        val roundComparisons = parsedHistory.rounds.map { round ->
+            val matches = entriesByDate[round.playedDate]
+            RoundComparison(
+                pdfRound = round,
+                golfCanadaEntry = matches?.firstOrNull(),
+                isMatched = !matches.isNullOrEmpty()
+            )
+        }
 
         val notes = mutableListOf<String>()
         if (context.matchedMember == null) {
@@ -26,13 +43,18 @@ class CompareDatesVerificationStep(
             result = FileVerificationResult(
                 playerName = parsedHistory.playerName,
                 memberId = parsedHistory.memberId,
+                matchedMember = context.matchedMember,
                 status = dateResult.status,
                 matchPercentage = dateResult.matchPercentage,
                 matchedCount = dateResult.matchedCount,
                 comparedCount = dateResult.comparedCount,
                 mismatchedDates = dateResult.mismatchedDates,
-                notes = notes
+                notes = notes,
+                parsedRounds = parsedHistory.rounds,
+                roundComparisons = roundComparisons
             )
         )
     }
+
+    override fun statusMessage(): String = "Comparing rounds..."
 }

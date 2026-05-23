@@ -1,6 +1,7 @@
 package com.kenjdavidson.golf.handicap.verification
 
 import com.kenjdavidson.golf.handicap.golfcanada.api.MembersApi
+import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryEntry
 import org.springframework.stereotype.Service
 import java.time.Clock
 import java.time.LocalDate
@@ -12,11 +13,11 @@ class CachingGolfCanadaHistoryLookupService(
     private val verificationProperties: VerificationProperties,
     private val clock: Clock = Clock.systemDefaultZone()
 ) : GolfCanadaHistoryLookupService {
-    private val cache = ConcurrentHashMap<Pair<Long, LocalDate>, Set<LocalDate>>()
+    private val cache = ConcurrentHashMap<Pair<Long, LocalDate>, List<HistoryEntry>>()
 
-    override fun getHistoryDates(individualId: Long?): Set<LocalDate> {
+    override fun getHistory(individualId: Long?): List<HistoryEntry> {
         if (individualId == null) {
-            return emptySet()
+            return emptyList()
         }
         val requestDate = LocalDate.now(clock)
         val cacheKey = individualId to requestDate
@@ -26,8 +27,6 @@ class CachingGolfCanadaHistoryLookupService(
                 membersApi.getHistory(individualId, 0, verificationProperties.maxRounds)
                     ?.data
                     .orEmpty()
-                    .mapNotNull { it.date?.toLocalDate() }
-                    .toSet()
             } catch (exception: Exception) {
                 throw VerificationProcessingException("Unable to retrieve Golf Canada history.", exception)
             }

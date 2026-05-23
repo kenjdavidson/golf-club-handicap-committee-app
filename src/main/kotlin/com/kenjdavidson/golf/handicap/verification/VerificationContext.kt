@@ -1,7 +1,7 @@
 package com.kenjdavidson.golf.handicap.verification
 
+import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryEntry
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser
-import java.time.LocalDate
 
 data class VerificationContext(
     val fileName: String,
@@ -9,6 +9,6 @@ data class VerificationContext(
     val authenticatedUser: GolfCanadaAuthenticatedUser,
     val parsedHistory: ParsedPlayerHistory? = null,
     val matchedMember: GolfCanadaMemberMatch? = null,
-    val golfCanadaDates: Set<LocalDate> = emptySet(),
+    val golfCanadaHistory: List<HistoryEntry> = emptyList(),
     val result: FileVerificationResult? = null
 )
