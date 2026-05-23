@@ -56,5 +56,5 @@ class CompareDatesVerificationStep(
         )
     }
 
-    override fun statusMessage(): String = "Comparing rounds..."
+    override fun statusMessageKey(): String = "step.status.compareDates"
 }

@@ -21,5 +21,5 @@ class LookupHistoryVerificationStep(
         return context.copy(matchedMember = matchedMember, golfCanadaHistory = golfCanadaHistory)
     }
 
-    override fun statusMessage(): String = "Querying Golf Canada member and history..."
+    override fun statusMessageKey(): String = "step.status.lookupHistory"
 }

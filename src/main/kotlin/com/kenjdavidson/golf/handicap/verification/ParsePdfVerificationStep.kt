@@ -12,5 +12,5 @@ class ParsePdfVerificationStep(
         return context.copy(parsedHistory = pdfRoundParser.parse(context.fileBytes))
     }
 
-    override fun statusMessage(): String = "Parsing PDF..."
+    override fun statusMessageKey(): String = "step.status.parsePdf"
 }
