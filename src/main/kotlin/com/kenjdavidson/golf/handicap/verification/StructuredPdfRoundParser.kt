@@ -82,11 +82,13 @@ class StructuredPdfRoundParser(
         }
 
         val playedDate = parsePlayedDate(columns[2]) ?: return null
+        val partners = columns.drop(11).filter { it.isNotBlank() }
         return ParsedRound(
             playedDate = playedDate,
             playDistance = playDistance,
             courseGroup = courseGroup,
-            primaryClub = columns.getOrNull(10)
+            primaryClub = columns.getOrNull(10),
+            playingPartners = partners
         )
     }
 

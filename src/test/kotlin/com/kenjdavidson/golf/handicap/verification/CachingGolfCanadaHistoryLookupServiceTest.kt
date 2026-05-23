@@ -27,23 +27,28 @@ class CachingGolfCanadaHistoryLookupServiceTest {
 
     @Test
     fun `uses cache for same day and refreshes when request date changes`() {
+        val entry = HistoryEntry().date(LocalDateTime.of(2026, 5, 18, 0, 0))
         `when`(membersApi.getHistory(123L, 0, 20)).thenReturn(
-            HistoryResponse().data(
-                listOf(HistoryEntry().date(LocalDateTime.of(2026, 5, 18, 0, 0)))
-            )
+            HistoryResponse().data(listOf(entry))
         )
 
-        val first = service.getHistoryDates(123L)
-        val second = service.getHistoryDates(123L)
+        val first = service.getHistory(123L)
+        val second = service.getHistory(123L)
 
-        assertEquals(setOf(LocalDate.parse("2026-05-18")), first)
+        assertEquals(listOf(entry), first)
         assertEquals(first, second)
         verify(membersApi, times(1)).getHistory(123L, 0, 20)
 
         clock.advanceDays(1)
-        service.getHistoryDates(123L)
+        service.getHistory(123L)
 
         verify(membersApi, times(2)).getHistory(123L, 0, 20)
+    }
+
+    @Test
+    fun `returns empty list when individualId is null`() {
+        val result = service.getHistory(null)
+        assertEquals(emptyList<HistoryEntry>(), result)
     }
 
     private class MutableClock(

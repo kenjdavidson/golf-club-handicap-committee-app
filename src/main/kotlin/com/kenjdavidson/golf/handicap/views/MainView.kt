@@ -6,8 +6,9 @@ import com.kenjdavidson.golf.handicap.verification.FileVerificationResult
 import com.kenjdavidson.golf.handicap.verification.SingleFileVerificationService
 import com.kenjdavidson.golf.handicap.verification.VerificationProcessingException
 import com.kenjdavidson.golf.handicap.verification.VerificationStatus
-import com.vaadin.flow.component.Html
 import com.vaadin.flow.component.html.Div
+import com.vaadin.flow.component.orderedlayout.FlexComponent
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.i18n.LocaleChangeEvent
 import com.vaadin.flow.i18n.LocaleChangeObserver
@@ -16,7 +17,6 @@ import com.vaadin.flow.router.Route
 import com.vaadin.flow.spring.security.AuthenticationContext
 import jakarta.annotation.security.PermitAll
 import org.springframework.context.ApplicationEventPublisher
-import java.time.format.DateTimeFormatter
 
 @Route(value = "", layout = AuthenticatedView::class)
 @PageTitle("Handicap Committee App")
@@ -84,29 +84,26 @@ class MainView(
     }
 
     private fun renderResult(result: FileVerificationResult) {
-        val mismatches = if (result.mismatchedDates.isEmpty()) {
-            AppMessages.translateCurrent("main.result.none")
-        } else {
-            result.mismatchedDates.joinToString(", ") { it.format(DATE_FORMATTER) }
-        }
-        val notes = if (result.notes.isEmpty()) {
-            ""
-        } else {
-            "<br/><strong>${AppMessages.translateCurrent("main.result.notes")}:</strong> ${result.notes.joinToString("; ")}"
+        verificationResult.removeAll()
+
+        val topRow = HorizontalLayout().apply {
+            setWidthFull()
+            isPadding = false
+            isSpacing = true
+            defaultVerticalComponentAlignment = FlexComponent.Alignment.START
         }
 
-        verificationResult.removeAll()
-        verificationResult.add(
-            Html(
-                "<div>" +
-                    "<strong>${AppMessages.translateCurrent("main.result.status")}:</strong> ${result.status}<br/>" +
-                    "<strong>${AppMessages.translateCurrent("main.result.dateMatch")}:</strong> ${result.matchPercentage}% " +
-                    "(${result.matchedCount}/${result.comparedCount})<br/>" +
-                    "<strong>${AppMessages.translateCurrent("main.result.mismatchedDates")}:</strong> $mismatches" +
-                    notes +
-                    "</div>"
-            )
-        )
+        val profileCard = MemberProfileCard(result.memberProfile)
+        val summaryCard = VerificationSummaryCard(result)
+
+        topRow.add(profileCard, summaryCard)
+        topRow.expand(summaryCard)
+
+        verificationResult.add(topRow)
+
+        if (result.roundComparisons.isNotEmpty()) {
+            verificationResult.add(RoundsComparisonGrid(result.roundComparisons))
+        }
     }
 
     private fun statusText(status: VerificationStatus): String {
@@ -120,8 +117,6 @@ class MainView(
     private fun publishStatus(message: String) {
         eventPublisher.publishEvent(StatusUpdateEvent(message))
     }
-
-    private companion object {
-        val DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE
-    }
 }
+
+
