@@ -35,15 +35,17 @@ class CompareDatesVerificationStep(
         }
 
         val notes = mutableListOf<String>()
-        if (context.matchedMember == null) {
+        val memberProfile = context.matchedMember?.let {
+            MemberProfile.from(it, parsedHistory.playerName, parsedHistory.memberId)
+        } ?: MemberProfile.unmatched(parsedHistory.playerName, parsedHistory.memberId)
+
+        if (!memberProfile.isMatched) {
             notes += "Unable to confidently match a Golf Canada member using parsed file details."
         }
 
         return context.copy(
             result = FileVerificationResult(
-                playerName = parsedHistory.playerName,
-                memberId = parsedHistory.memberId,
-                matchedMember = context.matchedMember,
+                memberProfile = memberProfile,
                 status = dateResult.status,
                 matchPercentage = dateResult.matchPercentage,
                 matchedCount = dateResult.matchedCount,

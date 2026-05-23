@@ -37,6 +37,11 @@ class RoundsComparisonGrid(comparisons: List<RoundComparison>) : VerticalLayout(
             }.setHeader(AppMessages.translateCurrent("main.rounds.gcScore"))
                 .setFlexGrow(0).setWidth("80px")
 
+            addColumn { comp ->
+                comp.golfCanadaEntry?.differential?.let { "%.1f".format(it) } ?: ""
+            }.setHeader(AppMessages.translateCurrent("main.rounds.gcDifferential"))
+                .setFlexGrow(0).setWidth("100px")
+
             addComponentColumn { comp ->
                 val matched = comp.isMatched
                 Span(

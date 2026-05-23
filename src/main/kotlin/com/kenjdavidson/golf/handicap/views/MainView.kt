@@ -93,7 +93,7 @@ class MainView(
             defaultVerticalComponentAlignment = FlexComponent.Alignment.START
         }
 
-        val profileCard = MemberProfileCard(result.matchedMember, result.playerName, result.memberId)
+        val profileCard = MemberProfileCard(result.memberProfile)
         val summaryCard = VerificationSummaryCard(result)
 
         topRow.add(profileCard, summaryCard)

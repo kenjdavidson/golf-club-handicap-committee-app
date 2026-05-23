@@ -1,7 +1,7 @@
 package com.kenjdavidson.golf.handicap.views
 
 import com.kenjdavidson.golf.handicap.i18n.AppMessages
-import com.kenjdavidson.golf.handicap.verification.GolfCanadaMemberMatch
+import com.kenjdavidson.golf.handicap.verification.MemberProfile
 import com.vaadin.flow.component.avatar.Avatar
 import com.vaadin.flow.component.html.H4
 import com.vaadin.flow.component.html.Span
@@ -10,14 +10,10 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.theme.lumo.LumoUtility
 
-class MemberProfileCard(
-    matchedMember: GolfCanadaMemberMatch?,
-    playerName: String?,
-    memberId: String?
-) : VerticalLayout() {
+class MemberProfileCard(profile: MemberProfile) : VerticalLayout() {
 
     init {
-        val displayName = matchedMember?.fullName ?: playerName ?: AppMessages.translateCurrent("member.notAvailable")
+        val displayName = profile.fullName ?: AppMessages.translateCurrent("member.notAvailable")
         val avatar = Avatar(displayName).apply {
             abbreviation = buildInitials(displayName)
         }
@@ -26,16 +22,15 @@ class MemberProfileCard(
             addClassNames(LumoUtility.FontWeight.BOLD, LumoUtility.FontSize.MEDIUM)
         }
 
-        val idText = matchedMember?.golfCanadaCardId ?: memberId
         val idSpan = Span(
-            if (idText != null) AppMessages.translateCurrent("member.number", idText)
+            if (profile.cardId != null) AppMessages.translateCurrent("member.number", profile.cardId)
             else AppMessages.translateCurrent("member.notAvailable")
         ).apply {
             addClassNames(LumoUtility.FontSize.SMALL, LumoUtility.TextColor.SECONDARY)
         }
 
         val homeCourseSpan = Span(
-            matchedMember?.homeCourse ?: AppMessages.translateCurrent("member.notAvailable")
+            profile.homeCourse ?: AppMessages.translateCurrent("member.notAvailable")
         ).apply {
             addClassNames(LumoUtility.FontSize.SMALL, LumoUtility.TextColor.SECONDARY)
         }
@@ -64,7 +59,7 @@ class MemberProfileCard(
         })
         add(headerRow)
 
-        if (matchedMember == null) {
+        if (!profile.isMatched) {
             add(Span(AppMessages.translateCurrent("main.member.unmatched")).apply {
                 addClassNames(LumoUtility.FontSize.XSMALL, LumoUtility.TextColor.ERROR)
             })
@@ -79,3 +74,4 @@ class MemberProfileCard(
         return first + second
     }
 }
+
