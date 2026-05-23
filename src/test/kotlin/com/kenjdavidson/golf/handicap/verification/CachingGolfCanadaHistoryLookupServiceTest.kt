@@ -12,7 +12,7 @@ import org.mockito.Mockito.`when`
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
-import java.time.OffsetDateTime
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 
@@ -29,7 +29,7 @@ class CachingGolfCanadaHistoryLookupServiceTest {
     fun `uses cache for same day and refreshes when request date changes`() {
         `when`(membersApi.getHistory(123L, 0, 20)).thenReturn(
             HistoryResponse().data(
-                listOf(HistoryEntry().date(OffsetDateTime.parse("2026-05-18T00:00:00Z")))
+                listOf(HistoryEntry().date(LocalDateTime.of(2026, 5, 18, 0, 0)))
             )
         )
 

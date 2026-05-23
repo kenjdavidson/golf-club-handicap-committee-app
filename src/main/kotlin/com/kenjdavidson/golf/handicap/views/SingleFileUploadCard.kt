@@ -1,5 +1,6 @@
 package com.kenjdavidson.golf.handicap.views
 
+import com.kenjdavidson.golf.handicap.i18n.AppMessages
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.VaadinIcon
@@ -8,16 +9,19 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.upload.Upload
 import com.vaadin.flow.component.upload.UploadButton
 import com.vaadin.flow.component.upload.UploadManager
+import com.vaadin.flow.i18n.LocaleChangeEvent
+import com.vaadin.flow.i18n.LocaleChangeObserver
 import com.vaadin.flow.server.streams.UploadHandler
+import java.util.Locale
 
-class SingleFileUploadCard : HorizontalLayout() {
+class SingleFileUploadCard : HorizontalLayout(), LocaleChangeObserver {
     private var uploadedBytes: ByteArray? = null
     private var uploadedFileName: String? = null
     private var verifyHandler: ((String, ByteArray) -> Unit)? = null
     private var fileSelectedListener: ((String) -> Unit)? = null
     private var fileRejectedListener: ((String) -> Unit)? = null
 
-    private val fileName = Span(NO_FILE_SELECTED).apply {
+    private val fileName = Span(AppMessages.translateCurrent("upload.noFileSelected")).apply {
         style["white-space"] = "normal"
         style["word-break"] = "break-word"
         style["flex-grow"] = "1"
@@ -35,7 +39,7 @@ class SingleFileUploadCard : HorizontalLayout() {
                     fileSelectedListener?.invoke(event.fileName)
                 }
             } catch (exception: Exception) {
-                val message = "$UPLOAD_FAILED: ${exception.message ?: UNKNOWN_ERROR}"
+                val message = "${AppMessages.translateCurrent("upload.failed")}: ${exception.message ?: AppMessages.translateCurrent("upload.unknownError")}"
                 event.reject(message)
                 event.ui.access {
                     clearFile()
@@ -44,10 +48,10 @@ class SingleFileUploadCard : HorizontalLayout() {
             }
         })
     ).apply {
-        text = "Upload file"
+        text = AppMessages.translateCurrent("upload.button")
     }
 
-    private val verifyButton = Button("Verify", VaadinIcon.CHECK.create()).apply {
+    private val verifyButton = Button(AppMessages.translateCurrent("upload.verify"), VaadinIcon.CHECK.create()).apply {
         isEnabled = false
         addClickListener {
             val fileBytes = uploadedBytes ?: return@addClickListener
@@ -78,6 +82,10 @@ class SingleFileUploadCard : HorizontalLayout() {
         expand(uploadPanel)
     }
 
+    override fun localeChange(event: LocaleChangeEvent) {
+        refreshLocalizedText(event.locale)
+    }
+
     fun setVerifyHandler(handler: (String, ByteArray) -> Unit) {
         verifyHandler = handler
         syncVerifyEnabled()
@@ -98,7 +106,7 @@ class SingleFileUploadCard : HorizontalLayout() {
     fun clearFile() {
         uploadedBytes = null
         uploadedFileName = null
-        fileName.text = NO_FILE_SELECTED
+        fileName.text = AppMessages.translateCurrent("upload.noFileSelected")
         syncVerifyEnabled()
     }
 
@@ -106,9 +114,11 @@ class SingleFileUploadCard : HorizontalLayout() {
         verifyButton.isEnabled = verifyHandler != null && uploadedBytes?.isNotEmpty() == true
     }
 
-    private companion object {
-        const val NO_FILE_SELECTED = "No file selected"
-        const val UPLOAD_FAILED = "Upload failed"
-        const val UNKNOWN_ERROR = "Unknown error"
+    private fun refreshLocalizedText(locale: Locale) {
+        upload.text = AppMessages.translate(locale, "upload.button")
+        verifyButton.text = AppMessages.translate(locale, "upload.verify")
+        if (uploadedFileName == null) {
+            fileName.text = AppMessages.translate(locale, "upload.noFileSelected")
+        }
     }
 }

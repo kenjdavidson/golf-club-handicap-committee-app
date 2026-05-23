@@ -1,9 +1,12 @@
 package com.kenjdavidson.golf.handicap.components
 
+import com.kenjdavidson.golf.handicap.i18n.AppMessages
 import com.kenjdavidson.golf.handicap.views.UserProfileResolver
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.html.Span
+import com.vaadin.flow.i18n.LocaleChangeEvent
+import com.vaadin.flow.i18n.LocaleChangeObserver
 import com.vaadin.flow.signals.local.ValueSignal
 import com.vaadin.flow.spring.security.AuthenticationContext
 import com.vaadin.flow.theme.lumo.LumoUtility
@@ -17,9 +20,9 @@ import org.springframework.stereotype.Component
 class StatusBar(
     authenticationContext: AuthenticationContext,
     userProfileResolver: UserProfileResolver
-) : HorizontalLayout() {
+) : HorizontalLayout(), LocaleChangeObserver {
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
-    private val statusSignal = ValueSignal("Status: Ready")
+    private val statusSignal = ValueSignal(AppMessages.translateCurrent("status.ready"))
 
     private val status = Span().apply {
         addClassNames(
@@ -28,7 +31,9 @@ class StatusBar(
         )
     }
 
-    private val context = Span("Logged in as ${authenticatedUser.displayName}").apply {
+    private val context = Span(
+        AppMessages.translateCurrent("status.loggedInAs", authenticatedUser.displayName)
+    ).apply {
         addClassNames(
             LumoUtility.FontSize.SMALL,
             LumoUtility.TextColor.SECONDARY
@@ -48,6 +53,10 @@ class StatusBar(
         style["background"] = "var(--lumo-base-color)"
         style["border-top"] = "1px solid var(--lumo-contrast-10pct)"
         style["flex-shrink"] = "0"
+    }
+
+    override fun localeChange(event: LocaleChangeEvent) {
+        context.text = AppMessages.translate(event.locale, "status.loggedInAs", authenticatedUser.displayName)
     }
 
     fun updateStatus(statusText: String) {
