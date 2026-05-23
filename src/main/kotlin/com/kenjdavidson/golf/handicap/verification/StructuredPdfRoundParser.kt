@@ -136,6 +136,11 @@ class StructuredPdfRoundParser(
                 ?: nameAndLocations.trim()
 
             val words = locationPrefix.split(WHITESPACE_REGEX).filter(String::isNotBlank)
+            if (words.size == 1) {
+                val prefix = words.first()
+                prefixCounts[prefix] = prefixCounts.getOrDefault(prefix, 0) + 1
+                return@forEach
+            }
             for (index in 1..<words.size) {
                 val prefix = words.take(index).joinToString(" ")
                 prefixCounts[prefix] = prefixCounts.getOrDefault(prefix, 0) + 1
