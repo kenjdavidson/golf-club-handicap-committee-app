@@ -16,6 +16,7 @@ webpack.generated.js
 vite.generated.ts
 frontend/generated/
 src/main/bundles
+.vaadin-node-tasks.lock
 
 # IDEs
 .idea/
