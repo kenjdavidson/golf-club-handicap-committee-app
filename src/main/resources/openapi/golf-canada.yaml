@@ -286,6 +286,13 @@ components:
       type: object
       description: Member snapshot payload as returned by Golf Canada.
       properties:
+        individualId:
+          type: integer
+          format: int64
+        cardId:
+          type: string
+        name:
+          type: string
         club:
           type: string
         membershipType:

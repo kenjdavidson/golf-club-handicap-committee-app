@@ -1,7 +1,7 @@
 package com.kenjdavidson.golf.handicap.verification
 
 import com.kenjdavidson.golf.handicap.golfcanada.api.MembersApi
-import com.kenjdavidson.golf.handicap.golfcanada.model.MemberSearchEntry
+import com.kenjdavidson.golf.handicap.golfcanada.model.Profile
 import org.springframework.stereotype.Service
 import java.util.concurrent.ConcurrentHashMap
 
@@ -52,34 +52,36 @@ class CachedGolfCanadaMemberLookupService(
 
         val entry = matched.first()
         val individualId = entry.individualId ?: return null
-        val profileHomeCourse = fetchProfileHomeCourse(individualId)
+        val profile = fetchProfile(individualId)
 
         return GolfCanadaMemberMatch(
             individualId = individualId,
             fullName = entry.name?.trim()?.takeIf { it.isNotBlank() } ?: UNKNOWN_PLAYER_NAME,
-            golfCanadaCardId = individualId.toString(),
-            homeCourse = profileHomeCourse
+            golfCanadaCardId = profile.cardId,
+            homeCourse = profile.homeCourse,
+            profile = profile
         )
     }
 
     private fun profileByMemberId(individualId: Long, parsedHistory: ParsedPlayerHistory): GolfCanadaMemberMatch? {
-        val profileHomeCourse = fetchProfileHomeCourse(individualId)
+        val profile = fetchProfile(individualId)
 
-        if (!matchesHomeCourse(parsedHistory.homeCourse, profileHomeCourse)) {
+        if (!matchesHomeCourse(parsedHistory.homeCourse, profile.homeCourse)) {
             return null
         }
 
         return GolfCanadaMemberMatch(
             individualId = individualId,
             fullName = parsedHistory.playerName?.trim()?.takeIf { it.isNotBlank() } ?: UNKNOWN_PLAYER_NAME,
-            golfCanadaCardId = individualId.toString(),
-            homeCourse = profileHomeCourse
+            golfCanadaCardId = profile.cardId,
+            homeCourse = profile.homeCourse,
+            profile = profile
         )
     }
 
-    private fun fetchProfileHomeCourse(individualId: Long): String? {
+    private fun fetchProfile(individualId: Long): Profile {
         return try {
-            membersApi.getProfile(individualId).homeCourse
+            membersApi.getProfile(individualId)
         } catch (exception: Exception) {
             throw VerificationProcessingException("Unable to retrieve Golf Canada member profile.", exception)
         }
