@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.gradle.api.tasks.compile.JavaCompile
 
 plugins {
     id("org.springframework.boot") version "4.0.0"
@@ -153,8 +154,9 @@ sourceSets {
 }
 
 // Ensure OpenAPI sources are generated before compilation
-tasks.named("compileJava") {
-    dependsOn("openApiGenerate")
+tasks.named<JavaCompile>("compileJava") {
+    dependsOn("openApiGenerate", "compileKotlin")
+    classpath += files(tasks.named<KotlinCompile>("compileKotlin").map { it.destinationDirectory })
 }
 tasks.withType<KotlinCompile> {
     dependsOn("openApiGenerate")
