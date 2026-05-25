@@ -29,6 +29,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.Answers.RETURNS_DEFAULTS;
@@ -92,8 +93,8 @@ class MainViewTest {
             shell.showRouterLayoutContent(view);
 
             List<Component> viewChildren = view.getChildren().collect(Collectors.toList());
-            assertTrue(viewChildren.size() == 2);
-            assertTrue("sticky".equals(viewChildren.get(0).getElement().getStyle().get("position")));
+            assertEquals(2, viewChildren.size());
+            assertEquals("sticky", viewChildren.get(0).getElement().getStyle().get("position"));
             assertTrue(containsText(shell, "Verify"));
             assertTrue(containsText(shell, "Logged in as Committee User"));
             assertFalse(containsText(shell, "Lookup"));
