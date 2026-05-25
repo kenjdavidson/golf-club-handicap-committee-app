@@ -55,6 +55,41 @@ paths:
         '404':
           description: Member not found
 
+  /api/members/search:
+    get:
+      summary: Search for members by name
+      tags: [Members]
+      operationId: searchMembers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: $skip
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: $top
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: text
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Member search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemberSearchResponse'
+        '401':
+          description: Not authorized
+
   /api/scores/getHistory:
     get:
       summary: Retrieve member handicap history
@@ -222,6 +257,31 @@ components:
           type: integer
         postHoleByHole:
           type: boolean
+    MemberSearchEntry:
+      type: object
+      description: A single member result from the Golf Canada member search.
+      properties:
+        individualId:
+          type: integer
+          format: int64
+        name:
+          type: string
+        club:
+          type: string
+        region:
+          type: string
+        handicap:
+          type: string
+    MemberSearchResponse:
+      type: object
+      description: Response payload from the Golf Canada member search endpoint.
+      properties:
+        totalCount:
+          type: integer
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/MemberSearchEntry'
     Profile:
       type: object
       description: Member snapshot payload as returned by Golf Canada.

@@ -1,6 +1,7 @@
 package com.kenjdavidson.golf.handicap.verification
 
 import com.kenjdavidson.golf.handicap.golfcanada.api.MembersApi
+import com.kenjdavidson.golf.handicap.golfcanada.model.MemberSearchEntry
 import org.springframework.stereotype.Service
 import java.util.concurrent.ConcurrentHashMap
 
@@ -17,25 +18,70 @@ class CachedGolfCanadaMemberLookupService(
             parsedHistory.homeCourse.orEmpty()
         ).joinToString("|")
 
-        return cache.computeIfAbsent(cacheKey) {
-            val individualId = parsedHistory.memberId?.trim()?.toLongOrNull() ?: return@computeIfAbsent null
-            val parsedMemberId = individualId.toString()
-            val profileHomeCourse = try {
-                membersApi.getProfile(individualId).homeCourse
-            } catch (exception: Exception) {
-                throw VerificationProcessingException("Unable to retrieve Golf Canada member profile.", exception)
-            }
+        return cache.computeIfAbsent(cacheKey) { resolveMatch(parsedHistory) }
+    }
 
-            if (!matchesHomeCourse(parsedHistory.homeCourse, profileHomeCourse)) {
-                return@computeIfAbsent null
-            }
+    private fun resolveMatch(parsedHistory: ParsedPlayerHistory): GolfCanadaMemberMatch? {
+        val nameMatch = parsedHistory.playerName
+            ?.trim()
+            ?.takeIf { it.isNotBlank() }
+            ?.let { searchByName(it, parsedHistory.homeCourse) }
 
-            GolfCanadaMemberMatch(
-                individualId = individualId,
-                fullName = parsedHistory.playerName?.trim()?.takeIf { it.isNotBlank() } ?: UNKNOWN_PLAYER_NAME,
-                golfCanadaCardId = parsedMemberId,
-                homeCourse = profileHomeCourse
-            )
+        if (nameMatch != null) {
+            return nameMatch
+        }
+
+        return parsedHistory.memberId
+            ?.trim()
+            ?.toLongOrNull()
+            ?.let { profileByMemberId(it, parsedHistory) }
+    }
+
+    private fun searchByName(playerName: String, homeCourse: String?): GolfCanadaMemberMatch? {
+        val results = try {
+            membersApi.searchMembers(0, 20, playerName)?.members.orEmpty()
+        } catch (exception: Exception) {
+            throw VerificationProcessingException("Unable to search Golf Canada members by name.", exception)
+        }
+
+        val matched = results.filter { matchesHomeCourse(homeCourse, it.club) }
+
+        if (matched.size != 1) {
+            return null
+        }
+
+        val entry = matched.first()
+        val individualId = entry.individualId ?: return null
+        val profileHomeCourse = fetchProfileHomeCourse(individualId)
+
+        return GolfCanadaMemberMatch(
+            individualId = individualId,
+            fullName = entry.name?.trim()?.takeIf { it.isNotBlank() } ?: UNKNOWN_PLAYER_NAME,
+            golfCanadaCardId = individualId.toString(),
+            homeCourse = profileHomeCourse
+        )
+    }
+
+    private fun profileByMemberId(individualId: Long, parsedHistory: ParsedPlayerHistory): GolfCanadaMemberMatch? {
+        val profileHomeCourse = fetchProfileHomeCourse(individualId)
+
+        if (!matchesHomeCourse(parsedHistory.homeCourse, profileHomeCourse)) {
+            return null
+        }
+
+        return GolfCanadaMemberMatch(
+            individualId = individualId,
+            fullName = parsedHistory.playerName?.trim()?.takeIf { it.isNotBlank() } ?: UNKNOWN_PLAYER_NAME,
+            golfCanadaCardId = individualId.toString(),
+            homeCourse = profileHomeCourse
+        )
+    }
+
+    private fun fetchProfileHomeCourse(individualId: Long): String? {
+        return try {
+            membersApi.getProfile(individualId).homeCourse
+        } catch (exception: Exception) {
+            throw VerificationProcessingException("Unable to retrieve Golf Canada member profile.", exception)
         }
     }
 
