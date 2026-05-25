@@ -3,6 +3,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "HandicapApplication",
+      "request": "launch",
+      "mainClass": "com.kenjdavidson.golf.handicap.HandicapApplication",
+      "projectName": "golf-club-handicap-committee-app"
+    },
+    {
+      "type": "java",
       "name": "Debug Spring Boot App (Attach 5005)",
       "request": "attach",
       "hostName": "localhost",
