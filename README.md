@@ -9,8 +9,10 @@ For local development or testing against a mock auth endpoint, the Golf Canada b
 
 ## Local run and debug
 
+- Use Java 21 for local Gradle import/builds (`JAVA_HOME` should point to a JDK 21 install).
 - Run app from Gradle: `./gradlew runApp`
 - Run app with remote debug on port 5005: `./gradlew debugApp`
+- Prefer the Gradle tasks above over launching `HandicapApplication` directly from an IDE Java runner so the mixed Kotlin/Java sources are compiled and wired consistently.
 - VS Code tasks/launch configs are included in `.vscode/tasks.json` and `.vscode/launch.json`.
 
 ## Release builds
