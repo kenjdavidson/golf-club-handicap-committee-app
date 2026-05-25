@@ -1,0 +1,2 @@
+4369
+/usr/lib/jvm/temurin-21-jdk-amd64/bin/java -Dorg.gradle.internal.worker.tmpdir=/tmp/workspace/kenjdavidson/golf-club-handicap-committee-app/build/tmp/test/work @/home/runner/.gradle/.tmp/gradle-worker-classpath9027859686411496839txt -Xmx512m -Dfile.encoding=UTF-8 -Duser.country -Duser.language=en -Duser.variant -ea worker.org.gradle.process.internal.worker.GradleWorkerMain 'Gradle Test Executor 1'
