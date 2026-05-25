@@ -46,7 +46,11 @@ class CachedGolfCanadaMemberLookupService(
 
         val matched = results.filter { matchesHomeCourse(homeCourse, it.club) }
 
-        if (matched.size != 1) {
+        if (matched.size > 1) {
+            throw NonUniqueMemberFoundException(matched)
+        }
+
+        if (matched.isEmpty()) {
             return null
         }
 
@@ -58,7 +62,6 @@ class CachedGolfCanadaMemberLookupService(
             individualId = individualId,
             fullName = entry.name?.trim()?.takeIf { it.isNotBlank() } ?: UNKNOWN_PLAYER_NAME,
             golfCanadaCardId = profile.cardId,
-            homeCourse = profile.homeCourse,
             profile = profile
         )
     }
@@ -74,7 +77,6 @@ class CachedGolfCanadaMemberLookupService(
             individualId = individualId,
             fullName = parsedHistory.playerName?.trim()?.takeIf { it.isNotBlank() } ?: UNKNOWN_PLAYER_NAME,
             golfCanadaCardId = profile.cardId,
-            homeCourse = profile.homeCourse,
             profile = profile
         )
     }

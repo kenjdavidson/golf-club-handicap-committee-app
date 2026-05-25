@@ -72,25 +72,22 @@ class CachedGolfCanadaMemberLookupServiceTest {
     }
 
     @Test
-    fun `findMember falls back to memberId profile lookup when name search returns multiple matches`() {
+    fun `findMember throws NonUniqueMemberFoundException when name search returns multiple home course matches`() {
         val entry1 = MemberSearchEntry().individualId(111L).name("Smith, John").club("Snake Point Golf Club")
         val entry2 = MemberSearchEntry().individualId(222L).name("Smith, John").club("Snake Point Golf Club")
         val response = MemberSearchResponse().totalCount(2).members(listOf(entry1, entry2))
-        val profile = Profile().individualId(152314L).cardId("6100011234").homeCourse("Snake Point Golf Club")
         `when`(membersApi.searchMembers(0, 20, "Smith, John")).thenReturn(response)
-        `when`(membersApi.getProfile(152314L)).thenReturn(profile)
 
-        val match = service.findMember(
-            ParsedPlayerHistory(
-                playerName = "Smith, John",
-                memberId = "152314",
-                homeCourse = "Snake Point",
-                rounds = emptyList()
+        assertThrows(NonUniqueMemberFoundException::class.java) {
+            service.findMember(
+                ParsedPlayerHistory(
+                    playerName = "Smith, John",
+                    memberId = "152314",
+                    homeCourse = "Snake Point",
+                    rounds = emptyList()
+                )
             )
-        )
-
-        assertEquals(152314L, match?.individualId)
-        assertNotNull(match?.profile)
+        }
     }
 
     @Test
