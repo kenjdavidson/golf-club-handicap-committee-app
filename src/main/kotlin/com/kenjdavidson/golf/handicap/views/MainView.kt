@@ -36,6 +36,10 @@ class MainView(
 
     init {
         val uploadCard = SingleFileUploadCard()
+        uploadCard.style["position"] = "sticky"
+        uploadCard.style["top"] = "0"
+        uploadCard.style["z-index"] = "1"
+        uploadCard.style["background"] = "var(--lumo-base-color)"
         uploadCard.setFileSelectedListener { fileName ->
             publishStatus(AppMessages.translateCurrent("main.status.uploaded", fileName))
         }
@@ -47,24 +51,12 @@ class MainView(
             verifyFile(fileName, fileBytes)
         }
 
-        setSizeFull()
+        setWidthFull()
         isPadding = true
         isSpacing = true
-        style["overflow"] = "auto"
-        style["min-height"] = "0"
         element.setAttribute("tabindex", "0")
         element.setAttribute("aria-label", AppMessages.translateCurrent("main.aria.mainContent"))
-        add(
-            VerticalLayout(uploadCard, verificationResult).apply {
-                setWidthFull()
-                isPadding = true
-                isSpacing = true
-                style["box-sizing"] = "border-box"
-                style["background"] = "var(--lumo-contrast-5pct)"
-                style["border"] = "1px solid var(--lumo-contrast-10pct)"
-                style["border-radius"] = "var(--lumo-border-radius-l)"
-            }
-        )
+        add(uploadCard, verificationResult)
     }
 
     override fun localeChange(event: LocaleChangeEvent) {
@@ -124,4 +116,3 @@ class MainView(
         eventPublisher.publishEvent(StatusUpdateEvent(message))
     }
 }
-
