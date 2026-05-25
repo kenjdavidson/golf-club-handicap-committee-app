@@ -1,6 +1,7 @@
 package com.kenjdavidson.golf.handicap.components
 
 import com.kenjdavidson.golf.handicap.i18n.AppMessages
+import com.kenjdavidson.golf.handicap.views.AboutView
 import com.kenjdavidson.golf.handicap.views.SettingsView
 import com.kenjdavidson.golf.handicap.views.UserProfileResolver
 import com.vaadin.flow.component.UI
@@ -134,6 +135,10 @@ class Navbar(
         }
         languageItem.subMenu.addItem(AppMessages.translate(locale, "menu.language.fr")) {
             applyLanguage(Locale.FRENCH)
+        }
+        userMenu.addSeparator()
+        userMenu.addItem(AppMessages.translate(locale, "menu.about")) {
+            UI.getCurrent()?.navigate(AboutView::class.java)
         }
         userMenu.addSeparator()
         userMenu.addItem(AppMessages.translate(locale, "menu.logout")) {
