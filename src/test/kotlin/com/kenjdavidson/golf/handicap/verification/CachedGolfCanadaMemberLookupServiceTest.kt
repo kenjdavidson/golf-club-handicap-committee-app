@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
+import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
@@ -171,7 +173,7 @@ class CachedGolfCanadaMemberLookupServiceTest {
 
         assertEquals(152314L, match?.individualId)
         assertEquals("Snake Point Golf Club", match?.homeCourse)
-        verify(membersApi, never()).searchMembers(0, 20, "  ")
+        verify(membersApi, never()).searchMembers(anyInt(), anyInt(), anyString())
     }
 
     @Test
