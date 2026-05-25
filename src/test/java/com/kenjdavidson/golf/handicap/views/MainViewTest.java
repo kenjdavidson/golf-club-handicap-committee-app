@@ -26,8 +26,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.Answers.RETURNS_DEFAULTS;
@@ -42,7 +44,7 @@ import static org.mockito.Mockito.when;
 class MainViewTest {
 
     @Test
-    void rendersAuthenticatedUserAndNavigationShell() {
+    void rendersAuthenticatedUserAndTopLevelShell() {
         AuthenticationContext authenticationContext = mock(AuthenticationContext.class);
         GolfCanadaAuthenticatedUser user = new GolfCanadaAuthenticatedUser(
             new AuthToken().accessToken("access-token").user(new User()
@@ -90,10 +92,13 @@ class MainViewTest {
             AuthenticatedView shell = new AuthenticatedView(navbar, statusBar);
             shell.showRouterLayoutContent(view);
 
+            List<Component> viewChildren = view.getChildren().collect(Collectors.toList());
+            assertEquals(2, viewChildren.size());
+            assertEquals("sticky", viewChildren.get(0).getElement().getStyle().get("position"));
             assertTrue(containsText(shell, "Verify"));
             assertTrue(containsText(shell, "Logged in as Committee User"));
-            assertTrue(containsText(shell, "Lookup"));
-            assertTrue(containsText(shell, "Settings"));
+            assertFalse(containsText(shell, "Lookup"));
+            assertFalse(containsText(shell, "Settings"));
             assertFalse(containsText(shell, "Golf Club Handicap Committee"));
             assertFalse(containsText(shell, "committee.user@example.com • HCP 8.4 • Gold"));
             assertFalse(containsText(shell, "Workspace Folder"));

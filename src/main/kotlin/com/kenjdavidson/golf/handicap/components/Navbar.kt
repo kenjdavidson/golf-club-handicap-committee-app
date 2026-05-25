@@ -1,15 +1,14 @@
 package com.kenjdavidson.golf.handicap.components
 
 import com.kenjdavidson.golf.handicap.i18n.AppMessages
+import com.kenjdavidson.golf.handicap.views.SettingsView
 import com.kenjdavidson.golf.handicap.views.UserProfileResolver
 import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.avatar.Avatar
-import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.contextmenu.ContextMenu
 import com.vaadin.flow.component.contextmenu.MenuItem
 import com.vaadin.flow.component.html.H2
 import com.vaadin.flow.component.html.Span
-import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
@@ -33,8 +32,6 @@ class Navbar(
 ) : HorizontalLayout(), LocaleChangeObserver {
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
     private val userProfile = userProfileResolver.buildUserProfile(authenticatedUser)
-    private var menuToggleListener: (() -> Unit)? = null
-    private val menuButton = Button(VaadinIcon.MENU.create())
     private val heading = H2("⛳ $appTitle").apply {
         addClassNames(LumoUtility.Margin.Bottom.XSMALL)
     }
@@ -65,9 +62,7 @@ class Navbar(
     }
 
     init {
-        menuButton.addClickListener { menuToggleListener?.invoke() }
-
-        add(menuButton, heading, buildUserSection())
+        add(heading, buildUserSection())
 
         setWidthFull()
         isPadding = true
@@ -91,10 +86,6 @@ class Navbar(
 
     override fun localeChange(event: LocaleChangeEvent) {
         refreshLocalizedText(event.locale)
-    }
-
-    fun setMenuToggleListener(listener: () -> Unit) {
-        menuToggleListener = listener
     }
 
     private fun initializeSavedLocale() {
@@ -124,7 +115,6 @@ class Navbar(
     }
 
     private fun refreshLocalizedText(locale: Locale) {
-        menuButton.element.setAttribute("aria-label", AppMessages.translate(locale, "menu.toggleNavigation"))
         avatar.element.setAttribute("aria-label", AppMessages.translate(locale, "menu.openUserMenu"))
         memberNumber.text = buildMemberNumber(locale)
         refreshUserMenu(locale)
@@ -134,6 +124,9 @@ class Navbar(
         userMenu.removeAll()
         styleProfileMenuItem(userMenu.addItem(userMenuInfo))
         userMenu.addSeparator()
+        userMenu.addItem(AppMessages.translate(locale, "menu.settings")) {
+            UI.getCurrent()?.navigate(SettingsView::class.java)
+        }
 
         val languageItem = userMenu.addItem(AppMessages.translate(locale, "menu.language"))
         languageItem.subMenu.addItem(AppMessages.translate(locale, "menu.language.en")) {
