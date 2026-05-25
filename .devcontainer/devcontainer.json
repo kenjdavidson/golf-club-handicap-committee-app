@@ -18,7 +18,8 @@
                 "hbenl.vscode-test-explorer"
             ],
             "settings": {
-                "java.jdt.ls.java.home": "/usr/local/sdkman/candidates/java/current",
+                "java.jdt.ls.java.home": "${env:JAVA_HOME}",
+                "java.import.gradle.java.home": "${env:JAVA_HOME}",
                 "java.configuration.updateBuildConfiguration": "interactive",
                 "kotlin.languageServer.enabled": true,
                 "kotlin.debugAdapter.enabled": true
