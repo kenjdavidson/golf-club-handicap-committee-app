@@ -48,6 +48,27 @@ class StructuredPdfRoundParserTest {
     }
 
     @Test
+    fun `parses fixed width rows extracted from uploaded pdf text`() {
+        val text = """
+            1 of 1
+            MemberIDFullName HomeClub PlayedAt PlayDate PlayTimeCreatedDateCreatedTimeDIA DayWeek CourseGroup BookerClassPlayerClassPrimaryClub1 SecondaryClub1SourceFromInterclubBookerMemIDBookerName BookerHomeClub BookerInterClub
+            152314 Adderley, JimBlue Springs Blue Springs 9/2/2025 09:00:00 9/1/2025 14:24:38 1 Tuesday MEMBER ONTARIOPL PL Blue Springs 0 152314 Adderley, Jim Blue Springs 0
+            152314 Adderley, JimBlue Springs Heron Point 7/29/202509:10:00 7/24/2025 10:58:57 5 Tuesday MEMBER ONTARIOPL PL Blue Springs 1 152314 Adderley, Jim Blue Springs 1
+            152314 Adderley, JimBlue Springs RattleSnake Point-Ac9/2/2025 17:45:00 8/31/2025 07:07:58 2 Tuesday ACADEMY PL PL Blue Springs Web-User 1 152314 Adderley, Jim Blue Springs 1
+        """.trimIndent()
+        val parser = StructuredPdfRoundParser(FakeExtractor(text), VerificationProperties(20))
+
+        val parsed = parser.parse(ByteArray(0))
+
+        assertEquals("Adderley, Jim", parsed.playerName)
+        assertEquals("152314", parsed.memberId)
+        assertEquals("Blue Springs", parsed.homeCourse)
+        assertEquals(listOf(LocalDate.of(2025, 9, 2), LocalDate.of(2025, 7, 29)), parsed.rounds.map { it.playedDate })
+        assertEquals("Blue Springs", parsed.rounds.first().playDistance)
+        assertEquals("Heron Point", parsed.rounds.last().playDistance)
+    }
+
+    @Test
     fun `throws when no round rows can be detected`() {
         val parser = StructuredPdfRoundParser(FakeExtractor("Ellis, Dean"), VerificationProperties(20))
 

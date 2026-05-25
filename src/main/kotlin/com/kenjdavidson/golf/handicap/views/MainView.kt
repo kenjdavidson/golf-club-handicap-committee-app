@@ -7,6 +7,7 @@ import com.kenjdavidson.golf.handicap.verification.SingleFileVerificationService
 import com.kenjdavidson.golf.handicap.verification.VerificationProcessingException
 import com.kenjdavidson.golf.handicap.verification.VerificationStatus
 import com.vaadin.flow.component.html.Div
+import com.vaadin.flow.component.html.Paragraph
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
@@ -79,7 +80,7 @@ class MainView(
         } catch (exception: VerificationProcessingException) {
             val message = exception.message ?: AppMessages.translateCurrent("main.status.failed")
             publishStatus(message)
-            verificationResult.removeAll()
+            renderError(message)
         }
     }
 
@@ -106,6 +107,11 @@ class MainView(
         }
     }
 
+    private fun renderError(message: String) {
+        verificationResult.removeAll()
+        verificationResult.add(Paragraph(message))
+    }
+
     private fun statusText(status: VerificationStatus): String {
         return when (status) {
             VerificationStatus.PASS -> AppMessages.translateCurrent("main.status.complete.pass")
@@ -118,5 +124,4 @@ class MainView(
         eventPublisher.publishEvent(StatusUpdateEvent(message))
     }
 }
-
 
