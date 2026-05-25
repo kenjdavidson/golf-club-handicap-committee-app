@@ -25,6 +25,7 @@ src/main/bundles
 .vscode/*
 !.vscode/tasks.json
 !.vscode/launch.json
+!.vscode/settings.json
 .eclipse/
 *.classpath
 *.project
