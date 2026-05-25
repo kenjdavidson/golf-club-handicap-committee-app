@@ -3,11 +3,14 @@ package com.kenjdavidson.golf.handicap.views
 import com.kenjdavidson.golf.handicap.components.StatusUpdateEvent
 import com.kenjdavidson.golf.handicap.i18n.AppMessages
 import com.kenjdavidson.golf.handicap.verification.FileVerificationResult
+import com.kenjdavidson.golf.handicap.verification.NonUniqueMemberFoundException
 import com.kenjdavidson.golf.handicap.verification.SingleFileVerificationService
 import com.kenjdavidson.golf.handicap.verification.VerificationProcessingException
 import com.kenjdavidson.golf.handicap.verification.VerificationStatus
 import com.vaadin.flow.component.html.Div
+import com.vaadin.flow.component.html.ListItem
 import com.vaadin.flow.component.html.Paragraph
+import com.vaadin.flow.component.html.UnorderedList
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
@@ -69,6 +72,10 @@ class MainView(
             val result = singleFileVerificationService.verify(fileName, fileBytes, authenticatedUser)
             renderResult(result)
             publishStatus(statusText(result.status))
+        } catch (exception: NonUniqueMemberFoundException) {
+            val message = AppMessages.translateCurrent("main.status.failed")
+            publishStatus(message)
+            renderCandidates(exception)
         } catch (exception: VerificationProcessingException) {
             val message = exception.message ?: AppMessages.translateCurrent("main.status.failed")
             publishStatus(message)
@@ -102,6 +109,18 @@ class MainView(
     private fun renderError(message: String) {
         verificationResult.removeAll()
         verificationResult.add(Paragraph(message))
+    }
+
+    private fun renderCandidates(exception: NonUniqueMemberFoundException) {
+        verificationResult.removeAll()
+        verificationResult.add(Paragraph(exception.message))
+        val list = UnorderedList()
+        exception.candidates.forEach { candidate ->
+            val label = listOfNotNull(candidate.name, candidate.club, candidate.region)
+                .joinToString(" — ")
+            list.add(ListItem(label))
+        }
+        verificationResult.add(list)
     }
 
     private fun statusText(status: VerificationStatus): String {
