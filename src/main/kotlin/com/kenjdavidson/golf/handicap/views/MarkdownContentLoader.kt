@@ -7,12 +7,16 @@ import java.nio.charset.StandardCharsets
 import java.util.Locale
 
 @Component
-class AboutContentLoader {
-    fun requireMarkdown(locale: Locale): String {
+class MarkdownContentLoader {
+    fun requireLocalizedMarkdown(
+        resourcePrefix: String,
+        locale: Locale,
+        fallbackLanguage: String = Locale.ENGLISH.language
+    ): String {
         val language = AppMessages.normalizeLocale(locale).language
-        return readMarkdown("about/about_$language.md")
-            ?: readMarkdown("about/about_en.md")
-            ?: throw IllegalStateException("Missing about markdown resources")
+        return readMarkdown("${resourcePrefix}_$language.md")
+            ?: readMarkdown("${resourcePrefix}_$fallbackLanguage.md")
+            ?: throw IllegalStateException("Missing markdown resources for prefix '$resourcePrefix'")
     }
 
     private fun readMarkdown(resourcePath: String): String? {
