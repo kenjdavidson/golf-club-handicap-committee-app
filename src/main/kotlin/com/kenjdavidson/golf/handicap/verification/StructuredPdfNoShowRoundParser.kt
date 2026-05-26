@@ -134,7 +134,7 @@ class StructuredPdfNoShowRoundParser(
 
     private companion object {
         val ROW_START_REGEX = Regex("""^"?\d{1,2}/\d{1,2}/\d{4}\b.*""")
-        val DATE_REGEX = Regex("\\b(\\d{1,2})/(\\d{1,2})/(\\d{4})\\d*\\b")
+        val DATE_REGEX = Regex("\\b(\\d{1,2})/(\\d{1,2})/(\\d{4})\\b")
         val PARSER_FORMATTER = DateTimeFormatterBuilder()
             .appendValue(ChronoField.MONTH_OF_YEAR)
             .appendLiteral('/')
