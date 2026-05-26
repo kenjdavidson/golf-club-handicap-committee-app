@@ -11,10 +11,12 @@ import java.util.Locale
 class StructuredPdfRoundParser(
     private val textExtractor: PdfTextExtractor,
     private val verificationProperties: VerificationProperties
-) : PdfRoundParser {
+) : RoundParser {
 
-    override fun parse(pdfBytes: ByteArray): ParsedPlayerHistory = operation("Parsing PDF rounds") {
-        val rawText = textExtractor.extract(pdfBytes)
+    override fun type(): ParserType = ParserType.PDF_TYPE_1
+
+    override fun parse(fileBytes: ByteArray): ParsedPlayerHistory = operation("Parsing PDF rounds") {
+        val rawText = textExtractor.extract(fileBytes)
         val normalizedLines = rawText.lines().map(String::trim).filter(String::isNotBlank)
         val ownerName = OWNER_NAME_REGEX.find(rawText)?.value
         val rowChunks = reconstructRows(normalizedLines)
