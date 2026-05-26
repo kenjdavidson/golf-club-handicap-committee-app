@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Value
 @PermitAll
 class AboutView(
     private val markdownContentLoader: MarkdownContentLoader,
-    @Value("\${app.ui.title: Golf Handicap App}") private val appTitle: String
+    @Value("\${app.ui.title:Golf Handicap App}") private val appTitle: String
 ) : VerticalLayout(), LocaleChangeObserver, HasDynamicTitle {
     private val title = H2()
     private val markdown = Markdown()
