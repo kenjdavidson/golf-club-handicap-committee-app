@@ -12,7 +12,7 @@ class LoginViewTest {
 
     @Test
     void doesNotRenderStatusBarContent() {
-        LoginView view = new LoginView("Handicap Committee App");
+        LoginView view = new LoginView();
 
         assertFalse(containsText(view, "Status: Ready"));
         assertFalse(containsText(view, "Logged in as"));

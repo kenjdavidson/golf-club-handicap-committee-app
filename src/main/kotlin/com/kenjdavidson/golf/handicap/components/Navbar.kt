@@ -17,7 +17,6 @@ import com.vaadin.flow.i18n.LocaleChangeObserver
 import com.vaadin.flow.server.VaadinSession
 import com.vaadin.flow.spring.security.AuthenticationContext
 import com.vaadin.flow.theme.lumo.LumoUtility
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
@@ -26,13 +25,12 @@ import java.util.Locale
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 class Navbar(
-    @Value("\${app.ui.title: Golf Handicap App}") appTitle: String,
     private val authenticationContext: AuthenticationContext,
     userProfileResolver: UserProfileResolver
 ) : HorizontalLayout(), LocaleChangeObserver {
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
     private val userProfile = userProfileResolver.buildUserProfile(authenticatedUser)
-    private val heading = H2("⛳ $appTitle").apply {
+    private val heading = H2("⛳ ${AppMessages.translateCurrent("app.title")}").apply {
         addClassNames(LumoUtility.Margin.Bottom.XSMALL)
     }
     private val avatar = Avatar(userProfile.displayName).apply {
@@ -115,6 +113,7 @@ class Navbar(
     }
 
     private fun refreshLocalizedText(locale: Locale) {
+        heading.text = "⛳ ${AppMessages.translate(locale, "app.title")}"
         avatar.element.setAttribute("aria-label", AppMessages.translate(locale, "menu.openUserMenu"))
         memberNumber.text = buildMemberNumber(locale)
         refreshUserMenu(locale)

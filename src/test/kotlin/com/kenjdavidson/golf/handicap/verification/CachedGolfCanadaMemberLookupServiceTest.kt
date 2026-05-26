@@ -25,9 +25,9 @@ class CachedGolfCanadaMemberLookupServiceTest {
 
     @Test
     fun `findMember returns match via name search when single result matches home course`() {
-        val entry = MemberSearchEntry().individualId(220507L).name("Adderley, Jim").club("Blue Springs Golf Club")
+        val entry = MemberSearchEntry().individualId(220507L).name("Adderley, Jim").club("Handicap Committee Golf Club")
         val response = MemberSearchResponse().totalCount(1).members(listOf(entry))
-        val profile = Profile().individualId(220507L).cardId("6104412250").homeCourse("Blue Springs Golf Club")
+        val profile = Profile().individualId(220507L).cardId("6104412250").homeCourse("Handicap Committee Golf Club")
         `when`(membersApi.searchMembers(0, 20, "Adderley, Jim")).thenReturn(response)
         `when`(membersApi.getProfile(220507L)).thenReturn(profile)
 
@@ -35,7 +35,7 @@ class CachedGolfCanadaMemberLookupServiceTest {
             ParsedPlayerHistory(
                 playerName = "Adderley, Jim",
                 memberId = "999999",
-                homeCourse = "Blue Springs",
+                homeCourse = "Handicap Committee",
                 rounds = emptyList()
             )
         )
@@ -43,7 +43,7 @@ class CachedGolfCanadaMemberLookupServiceTest {
         assertEquals(220507L, match?.individualId)
         assertEquals("Adderley, Jim", match?.fullName)
         assertEquals("6104412250", match?.golfCanadaCardId)
-        assertEquals("Blue Springs Golf Club", match?.homeCourse)
+        assertEquals("Handicap Committee Golf Club", match?.homeCourse)
         assertNotNull(match?.profile)
     }
 
@@ -143,7 +143,7 @@ class CachedGolfCanadaMemberLookupServiceTest {
 
     @Test
     fun `findMember throws verification exception when profile lookup fails during name-search path`() {
-        val entry = MemberSearchEntry().individualId(220507L).name("Adderley, Jim").club("Blue Springs Golf Club")
+        val entry = MemberSearchEntry().individualId(220507L).name("Adderley, Jim").club("Handicap Committee Golf Club")
         val response = MemberSearchResponse().totalCount(1).members(listOf(entry))
         `when`(membersApi.searchMembers(0, 20, "Adderley, Jim")).thenReturn(response)
         `when`(membersApi.getProfile(220507L)).thenThrow(RuntimeException("Profile lookup failed"))
@@ -153,7 +153,7 @@ class CachedGolfCanadaMemberLookupServiceTest {
                 ParsedPlayerHistory(
                     playerName = "Adderley, Jim",
                     memberId = null,
-                    homeCourse = "Blue Springs",
+                    homeCourse = "Handicap Committee",
                     rounds = emptyList()
                 )
             )
@@ -219,16 +219,16 @@ class CachedGolfCanadaMemberLookupServiceTest {
 
     @Test
     fun `findMember caches repeated lookups for same parsed key`() {
-        val entry = MemberSearchEntry().individualId(220507L).name("Adderley, Jim").club("Blue Springs Golf Club")
+        val entry = MemberSearchEntry().individualId(220507L).name("Adderley, Jim").club("Handicap Committee Golf Club")
         val response = MemberSearchResponse().totalCount(1).members(listOf(entry))
-        val profile = Profile().individualId(220507L).cardId("6104412250").homeCourse("Blue Springs Golf Club")
+        val profile = Profile().individualId(220507L).cardId("6104412250").homeCourse("Handicap Committee Golf Club")
         `when`(membersApi.searchMembers(0, 20, "Adderley, Jim")).thenReturn(response)
         `when`(membersApi.getProfile(220507L)).thenReturn(profile)
 
         val parsed = ParsedPlayerHistory(
             playerName = "Adderley, Jim",
             memberId = "999999",
-            homeCourse = "Blue Springs",
+            homeCourse = "Handicap Committee",
             rounds = emptyList()
         )
 
@@ -239,4 +239,3 @@ class CachedGolfCanadaMemberLookupServiceTest {
         verify(membersApi, times(1)).getProfile(220507L)
     }
 }
-
