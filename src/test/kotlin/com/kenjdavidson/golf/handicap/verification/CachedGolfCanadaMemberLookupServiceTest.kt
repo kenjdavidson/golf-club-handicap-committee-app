@@ -24,7 +24,7 @@ class CachedGolfCanadaMemberLookupServiceTest {
     // ── Name-search primary path ───────────────────────────────────────────────
 
     @Test
-    fun `findMember returns match via name search when single result matches home course`() {
+    fun `findMember returns match via name search when single result is returned`() {
         val entry = MemberSearchEntry().individualId(220507L).name("Adderley, Jim").club("Handicap Committee Golf Club")
         val response = MemberSearchResponse().totalCount(1).members(listOf(entry))
         val profile = Profile().individualId(220507L).cardId("6104412250").homeCourse("Handicap Committee Golf Club")
@@ -35,7 +35,7 @@ class CachedGolfCanadaMemberLookupServiceTest {
             ParsedPlayerHistory(
                 playerName = "Adderley, Jim",
                 memberId = "999999",
-                homeCourse = "Handicap Committee",
+                homeCourse = null,
                 rounds = emptyList()
             )
         )
@@ -48,9 +48,8 @@ class CachedGolfCanadaMemberLookupServiceTest {
     }
 
     @Test
-    fun `findMember falls back to memberId profile lookup when name search returns no home course match`() {
-        val entry = MemberSearchEntry().individualId(111L).name("Ellis, Dean").club("Other Club")
-        val response = MemberSearchResponse().totalCount(1).members(listOf(entry))
+    fun `findMember falls back to memberId profile lookup when name search returns no members`() {
+        val response = MemberSearchResponse().totalCount(0).members(emptyList())
         val profile = Profile().individualId(152314L).cardId("6100011234").homeCourse("Snake Point Golf Club")
         `when`(membersApi.searchMembers(0, 20, "Ellis, Dean")).thenReturn(response)
         `when`(membersApi.getProfile(152314L)).thenReturn(profile)
@@ -59,7 +58,7 @@ class CachedGolfCanadaMemberLookupServiceTest {
             ParsedPlayerHistory(
                 playerName = "Ellis, Dean",
                 memberId = "152314",
-                homeCourse = "Snake Point",
+                homeCourse = null,
                 rounds = emptyList()
             )
         )
@@ -83,7 +82,7 @@ class CachedGolfCanadaMemberLookupServiceTest {
                 ParsedPlayerHistory(
                     playerName = "Smith, John",
                     memberId = "152314",
-                    homeCourse = "Snake Point",
+                    homeCourse = null,
                     rounds = emptyList()
                 )
             )
@@ -99,7 +98,7 @@ class CachedGolfCanadaMemberLookupServiceTest {
             ParsedPlayerHistory(
                 playerName = "Ellis, Dean",
                 memberId = null,
-                homeCourse = "Snake Point",
+                homeCourse = null,
                 rounds = emptyList()
             )
         )
@@ -108,10 +107,10 @@ class CachedGolfCanadaMemberLookupServiceTest {
     }
 
     @Test
-    fun `findMember returns null when both name search and memberId profile lookup find no home course match`() {
+    fun `findMember returns memberId profile match when name search misses and memberId is present`() {
         val response = MemberSearchResponse().totalCount(0).members(emptyList())
         `when`(membersApi.searchMembers(0, 20, "Ellis, Dean")).thenReturn(response)
-        `when`(membersApi.getProfile(152314L)).thenReturn(Profile().homeCourse("Different Course"))
+        `when`(membersApi.getProfile(152314L)).thenReturn(Profile().cardId("6100011234").homeCourse("Different Course"))
 
         val match = service.findMember(
             ParsedPlayerHistory(
@@ -122,7 +121,8 @@ class CachedGolfCanadaMemberLookupServiceTest {
             )
         )
 
-        assertNull(match)
+        assertEquals(152314L, match?.individualId)
+        assertEquals("6100011234", match?.golfCanadaCardId)
     }
 
     @Test
@@ -134,7 +134,7 @@ class CachedGolfCanadaMemberLookupServiceTest {
                 ParsedPlayerHistory(
                     playerName = "Ellis, Dean",
                     memberId = "152314",
-                    homeCourse = "Snake Point",
+                    homeCourse = null,
                     rounds = emptyList()
                 )
             )
@@ -153,7 +153,7 @@ class CachedGolfCanadaMemberLookupServiceTest {
                 ParsedPlayerHistory(
                     playerName = "Adderley, Jim",
                     memberId = null,
-                    homeCourse = "Handicap Committee",
+                    homeCourse = null,
                     rounds = emptyList()
                 )
             )
@@ -171,7 +171,7 @@ class CachedGolfCanadaMemberLookupServiceTest {
             ParsedPlayerHistory(
                 playerName = "  ",
                 memberId = "152314",
-                homeCourse = "Snake Point",
+                homeCourse = null,
                 rounds = emptyList()
             )
         )
@@ -189,7 +189,7 @@ class CachedGolfCanadaMemberLookupServiceTest {
             ParsedPlayerHistory(
                 playerName = null,
                 memberId = null,
-                homeCourse = "Snake Point",
+                homeCourse = null,
                 rounds = emptyList()
             )
         )
@@ -208,7 +208,7 @@ class CachedGolfCanadaMemberLookupServiceTest {
                 ParsedPlayerHistory(
                     playerName = "Ellis, Dean",
                     memberId = "152314",
-                    homeCourse = "Snake Point",
+                    homeCourse = null,
                     rounds = emptyList()
                 )
             )
@@ -228,7 +228,7 @@ class CachedGolfCanadaMemberLookupServiceTest {
         val parsed = ParsedPlayerHistory(
             playerName = "Adderley, Jim",
             memberId = "999999",
-            homeCourse = "Handicap Committee",
+            homeCourse = null,
             rounds = emptyList()
         )
 
