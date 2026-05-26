@@ -2,7 +2,8 @@ package com.kenjdavidson.golf.handicap.views
 
 import com.kenjdavidson.golf.handicap.i18n.AppMessages
 import com.kenjdavidson.golf.handicap.settings.AppSettings
-import com.kenjdavidson.golf.handicap.verification.ParserType
+import com.kenjdavidson.golf.handicap.verification.ParserDefinition
+import com.kenjdavidson.golf.handicap.verification.RoundParser
 import com.vaadin.flow.component.html.H2
 import com.vaadin.flow.component.html.Paragraph
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
@@ -17,16 +18,12 @@ import jakarta.annotation.security.PermitAll
 @PageTitle("Settings | Handicap Committee App")
 @PermitAll
 class SettingsView(
-    private val appSettings: AppSettings
+    private val appSettings: AppSettings,
+    private val roundParsers: List<RoundParser>
 ) : VerticalLayout(), LocaleChangeObserver {
 
     private val title = H2()
-
-    private val parserTypeSelect = Select<ParserType>().apply {
-        setItems(*ParserType.entries.toTypedArray())
-        value = appSettings.selectedParserType
-    }
-
+    private val parserTypeSelect = Select<RoundParser>()
     private val parserTypeDescription = Paragraph()
 
     init {
@@ -36,12 +33,15 @@ class SettingsView(
 
         title.text = AppMessages.translateCurrent("settings.title")
 
+        parserTypeSelect.setItems(roundParsers)
+        parserTypeSelect.value = appSettings.selectedParser
+
         refreshParserTypeLabels()
-        updateParserTypeDescription(appSettings.selectedParserType)
+        updateParserDescription(appSettings.selectedParser)
 
         parserTypeSelect.addValueChangeListener { event ->
-            appSettings.selectedParserType = event.value
-            updateParserTypeDescription(event.value)
+            appSettings.selectedParser = event.value
+            updateParserDescription(event.value)
         }
 
         add(title, parserTypeSelect, parserTypeDescription)
@@ -50,20 +50,25 @@ class SettingsView(
     override fun localeChange(event: LocaleChangeEvent) {
         title.text = AppMessages.translate(event.locale, "settings.title")
         refreshParserTypeLabels()
-        updateParserTypeDescription(parserTypeSelect.value)
+        updateParserDescription(parserTypeSelect.value)
     }
 
     private fun refreshParserTypeLabels() {
         parserTypeSelect.label = AppMessages.translateCurrent("settings.parser.type.label")
-        parserTypeSelect.setItemLabelGenerator { type ->
-            AppMessages.translateCurrent(type.displayNameKey)
+        parserTypeSelect.setItemLabelGenerator { parser ->
+            parser.javaClass.getAnnotation(ParserDefinition::class.java)
+                ?.displayNameKey
+                ?.let { AppMessages.translateCurrent(it) }
+                ?: parser.javaClass.simpleName
         }
     }
 
-    private fun updateParserTypeDescription(type: ParserType?) {
-        parserTypeDescription.text = type?.let {
-            AppMessages.translateCurrent(it.descriptionKey)
-        } ?: ""
+    private fun updateParserDescription(parser: RoundParser?) {
+        parserTypeDescription.text = parser
+            ?.javaClass?.getAnnotation(ParserDefinition::class.java)
+            ?.descriptionKey
+            ?.let { AppMessages.translateCurrent(it) }
+            ?: ""
     }
 }
 

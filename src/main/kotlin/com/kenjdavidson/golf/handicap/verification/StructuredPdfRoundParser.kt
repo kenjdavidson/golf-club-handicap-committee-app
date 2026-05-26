@@ -1,6 +1,7 @@
 package com.kenjdavidson.golf.handicap.verification
 
 import com.kenjdavidson.golf.handicap.util.operation
+import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.format.DateTimeFormatterBuilder
@@ -8,12 +9,15 @@ import java.time.temporal.ChronoField
 import java.util.Locale
 
 @Service
+@Order(1)
+@ParserDefinition(
+    displayNameKey = "settings.parser.type.pdfType1.name",
+    descriptionKey = "settings.parser.type.pdfType1.description"
+)
 class StructuredPdfRoundParser(
     private val textExtractor: PdfTextExtractor,
     private val verificationProperties: VerificationProperties
 ) : RoundParser {
-
-    override fun type(): ParserType = ParserType.PDF_TYPE_1
 
     override fun parse(fileBytes: ByteArray): ParsedPlayerHistory = operation("Parsing PDF rounds") {
         val rawText = textExtractor.extract(fileBytes)

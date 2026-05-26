@@ -1,10 +1,10 @@
 package com.kenjdavidson.golf.handicap.settings
 
-import com.kenjdavidson.golf.handicap.verification.ParserType
+import com.kenjdavidson.golf.handicap.verification.RoundParser
 import org.springframework.stereotype.Component
 
 @Component
-class AppSettings {
+class AppSettings(parsers: List<RoundParser>) {
     @Volatile
-    var selectedParserType: ParserType = ParserType.PDF_TYPE_1
+    var selectedParser: RoundParser = parsers.first()
 }
