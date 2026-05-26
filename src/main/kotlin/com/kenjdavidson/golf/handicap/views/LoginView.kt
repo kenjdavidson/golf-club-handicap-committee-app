@@ -16,7 +16,6 @@ import com.vaadin.flow.router.Route
 import com.vaadin.flow.server.auth.AnonymousAllowed
 import com.vaadin.flow.theme.lumo.Lumo
 import com.vaadin.flow.theme.lumo.LumoUtility
-import org.springframework.beans.factory.annotation.Value
 
 @Route("login")
 @PageTitle("Login | Handicap Committee App")
@@ -25,10 +24,9 @@ import org.springframework.beans.factory.annotation.Value
 @StyleSheet(Lumo.UTILITY_STYLESHEET)
 @StyleSheet("context://styles/global.css")
 class LoginView(
-    @Value("\${app.ui.title:Handicap Committee App}") private val appTitle: String,
 ) : VerticalLayout(), BeforeEnterObserver, LocaleChangeObserver {
     private val loginForm = LoginForm()
-    private val heading = H2("⛳ $appTitle").apply {
+    private val heading = H2("⛳ ${AppMessages.translateCurrent("app.title")}").apply {
         addClassNames(LumoUtility.Margin.Bottom.XSMALL)
     }
     private val message = Paragraph().apply {
@@ -63,6 +61,7 @@ class LoginView(
     }
 
     override fun localeChange(event: LocaleChangeEvent) {
+        heading.text = "⛳ ${AppMessages.translate(event.locale, "app.title")}"
         message.text = AppMessages.translate(event.locale, "login.signInMessage")
     }
 

@@ -68,7 +68,7 @@ class MainViewTest {
         );
         SingleFileVerificationService verificationService = mock(SingleFileVerificationService.class);
         ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
-        Navbar navbar = new Navbar("Golf Handicap App", authenticationContext, userProfileResolver);
+        Navbar navbar = new Navbar(authenticationContext, userProfileResolver);
         StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver);
 
         // Vaadin 25 requires an active service/UI context for several components:
