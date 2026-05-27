@@ -1,8 +1,12 @@
-package com.kenjdavidson.golf.handicap.verification
+package com.kenjdavidson.golf.handicap.verification.api
 
 import com.kenjdavidson.golf.handicap.golfcanada.api.MembersApi
 import com.kenjdavidson.golf.handicap.golfcanada.model.Profile
 import com.kenjdavidson.golf.handicap.settings.AppSettings
+import com.kenjdavidson.golf.handicap.verification.GolfCanadaMemberMatch
+import com.kenjdavidson.golf.handicap.verification.NonUniqueMemberFoundException
+import com.kenjdavidson.golf.handicap.verification.ParsedPlayerHistory
+import com.kenjdavidson.golf.handicap.verification.VerificationProcessingException
 import org.springframework.stereotype.Service
 import java.util.concurrent.ConcurrentHashMap
 

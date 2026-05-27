@@ -1,6 +1,10 @@
-package com.kenjdavidson.golf.handicap.verification
+package com.kenjdavidson.golf.handicap.verification.file
 
 import com.kenjdavidson.golf.handicap.util.operation
+import com.kenjdavidson.golf.handicap.verification.ParsedPlayerHistory
+import com.kenjdavidson.golf.handicap.verification.ParsedRound
+import com.kenjdavidson.golf.handicap.verification.VerificationProcessingException
+import com.kenjdavidson.golf.handicap.verification.VerificationSettings
 import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Service
 import java.time.LocalDate

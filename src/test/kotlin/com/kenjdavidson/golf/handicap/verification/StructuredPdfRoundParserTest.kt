@@ -1,5 +1,7 @@
 package com.kenjdavidson.golf.handicap.verification
 
+import com.kenjdavidson.golf.handicap.verification.file.PdfTextExtractor
+import com.kenjdavidson.golf.handicap.verification.file.StructuredPdfRoundParser
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertThrows

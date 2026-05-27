@@ -3,6 +3,7 @@ package com.kenjdavidson.golf.handicap.verification
 import com.kenjdavidson.golf.handicap.golfcanada.api.MembersApi
 import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryEntry
 import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryResponse
+import com.kenjdavidson.golf.handicap.verification.api.CachingGolfCanadaHistoryLookupService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock

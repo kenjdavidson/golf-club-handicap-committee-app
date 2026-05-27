@@ -1,5 +1,7 @@
 package com.kenjdavidson.golf.handicap.verification
 
+import com.kenjdavidson.golf.handicap.verification.file.ClubLinkPdfRoundParser
+import com.kenjdavidson.golf.handicap.verification.file.PdfTextExtractor
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows

@@ -2,6 +2,7 @@ package com.kenjdavidson.golf.handicap.verification
 
 import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryEntry
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser
+import com.kenjdavidson.golf.handicap.verification.steps.CompareDatesVerificationStep
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test

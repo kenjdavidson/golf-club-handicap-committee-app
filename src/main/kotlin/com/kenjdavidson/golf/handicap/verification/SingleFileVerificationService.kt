@@ -2,6 +2,7 @@ package com.kenjdavidson.golf.handicap.verification
 
 import com.kenjdavidson.golf.handicap.components.StatusUpdateEvent
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser
+import com.kenjdavidson.golf.handicap.verification.steps.SingleFileVerificationStep
 import com.kenjdavidson.golf.handicap.util.operation
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service

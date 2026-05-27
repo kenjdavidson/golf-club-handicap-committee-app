@@ -1,5 +1,11 @@
-package com.kenjdavidson.golf.handicap.verification
+package com.kenjdavidson.golf.handicap.verification.steps
 
+import com.kenjdavidson.golf.handicap.verification.DateMatchVerificationService
+import com.kenjdavidson.golf.handicap.verification.FileVerificationResult
+import com.kenjdavidson.golf.handicap.verification.MemberProfile
+import com.kenjdavidson.golf.handicap.verification.RoundComparison
+import com.kenjdavidson.golf.handicap.verification.VerificationContext
+import com.kenjdavidson.golf.handicap.verification.VerificationProcessingException
 import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Component
 
