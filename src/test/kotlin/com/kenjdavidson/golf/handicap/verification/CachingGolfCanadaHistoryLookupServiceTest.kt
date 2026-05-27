@@ -19,9 +19,10 @@ import java.time.ZoneOffset
 class CachingGolfCanadaHistoryLookupServiceTest {
     private val membersApi = mock(MembersApi::class.java)
     private val clock = MutableClock(Instant.parse("2026-05-19T00:00:00Z"), ZoneOffset.UTC)
+    private val verificationSettings = VerificationSettings(VerificationProperties(20))
     private val service = CachingGolfCanadaHistoryLookupService(
         membersApi = membersApi,
-        verificationProperties = VerificationProperties(20),
+        verificationSettings = verificationSettings,
         clock = clock
     )
 

@@ -16,7 +16,7 @@ import java.util.Locale
 )
 class StructuredPdfRoundParser(
     private val textExtractor: PdfTextExtractor,
-    private val verificationProperties: VerificationProperties
+    private val verificationSettings: VerificationSettings
 ) : RoundParser {
 
     override fun parse(fileBytes: ByteArray): ParsedPlayerHistory = operation("Parsing PDF rounds") {
@@ -32,7 +32,7 @@ class StructuredPdfRoundParser(
 
         val rounds = rowChunks.mapNotNull { parseRound(it, ownerName, inferredHomeCourse) }
             .sortedByDescending { it.playedDate }
-            .take(verificationProperties.maxRounds)
+            .take(verificationSettings.maxRounds)
 
         if (rounds.isEmpty()) {
             throw VerificationProcessingException("No valid played dates were found in the uploaded PDF.")
