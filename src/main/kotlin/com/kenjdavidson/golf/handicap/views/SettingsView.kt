@@ -2,9 +2,9 @@ package com.kenjdavidson.golf.handicap.views
 
 import com.kenjdavidson.golf.handicap.i18n.AppMessages
 import com.kenjdavidson.golf.handicap.settings.AppSettings
-import com.kenjdavidson.golf.handicap.verification.ParserDefinition
-import com.kenjdavidson.golf.handicap.verification.RoundParser
 import com.kenjdavidson.golf.handicap.verification.VerificationSettings
+import com.kenjdavidson.golf.handicap.verification.file.ParserDefinition
+import com.kenjdavidson.golf.handicap.verification.file.RoundParser
 import com.vaadin.flow.component.html.H2
 import com.vaadin.flow.component.html.Paragraph
 import com.vaadin.flow.component.orderedlayout.VerticalLayout

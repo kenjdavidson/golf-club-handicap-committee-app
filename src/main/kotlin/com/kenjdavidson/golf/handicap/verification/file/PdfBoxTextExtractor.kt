@@ -1,5 +1,6 @@
-package com.kenjdavidson.golf.handicap.verification
+package com.kenjdavidson.golf.handicap.verification.file
 
+import com.kenjdavidson.golf.handicap.verification.VerificationProcessingException
 import org.apache.pdfbox.Loader
 import org.apache.pdfbox.text.PDFTextStripper
 import org.springframework.stereotype.Component

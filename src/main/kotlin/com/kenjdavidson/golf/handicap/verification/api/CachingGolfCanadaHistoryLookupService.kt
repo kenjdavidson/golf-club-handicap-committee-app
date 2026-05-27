@@ -1,7 +1,9 @@
-package com.kenjdavidson.golf.handicap.verification
+package com.kenjdavidson.golf.handicap.verification.api
 
 import com.kenjdavidson.golf.handicap.golfcanada.api.MembersApi
 import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryEntry
+import com.kenjdavidson.golf.handicap.verification.VerificationProcessingException
+import com.kenjdavidson.golf.handicap.verification.VerificationSettings
 import org.springframework.stereotype.Service
 import java.time.Clock
 import java.time.LocalDate

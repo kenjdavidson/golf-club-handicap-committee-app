@@ -5,6 +5,8 @@ import com.kenjdavidson.golf.handicap.golfcanada.model.MemberSearchEntry
 import com.kenjdavidson.golf.handicap.golfcanada.model.MemberSearchResponse
 import com.kenjdavidson.golf.handicap.golfcanada.model.Profile
 import com.kenjdavidson.golf.handicap.settings.AppSettings
+import com.kenjdavidson.golf.handicap.verification.api.CachedGolfCanadaMemberLookupService
+import com.kenjdavidson.golf.handicap.verification.file.RoundParser
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull

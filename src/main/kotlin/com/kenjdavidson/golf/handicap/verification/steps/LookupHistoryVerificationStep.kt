@@ -1,5 +1,9 @@
-package com.kenjdavidson.golf.handicap.verification
+package com.kenjdavidson.golf.handicap.verification.steps
 
+import com.kenjdavidson.golf.handicap.verification.VerificationContext
+import com.kenjdavidson.golf.handicap.verification.VerificationProcessingException
+import com.kenjdavidson.golf.handicap.verification.api.GolfCanadaHistoryLookupService
+import com.kenjdavidson.golf.handicap.verification.api.GolfCanadaMemberLookupService
 import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Component
 

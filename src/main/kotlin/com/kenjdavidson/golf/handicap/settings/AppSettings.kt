@@ -1,6 +1,6 @@
 package com.kenjdavidson.golf.handicap.settings
 
-import com.kenjdavidson.golf.handicap.verification.RoundParser
+import com.kenjdavidson.golf.handicap.verification.file.RoundParser
 import org.springframework.stereotype.Component
 
 @Component
