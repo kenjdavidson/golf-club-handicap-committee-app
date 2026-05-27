@@ -17,6 +17,8 @@ For local development or testing against a mock auth endpoint, the Golf Canada b
 
 - Build a self-contained zip for the current platform: `./gradlew -Pproduction jpackageAppArchive`
 - Create a Windows installer locally: `./gradlew -Pproduction jpackageInstaller`
+- Desktop package icons are sourced from `src/main/resources/static/icons` (same icon used by browser toolbar and jpackage bundles)
+- Override package metadata when needed: `-Pjpackage.mac.package.identifier=... -Pjpackage.mac.package.name=... -Pjpackage.win.upgrade.uuid=...`
 - Prepare a date-based snapshot tag without bumping the project version: `./gradlew prepareSnapshotRelease`
 - Prepare a semantic patch release and bump to the next patch snapshot: `./gradlew preparePatchRelease`
 - Prepare a semantic minor release and bump to the next minor snapshot: `./gradlew prepareMinorRelease`
