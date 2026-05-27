@@ -199,14 +199,6 @@ tasks.register('jpackageAppImage', Exec) {
             '--dest', outputDir.absolutePath
         ]
 
-        if (isWindows) {
-            command.addAll([
-                '--win-shortcut',
-                '--win-menu',
-                '--win-menu-group', 'Golf Club'
-            ])
-        }
-
         commandLine(command)
     }
 }
