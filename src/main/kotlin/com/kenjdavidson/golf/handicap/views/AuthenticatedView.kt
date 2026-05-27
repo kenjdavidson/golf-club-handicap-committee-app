@@ -27,21 +27,9 @@ class AuthenticatedView(
 ) : AppLayout(), LocaleChangeObserver {
     private val singleFileButton = Button().apply {
         addClassName("main-menu-action-button")
-        addClickListener {
-            ui.ifPresent { currentUi ->
-                currentUi.navigate(MainView::class.java)
-            }
-            mainMenuPanel.isVisible = false
-        }
     }
     private val workspaceButton = Button().apply {
         addClassName("main-menu-action-button")
-        addClickListener {
-            ui.ifPresent { currentUi ->
-                currentUi.navigate(WorkspaceView::class.java)
-            }
-            mainMenuPanel.isVisible = false
-        }
     }
     private val mainMenuPanel = HorizontalLayout(singleFileButton, workspaceButton).apply {
         addClassName("main-menu-panel")
@@ -57,6 +45,18 @@ class AuthenticatedView(
 
     init {
         refreshLocalizedText(AppMessages.resolveLocale())
+        singleFileButton.addClickListener {
+            ui.ifPresent { currentUi ->
+                currentUi.navigate(MainView::class.java)
+            }
+            mainMenuPanel.isVisible = false
+        }
+        workspaceButton.addClickListener {
+            ui.ifPresent { currentUi ->
+                currentUi.navigate(WorkspaceView::class.java)
+            }
+            mainMenuPanel.isVisible = false
+        }
         navbar.addAppMenuToggleListener {
             mainMenuPanel.isVisible = !mainMenuPanel.isVisible
         }
