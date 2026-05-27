@@ -1,10 +1,10 @@
 package com.kenjdavidson.golf.handicap.verification.file
 
+import com.kenjdavidson.golf.handicap.settings.UserSettingsService
 import com.kenjdavidson.golf.handicap.util.operation
 import com.kenjdavidson.golf.handicap.verification.ParsedPlayerHistory
 import com.kenjdavidson.golf.handicap.verification.ParsedRound
 import com.kenjdavidson.golf.handicap.verification.VerificationProcessingException
-import com.kenjdavidson.golf.handicap.verification.VerificationSettings
 import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -20,7 +20,7 @@ import java.util.Locale
 )
 class ClubLinkPdfRoundParser(
     private val textExtractor: PdfTextExtractor,
-    private val verificationSettings: VerificationSettings
+    private val appSettings: UserSettingsService
 ) : RoundParser {
 
     override fun parse(fileBytes: ByteArray): ParsedPlayerHistory = operation("Parsing ClubLink PDF rounds") {
@@ -30,7 +30,7 @@ class ClubLinkPdfRoundParser(
         val playerName = extractPlayerName(lines)
         val rounds = lines.mapNotNull { parseRound(it) }
             .sortedByDescending { it.playedDate }
-            .take(verificationSettings.maxRounds)
+            .take(appSettings.maxRounds)
 
         if (rounds.isEmpty()) {
             throw VerificationProcessingException("No valid played dates were found in the uploaded PDF.")

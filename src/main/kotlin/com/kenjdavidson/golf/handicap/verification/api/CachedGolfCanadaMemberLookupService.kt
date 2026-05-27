@@ -2,7 +2,7 @@ package com.kenjdavidson.golf.handicap.verification.api
 
 import com.kenjdavidson.golf.handicap.golfcanada.api.MembersApi
 import com.kenjdavidson.golf.handicap.golfcanada.model.Profile
-import com.kenjdavidson.golf.handicap.settings.AppSettings
+import com.kenjdavidson.golf.handicap.settings.UserSettingsService
 import com.kenjdavidson.golf.handicap.verification.GolfCanadaMemberMatch
 import com.kenjdavidson.golf.handicap.verification.NonUniqueMemberFoundException
 import com.kenjdavidson.golf.handicap.verification.ParsedPlayerHistory
@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap
 @Service
 class CachedGolfCanadaMemberLookupService(
     private val membersApi: MembersApi,
-    private val appSettings: AppSettings
+    private val appSettings: UserSettingsService
 ) : GolfCanadaMemberLookupService {
     private val cache = ConcurrentHashMap<String, GolfCanadaMemberMatch?>()
 

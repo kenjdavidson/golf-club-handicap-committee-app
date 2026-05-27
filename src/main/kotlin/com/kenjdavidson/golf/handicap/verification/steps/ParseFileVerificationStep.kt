@@ -1,6 +1,6 @@
 package com.kenjdavidson.golf.handicap.verification.steps
 
-import com.kenjdavidson.golf.handicap.settings.AppSettings
+import com.kenjdavidson.golf.handicap.settings.UserSettingsService
 import com.kenjdavidson.golf.handicap.verification.VerificationContext
 import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Component
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 @Component
 @Order(100)
 class ParseFileVerificationStep(
-    private val appSettings: AppSettings
+    private val appSettings: UserSettingsService
 ) : SingleFileVerificationStep {
 
     override fun process(context: VerificationContext): VerificationContext {
