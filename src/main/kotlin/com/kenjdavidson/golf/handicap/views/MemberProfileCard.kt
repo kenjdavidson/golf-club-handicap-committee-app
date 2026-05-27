@@ -48,8 +48,7 @@ class MemberProfileCard(profile: MemberProfile) : VerticalLayout() {
 
         isPadding = true
         isSpacing = true
-        width = "280px"
-        style["flex-shrink"] = "0"
+        setWidthFull()
         style["background"] = "var(--lumo-base-color)"
         style["border"] = "1px solid var(--lumo-contrast-10pct)"
         style["border-radius"] = "var(--lumo-border-radius-m)"
@@ -74,4 +73,3 @@ class MemberProfileCard(profile: MemberProfile) : VerticalLayout() {
         return first + second
     }
 }
-

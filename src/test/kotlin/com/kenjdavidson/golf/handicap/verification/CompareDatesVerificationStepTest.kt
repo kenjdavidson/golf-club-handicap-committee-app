@@ -13,7 +13,7 @@ class CompareDatesVerificationStepTest {
     private val step = CompareDatesVerificationStep(DateMatchVerificationService())
 
     @Test
-    fun `builds date grouped comparisons including scheduled only and golf canada only rows`() {
+    fun `builds date grouped comparisons using parsed rounds as the source list`() {
         val context = VerificationContext(
             fileName = "rounds.pdf",
             fileBytes = byteArrayOf(1),
@@ -35,19 +35,16 @@ class CompareDatesVerificationStepTest {
 
         val result = step.process(context).result ?: error("Expected verification result")
 
-        assertEquals(listOf(LocalDate.of(2026, 5, 10), LocalDate.of(2026, 5, 9), LocalDate.of(2026, 5, 8)), result.roundComparisons.map { it.date })
+        assertEquals(listOf(LocalDate.of(2026, 5, 10), LocalDate.of(2026, 5, 9)), result.roundComparisons.map { it.date })
         assertEquals(true, result.roundComparisons[0].isMatched)
         assertEquals("Scheduled B", result.roundComparisons[1].scheduledRound?.playDistance)
         assertNull(result.roundComparisons[1].golfCanadaEntry)
-        assertNull(result.roundComparisons[2].scheduledRound)
-        assertEquals("GC B", result.roundComparisons[2].golfCanadaEntry?.course)
     }
 
     private fun parsedRound(date: LocalDate, distance: String) = ParsedRound(
         playedDate = date,
         playDistance = distance,
         courseGroup = null,
-        primaryClub = null,
-        playingPartners = emptyList()
+        primaryClub = null
     )
 }

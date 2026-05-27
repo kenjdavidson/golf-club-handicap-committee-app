@@ -18,28 +18,29 @@ class RoundsComparisonGrid(comparisons: List<RoundComparison>) : VerticalLayout(
 
             addColumn { it.date.format(DATE_FORMATTER) }
                 .setHeader(AppMessages.translateCurrent("main.rounds.date"))
-                .setFlexGrow(0).setWidth("110px")
+                .setAutoWidth(true)
+                .setFlexGrow(2)
 
             addColumn { it.scheduledRound?.playDistance ?: "" }
                 .setHeader(AppMessages.translateCurrent("main.rounds.course"))
-                .setFlexGrow(1)
-
-            addColumn { it.scheduledRound?.playingPartners?.joinToString(", ").orEmpty() }
-                .setHeader(AppMessages.translateCurrent("main.rounds.playingWith"))
+                .setAutoWidth(true)
                 .setFlexGrow(1)
 
             addColumn { it.golfCanadaEntry?.course ?: "" }
                 .setHeader(AppMessages.translateCurrent("main.rounds.gcCourse"))
+                .setAutoWidth(true)
                 .setFlexGrow(1)
 
             addColumn { comp ->
                 comp.golfCanadaEntry?.score?.toString() ?: ""
             }.setHeader(AppMessages.translateCurrent("main.rounds.gcScore"))
+                .setAutoWidth(true)
                 .setFlexGrow(0).setWidth("80px")
 
             addColumn { comp ->
                 comp.golfCanadaEntry?.differential?.let { "%.1f".format(it) } ?: ""
             }.setHeader(AppMessages.translateCurrent("main.rounds.gcDifferential"))
+                .setAutoWidth(true)
                 .setFlexGrow(0).setWidth("100px")
 
             addComponentColumn { comp ->
@@ -55,7 +56,8 @@ class RoundsComparisonGrid(comparisons: List<RoundComparison>) : VerticalLayout(
                     style["color"] = if (comp.isMatched) "var(--lumo-success-color)" else "var(--lumo-warning-text-color)"
                 }
             }.setHeader(AppMessages.translateCurrent("main.result.status"))
-                .setFlexGrow(0).setWidth("110px")
+                .setAutoWidth(true)
+                .setFlexGrow(2)
 
             setItems(comparisons)
             classNames.add("rounds-comparison-grid")

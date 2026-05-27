@@ -25,13 +25,14 @@ class CompareDatesVerificationStep(
             .mapNotNull { entry -> entry.date?.toLocalDate()?.let { date -> date to entry } }
             .groupBy({ it.first }, { it.second })
 
-        val roundsByDate = parsedHistory.rounds.groupBy { it.playedDate }
-        val allDates = (roundsByDate.keys + entriesByDate.keys).sortedDescending()
-        val roundComparisons = allDates.flatMap { date ->
-            val scheduledRounds = roundsByDate[date].orEmpty()
+        val roundsByDate = parsedHistory.rounds
+            .groupBy { it.playedDate }
+            .toMutableMap()
+        val sortedRoundDates = roundsByDate.keys.sortedDescending()
+        val roundComparisons = sortedRoundDates.flatMap { date ->
+            val scheduledRounds = roundsByDate.remove(date).orEmpty()
             val golfCanadaRounds = entriesByDate[date].orEmpty()
-            val rowsForDate = maxOf(scheduledRounds.size, golfCanadaRounds.size)
-            (0 until rowsForDate).map { index ->
+            scheduledRounds.indices.map { index ->
                 RoundComparison(
                     date = date,
                     scheduledRound = scheduledRounds.getOrNull(index),

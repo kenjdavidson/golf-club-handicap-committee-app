@@ -90,14 +90,14 @@ class MainView(
             setWidthFull()
             isPadding = false
             isSpacing = true
-            defaultVerticalComponentAlignment = FlexComponent.Alignment.START
+            defaultVerticalComponentAlignment = FlexComponent.Alignment.STRETCH
         }
 
         val profileCard = MemberProfileCard(result.memberProfile)
         val summaryCard = VerificationSummaryCard(result)
 
         topRow.add(profileCard, summaryCard)
-        topRow.expand(summaryCard)
+        topRow.setFlexGrow(1.0, profileCard, summaryCard)
 
         verificationResult.add(topRow)
 
