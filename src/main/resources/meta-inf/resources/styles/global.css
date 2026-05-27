@@ -21,3 +21,24 @@ vaadin-context-menu-item:hover {
 vaadin-context-menu-item {
     min-width: 150px;
 }
+
+.main-menu-panel {
+    background: var(--lumo-primary-color-10pct);
+    border-radius: var(--lumo-border-radius-l);
+    margin: 0.5rem 1rem 0;
+    padding: 0.5rem 0.75rem;
+    width: calc(100% - 2rem);
+    box-sizing: border-box;
+}
+
+.main-menu-action-button {
+    border: 1px solid var(--lumo-primary-color-30pct);
+    border-radius: 999px;
+    background: var(--lumo-base-color);
+    transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.main-menu-action-button:hover {
+    background: var(--lumo-primary-color-10pct);
+    border-color: var(--lumo-primary-color-50pct);
+}
