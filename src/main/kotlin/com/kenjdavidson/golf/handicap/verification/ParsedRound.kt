@@ -6,6 +6,5 @@ data class ParsedRound(
     val playedDate: LocalDate,
     val playDistance: String?,
     val courseGroup: String?,
-    val primaryClub: String?,
-    val playingPartners: List<String> = emptyList()
+    val primaryClub: String?
 )

@@ -74,7 +74,7 @@ class VerificationSummaryCard(result: FileVerificationResult) : VerticalLayout()
         }
         return HorizontalLayout(labelSpan, valueSpan).apply {
             isPadding = false
-            isSpacing = false
+            isSpacing = true
             defaultVerticalComponentAlignment = FlexComponent.Alignment.BASELINE
         }
     }

@@ -2,6 +2,7 @@ package com.kenjdavidson.golf.handicap.components
 
 import com.kenjdavidson.golf.handicap.i18n.AppMessages
 import com.kenjdavidson.golf.handicap.views.AboutView
+import com.kenjdavidson.golf.handicap.views.MainView
 import com.kenjdavidson.golf.handicap.views.SettingsView
 import com.kenjdavidson.golf.handicap.views.UserProfileResolver
 import com.vaadin.flow.component.UI
@@ -33,6 +34,11 @@ class Navbar(
     private val userProfile = userProfileResolver.buildUserProfile(authenticatedUser)
     private val heading = H2("⛳ ${AppMessages.translateCurrent("app.title")}").apply {
         addClassNames(LumoUtility.Margin.Bottom.XSMALL)
+        style["cursor"] = "pointer"
+        element.setAttribute("role", "button")
+        addClickListener {
+            UI.getCurrent()?.navigate(MainView::class.java)
+        }
     }
     private val avatar = Avatar(userProfile.displayName).apply {
         abbreviation = userProfile.initials
@@ -124,25 +130,27 @@ class Navbar(
         userMenu.removeAll()
         styleProfileMenuItem(userMenu.addItem(userMenuInfo))
         userMenu.addSeparator()
-        userMenu.addItem(AppMessages.translate(locale, "menu.settings")) {
+        styleMenuItem(userMenu.addItem(AppMessages.translate(locale, "menu.settings")) {
             UI.getCurrent()?.navigate(SettingsView::class.java)
-        }
+        })
 
         val languageItem = userMenu.addItem(AppMessages.translate(locale, "menu.language"))
-        languageItem.subMenu.addItem(AppMessages.translate(locale, "menu.language.en")) {
+        styleMenuItem(languageItem)
+        val currentLanguage = AppMessages.normalizeLocale(locale).language
+        styleMenuItem(languageItem.subMenu.addItem(buildLanguageLabel(locale, Locale.ENGLISH, currentLanguage)) {
             applyLanguage(Locale.ENGLISH)
-        }
-        languageItem.subMenu.addItem(AppMessages.translate(locale, "menu.language.fr")) {
+        })
+        styleMenuItem(languageItem.subMenu.addItem(buildLanguageLabel(locale, Locale.FRENCH, currentLanguage)) {
             applyLanguage(Locale.FRENCH)
-        }
+        })
         userMenu.addSeparator()
-        userMenu.addItem(AppMessages.translate(locale, "menu.about")) {
+        styleMenuItem(userMenu.addItem(AppMessages.translate(locale, "menu.about")) {
             UI.getCurrent()?.navigate(AboutView::class.java)
-        }
+        })
         userMenu.addSeparator()
-        userMenu.addItem(AppMessages.translate(locale, "menu.logout")) {
+        styleMenuItem(userMenu.addItem(AppMessages.translate(locale, "menu.logout")) {
             authenticationContext.logout()
-        }
+        })
     }
 
     private fun buildMemberNumber(locale: Locale): String {
@@ -153,10 +161,24 @@ class Navbar(
     }
 
     private fun styleProfileMenuItem(menuItem: MenuItem) {
+        styleMenuItem(menuItem)
         menuItem.isEnabled = false
         menuItem.style["color"] = "var(--lumo-secondary-text-color)"
         menuItem.style["font-weight"] = "600"
         menuItem.style["font-size"] = "var(--lumo-font-size-s)"
         menuItem.style["opacity"] = "1"
+    }
+
+    private fun styleMenuItem(menuItem: MenuItem) {
+        menuItem.style["min-width"] = "150px"
+    }
+
+    private fun buildLanguageLabel(locale: Locale, optionLocale: Locale, currentLanguage: String): String {
+        val labelKey = when (optionLocale.language) {
+            Locale.FRENCH.language -> "menu.language.fr"
+            else -> "menu.language.en"
+        }
+        val label = AppMessages.translate(locale, labelKey)
+        return if (optionLocale.language == currentLanguage) "✓ $label" else label
     }
 }

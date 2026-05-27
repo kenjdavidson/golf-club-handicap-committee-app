@@ -17,3 +17,7 @@ vaadin-context-menu-item:hover {
     color: var(--lumo-primary-text-color) !important;
     cursor: pointer;
 }
+
+vaadin-context-menu-item {
+    min-width: 150px;
+}
