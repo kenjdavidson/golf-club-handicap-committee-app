@@ -31,3 +31,14 @@ For local development or testing against a mock auth endpoint, the Golf Canada b
   - builds zipped application bundles for macOS and Windows
   - publishes both zip files to the matching GitHub Release
   - enables GitHub-generated release notes as the release changelog
+
+### 🍏 Running on macOS
+
+Because the macOS application bundle is distributed as an open-source, unsigned app, macOS may show a **"Developer cannot be verified"** warning the first time you open it.
+
+- **Option A (GUI):** Right-click (or Control-click) the application icon, choose **Open**, then click **Open** again in the confirmation dialog.
+- **Option B (Terminal):** Remove the quarantine flag before opening the app:
+
+  ```bash
+  xattr -cr /Applications/GolfClubHandicapCommitteeApp.app
+  ```
