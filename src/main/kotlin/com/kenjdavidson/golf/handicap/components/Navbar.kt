@@ -4,18 +4,24 @@ import com.kenjdavidson.golf.handicap.i18n.AppMessages
 import com.kenjdavidson.golf.handicap.views.AboutView
 import com.kenjdavidson.golf.handicap.views.MainView
 import com.kenjdavidson.golf.handicap.views.SettingsView
+import com.vaadin.flow.component.ComponentEvent
+import com.vaadin.flow.component.ComponentEventListener
 import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.avatar.Avatar
+import com.vaadin.flow.component.button.Button
+import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.contextmenu.ContextMenu
 import com.vaadin.flow.component.contextmenu.MenuItem
 import com.vaadin.flow.component.html.H2
 import com.vaadin.flow.component.html.Span
+import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.i18n.LocaleChangeEvent
 import com.vaadin.flow.i18n.LocaleChangeObserver
 import com.vaadin.flow.server.VaadinSession
+import com.vaadin.flow.shared.Registration
 import com.vaadin.flow.spring.security.AuthenticationContext
 import com.vaadin.flow.theme.lumo.LumoUtility
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
@@ -43,6 +49,14 @@ class Navbar(
         abbreviation = userProfile.initials
         style["cursor"] = "pointer"
         element.setAttribute("role", "button")
+    }
+    private val appMenuButton = Button(VaadinIcon.GRID_BIG.create()).apply {
+        addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_TERTIARY_INLINE)
+        style["cursor"] = "pointer"
+        element.setAttribute("role", "button")
+        addClickListener {
+            fireEvent(AppMenuToggleEvent(this@Navbar, true))
+        }
     }
     private val name = Span(userProfile.displayName).apply {
         addClassNames(
@@ -80,7 +94,7 @@ class Navbar(
         styleProfileMenuItem(userMenu.addItem(userMenuInfo))
         userMenu.addSeparator()
 
-        return HorizontalLayout(avatar).apply {
+        return HorizontalLayout(appMenuButton, avatar).apply {
             isSpacing = false
             defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
 
@@ -120,6 +134,7 @@ class Navbar(
 
     private fun refreshLocalizedText(locale: Locale) {
         heading.text = "⛳ ${AppMessages.translate(locale, "app.title")}"
+        appMenuButton.element.setAttribute("aria-label", AppMessages.translate(locale, "menu.openMainMenu"))
         avatar.element.setAttribute("aria-label", AppMessages.translate(locale, "menu.openUserMenu"))
         memberNumber.text = buildMemberNumber(locale)
         refreshUserMenu(locale)
@@ -181,4 +196,10 @@ class Navbar(
         val label = AppMessages.translate(locale, labelKey)
         return if (optionLocale.language == currentLanguage) "✓ $label" else label
     }
+
+    fun addAppMenuToggleListener(listener: ComponentEventListener<AppMenuToggleEvent>): Registration {
+        return addListener(AppMenuToggleEvent::class.java, listener)
+    }
+
+    class AppMenuToggleEvent(source: Navbar, fromClient: Boolean) : ComponentEvent<Navbar>(source, fromClient)
 }

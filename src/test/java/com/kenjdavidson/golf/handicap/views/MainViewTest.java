@@ -98,6 +98,8 @@ class MainViewTest {
             assertEquals(2, viewChildren.size());
             assertEquals("sticky", viewChildren.get(0).getElement().getStyle().get("position"));
             assertTrue(containsText(shell, "Verify"));
+            assertTrue(containsText(shell, "Single File Validation"));
+            assertTrue(containsText(shell, "Workspace Validation"));
             assertTrue(containsText(shell, "Logged in as Committee User"));
             assertFalse(containsText(shell, "Lookup"));
             assertFalse(containsText(shell, "Settings"));
