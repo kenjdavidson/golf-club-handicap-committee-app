@@ -1,4 +1,4 @@
-package com.kenjdavidson.golf.handicap.views
+package com.kenjdavidson.golf.handicap.components
 
 data class UserProfile(
     val displayName: String,

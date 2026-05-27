@@ -3,8 +3,6 @@ package com.kenjdavidson.golf.handicap.components;
 import com.kenjdavidson.golf.handicap.golfcanada.model.AuthToken;
 import com.kenjdavidson.golf.handicap.golfcanada.model.User;
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser;
-import com.kenjdavidson.golf.handicap.views.UserProfile;
-import com.kenjdavidson.golf.handicap.views.UserProfileResolver;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.UI;

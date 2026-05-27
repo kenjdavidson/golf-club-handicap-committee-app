@@ -1,5 +1,6 @@
 package com.kenjdavidson.golf.handicap.views
 
+import com.kenjdavidson.golf.handicap.components.MarkdownContentLoader
 import com.kenjdavidson.golf.handicap.i18n.AppMessages
 import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.html.H2

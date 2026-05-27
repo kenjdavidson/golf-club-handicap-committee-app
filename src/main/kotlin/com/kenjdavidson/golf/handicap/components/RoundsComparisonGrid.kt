@@ -1,4 +1,4 @@
-package com.kenjdavidson.golf.handicap.views
+package com.kenjdavidson.golf.handicap.components
 
 import com.kenjdavidson.golf.handicap.i18n.AppMessages
 import com.kenjdavidson.golf.handicap.verification.RoundComparison
