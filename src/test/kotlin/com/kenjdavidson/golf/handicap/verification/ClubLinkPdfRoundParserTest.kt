@@ -11,19 +11,20 @@ class ClubLinkPdfRoundParserTest {
     /**
      * The full ClubLink report layout reproduced from the issue description.
      * Covers two pages, mixed AM/PM times, and the no-space artefact before two-digit hours.
+     * All names, addresses, and identifiers are fictional and used for testing only.
      */
     private val fullReportText = """
         ClubLink Corporation ULC
-        15675 Dufferin Street
-        (905) 841-3730
+        100 Example Boulevard
+        (555) 000-1234
         clublink.ca
-        King City, ON L7B 1K5
+        Testville, ON A1B 2C3
         Canada
         Rounds History Page 1 of 2
         05/24/2026August 01, 2025 - May 24, 2026
-        TSHELTONMr.  Tom Winski
-        2660 Cavendish Drive
-        Burlington, ON L7P3X9
+        JTESTERMr.  John Tester
+        999 Fake Street
+        Sampletown, ON X9X 9X9
         Date Holes PlayerTime
         Price Level: PL
         Paid No ShowTee Type
@@ -33,9 +34,9 @@ class ClubLinkPdfRoundParserTest {
         Thu, Aug 14, 25  18 Player One11:01AM Yes No 1 No Cart
         Rounds History Page 2 of 2
         05/24/2026August 01, 2025 - May 24, 2026
-        TSHELTONMr.  Tom Winski
-        2660 Cavendish Drive
-        Burlington, ON L7P3X9
+        JTESTERMr.  John Tester
+        999 Fake Street
+        Sampletown, ON X9X 9X9
         Date Holes PlayerTime
         Price Level: PL
         Paid No ShowTee Type
@@ -56,7 +57,7 @@ class ClubLinkPdfRoundParserTest {
     fun `parses player name from header by inverting first and last name`() {
         val parser = ClubLinkPdfRoundParser(FakeExtractor(fullReportText), testSettings())
         val parsed = parser.parse(ByteArray(0))
-        assertEquals("Winski, Tom", parsed.playerName)
+        assertEquals("Tester, John", parsed.playerName)
     }
 
     @Test
@@ -93,7 +94,7 @@ class ClubLinkPdfRoundParserTest {
     fun `handles rows where time is concatenated directly after Player One`() {
         // "Player One10:50AM" – no space before two-digit hour
         val text = """
-            TSHELTONMr.  Tom Winski
+            JTESTERMr.  John Tester
             Sun, Aug 10, 25  18 Player One10:50AM Yes No 1 Power Cart
         """.trimIndent()
         val parser = ClubLinkPdfRoundParser(FakeExtractor(text), testSettings())
@@ -106,7 +107,7 @@ class ClubLinkPdfRoundParserTest {
     @Test
     fun `filters out no-show rows`() {
         val text = """
-            TSHELTONMr.  Tom Winski
+            JTESTERMr.  John Tester
             Sat, Aug 2, 25  18 Player One 7:30AM Yes No 1 No Cart
             Tue, Aug 5, 25  18 Player One 9:10AM Yes Yes 1 No Cart
         """.trimIndent()
@@ -122,7 +123,7 @@ class ClubLinkPdfRoundParserTest {
         val rows = (1..25).joinToString("\n") { day ->
             "Sat, Aug ${day.coerceAtMost(31)}, 25  18 Player One 9:00AM Yes No 1 No Cart"
         }
-        val text = "TSHELTONMr.  Tom Winski\n$rows"
+        val text = "JTESTERMr.  John Tester\n$rows"
         val parser = ClubLinkPdfRoundParser(FakeExtractor(text), testSettings(maxRounds = 20))
         val parsed = parser.parse(ByteArray(0))
 
@@ -133,8 +134,8 @@ class ClubLinkPdfRoundParserTest {
     fun `throws when no valid round rows are found`() {
         val text = """
             ClubLink Corporation ULC
-            15675 Dufferin Street
-            TSHELTONMr.  Tom Winski
+            100 Example Boulevard
+            JTESTERMr.  John Tester
             Date Holes PlayerTime
         """.trimIndent()
         val parser = ClubLinkPdfRoundParser(FakeExtractor(text), testSettings())
@@ -147,7 +148,7 @@ class ClubLinkPdfRoundParserTest {
     @Test
     fun `throws when all rows are no-show`() {
         val text = """
-            TSHELTONMr.  Tom Winski
+            JTESTERMr.  John Tester
             Sat, Aug 2, 25  18 Player One 7:30AM Yes Yes 1 No Cart
         """.trimIndent()
         val parser = ClubLinkPdfRoundParser(FakeExtractor(text), testSettings())
