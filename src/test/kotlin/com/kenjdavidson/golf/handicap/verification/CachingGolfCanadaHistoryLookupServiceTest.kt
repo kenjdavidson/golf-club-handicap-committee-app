@@ -19,15 +19,17 @@ import java.time.ZoneOffset
 class CachingGolfCanadaHistoryLookupServiceTest {
     private val membersApi = mock(MembersApi::class.java)
     private val clock = MutableClock(Instant.parse("2026-05-19T00:00:00Z"), ZoneOffset.UTC)
+    private val verificationSettings = VerificationSettings(VerificationProperties(20))
     private val service = CachingGolfCanadaHistoryLookupService(
         membersApi = membersApi,
+        verificationSettings = verificationSettings,
         clock = clock
     )
 
     @Test
     fun `uses cache for same day and refreshes when request date changes`() {
         val entry = HistoryEntry().date(LocalDateTime.of(2026, 5, 18, 0, 0))
-        `when`(membersApi.getHistory(123L, 0, 100)).thenReturn(
+        `when`(membersApi.getHistory(123L, 0, 60)).thenReturn(
             HistoryResponse().data(listOf(entry))
         )
 
@@ -36,12 +38,12 @@ class CachingGolfCanadaHistoryLookupServiceTest {
 
         assertEquals(listOf(entry), first)
         assertEquals(first, second)
-        verify(membersApi, times(1)).getHistory(123L, 0, 100)
+        verify(membersApi, times(1)).getHistory(123L, 0, 60)
 
         clock.advanceDays(1)
         service.getHistory(123L)
 
-        verify(membersApi, times(2)).getHistory(123L, 0, 100)
+        verify(membersApi, times(2)).getHistory(123L, 0, 60)
     }
 
     @Test

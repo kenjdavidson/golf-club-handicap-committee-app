@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap
 @Service
 class CachingGolfCanadaHistoryLookupService(
     private val membersApi: MembersApi,
+    private val verificationSettings: VerificationSettings,
     private val clock: Clock = Clock.systemDefaultZone()
 ) : GolfCanadaHistoryLookupService {
     private val cache = ConcurrentHashMap<Pair<Long, LocalDate>, List<HistoryEntry>>()
@@ -23,7 +24,7 @@ class CachingGolfCanadaHistoryLookupService(
 
         return cache.computeIfAbsent(cacheKey) {
             try {
-                membersApi.getHistory(individualId, 0, GOLF_CANADA_HISTORY_LOOKBACK_ROUNDS)
+                membersApi.getHistory(individualId, 0, verificationSettings.maxRounds * GOLF_CANADA_HISTORY_LOOKBACK_MULTIPLIER)
                     ?.data
                     .orEmpty()
             } catch (exception: Exception) {
@@ -33,6 +34,6 @@ class CachingGolfCanadaHistoryLookupService(
     }
 
     companion object {
-        private const val GOLF_CANADA_HISTORY_LOOKBACK_ROUNDS = 100
+        private const val GOLF_CANADA_HISTORY_LOOKBACK_MULTIPLIER = 3
     }
 }
