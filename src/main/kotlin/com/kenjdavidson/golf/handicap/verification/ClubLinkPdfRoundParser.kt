@@ -77,7 +77,7 @@ class ClubLinkPdfRoundParser(
 
     private companion object {
         // Matches "TSHELTONMr.  Tom Winski" – uppercase username prefix + title + name
-        val OWNER_NAME_LINE_REGEX = Regex("""^[A-Z]{2,}(?:Mr\.|Ms\.|Mrs\.|Dr\.)\s{1,}(.+)$""")
+        val OWNER_NAME_LINE_REGEX = Regex("""^[A-Z]{2,}(?:Mr\.|Ms\.|Mrs\.|Dr\.)\s+(.+)$""")
         val WHITESPACE_REGEX = Regex("""\s+""")
 
         // Matches round rows: "Sat, Aug 2, 25  18 Player One 7:30AM Yes No 1 No Cart"
@@ -88,7 +88,9 @@ class ClubLinkPdfRoundParser(
                 """\s+\d+\s+Player\s+One\s*\d{1,2}:\d{2}(?:AM|PM)\s+(?:Yes|No)\s+(Yes|No)\s+\d+\s+.+$"""
         )
 
-        // "Aug 2, 25" (day-of-week stripped) – 2-digit year anchored to the 2000s (25 → 2025)
+        // "Aug 2, 25" (day-of-week stripped) – 2-digit year anchored to 2000-2099.
+        // ClubLink rounds history reports only contain current-season dates so values
+        // outside that century are not expected in practice.
         val DATE_FORMATTER = DateTimeFormatterBuilder()
             .parseCaseInsensitive()
             .appendPattern("MMM d, ")
