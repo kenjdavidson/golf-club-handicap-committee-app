@@ -170,7 +170,8 @@ class Navbar(
     }
 
     private fun styleMenuItem(menuItem: MenuItem) {
-        menuItem.style["min-width"] = "150px"
+        menuItem.style["min-width"] = "200px"
+        menuItem.style["width"] = "200px"
     }
 
     private fun buildLanguageLabel(locale: Locale, optionLocale: Locale, currentLanguage: String): String {
