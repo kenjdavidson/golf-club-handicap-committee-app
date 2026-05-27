@@ -1,7 +1,6 @@
 package com.kenjdavidson.golf.handicap.components
 
 import com.kenjdavidson.golf.handicap.i18n.AppMessages
-import com.kenjdavidson.golf.handicap.views.UserProfileResolver
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.html.Span

@@ -4,7 +4,6 @@ import com.kenjdavidson.golf.handicap.i18n.AppMessages
 import com.kenjdavidson.golf.handicap.views.AboutView
 import com.kenjdavidson.golf.handicap.views.MainView
 import com.kenjdavidson.golf.handicap.views.SettingsView
-import com.kenjdavidson.golf.handicap.views.UserProfileResolver
 import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.avatar.Avatar
 import com.vaadin.flow.component.contextmenu.ContextMenu

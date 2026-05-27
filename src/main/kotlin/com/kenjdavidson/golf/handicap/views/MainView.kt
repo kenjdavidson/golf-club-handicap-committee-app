@@ -1,6 +1,11 @@
 package com.kenjdavidson.golf.handicap.views
 
 import com.kenjdavidson.golf.handicap.components.StatusUpdateEvent
+import com.kenjdavidson.golf.handicap.components.MemberProfileCard
+import com.kenjdavidson.golf.handicap.components.RoundsComparisonGrid
+import com.kenjdavidson.golf.handicap.components.SingleFileUploadCard
+import com.kenjdavidson.golf.handicap.components.UserProfileResolver
+import com.kenjdavidson.golf.handicap.components.VerificationSummaryCard
 import com.kenjdavidson.golf.handicap.i18n.AppMessages
 import com.kenjdavidson.golf.handicap.verification.FileVerificationResult
 import com.kenjdavidson.golf.handicap.verification.NonUniqueMemberFoundException

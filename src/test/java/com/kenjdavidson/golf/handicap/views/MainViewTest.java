@@ -2,6 +2,8 @@ package com.kenjdavidson.golf.handicap.views;
 
 import com.kenjdavidson.golf.handicap.components.Navbar;
 import com.kenjdavidson.golf.handicap.components.StatusBar;
+import com.kenjdavidson.golf.handicap.components.UserProfile;
+import com.kenjdavidson.golf.handicap.components.UserProfileResolver;
 import com.kenjdavidson.golf.handicap.golfcanada.model.AuthToken;
 import com.kenjdavidson.golf.handicap.golfcanada.model.User;
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser;

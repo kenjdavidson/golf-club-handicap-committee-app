@@ -2,8 +2,6 @@ package com.kenjdavidson.golf.handicap.components
 
 import com.kenjdavidson.golf.handicap.i18n.AppMessages
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser
-import com.kenjdavidson.golf.handicap.views.UserProfile
-import com.kenjdavidson.golf.handicap.views.UserProfileResolver
 import com.vaadin.flow.component.contextmenu.ContextMenu
 import com.vaadin.flow.spring.security.AuthenticationContext
 import org.junit.jupiter.api.Assertions.assertEquals

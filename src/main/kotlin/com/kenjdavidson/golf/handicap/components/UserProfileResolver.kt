@@ -1,4 +1,4 @@
-package com.kenjdavidson.golf.handicap.views
+package com.kenjdavidson.golf.handicap.components
 
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser
 import com.vaadin.flow.spring.security.AuthenticationContext
