@@ -17,7 +17,7 @@ class AppSettings(
     private val userSettingsRepository: UserSettingsRepository? = null
 ) {
     private val defaultParser: RoundParser = parsers.firstOrNull()
-        ?: throw IllegalStateException("At least one round parser must be configured.")
+        ?: throw IllegalStateException("AppSettings requires at least one RoundParser to be registered in the Spring context.")
     private val parsersByClassName: Map<String, RoundParser> = parsers.associateBy { it.javaClass.name }
 
     @Volatile
