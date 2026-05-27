@@ -7,4 +7,10 @@ import org.springframework.stereotype.Component
 class AppSettings(parsers: List<RoundParser>) {
     @Volatile
     var selectedParser: RoundParser = parsers.first()
+
+    @Volatile
+    var defaultHomeCourse: String? = null
+        set(value) {
+            field = value?.trim()?.takeIf { it.isNotBlank() }
+        }
 }

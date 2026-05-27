@@ -4,6 +4,7 @@ import com.kenjdavidson.golf.handicap.golfcanada.api.MembersApi
 import com.kenjdavidson.golf.handicap.golfcanada.model.MemberSearchEntry
 import com.kenjdavidson.golf.handicap.golfcanada.model.MemberSearchResponse
 import com.kenjdavidson.golf.handicap.golfcanada.model.Profile
+import com.kenjdavidson.golf.handicap.settings.AppSettings
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -19,7 +20,9 @@ import org.mockito.Mockito.`when`
 
 class CachedGolfCanadaMemberLookupServiceTest {
     private val membersApi = mock(MembersApi::class.java)
-    private val service = CachedGolfCanadaMemberLookupService(membersApi)
+    private val parser = mock(RoundParser::class.java)
+    private val appSettings = AppSettings(listOf(parser))
+    private val service = CachedGolfCanadaMemberLookupService(membersApi, appSettings)
 
     // ── Name-search primary path ───────────────────────────────────────────────
 
@@ -107,7 +110,7 @@ class CachedGolfCanadaMemberLookupServiceTest {
     }
 
     @Test
-    fun `findMember returns memberId profile match when name search misses and memberId is present`() {
+    fun `findMember returns null when both name search and memberId profile lookup find no home course match`() {
         val response = MemberSearchResponse().totalCount(0).members(emptyList())
         `when`(membersApi.searchMembers(0, 20, "Ellis, Dean")).thenReturn(response)
         `when`(membersApi.getProfile(152314L)).thenReturn(Profile().cardId("6100011234").homeCourse("Different Course"))
@@ -121,8 +124,53 @@ class CachedGolfCanadaMemberLookupServiceTest {
             )
         )
 
-        assertEquals(152314L, match?.individualId)
-        assertEquals("6100011234", match?.golfCanadaCardId)
+        assertNull(match)
+    }
+
+    @Test
+    fun `findMember uses configured default home course when parsed file has none`() {
+        appSettings.defaultHomeCourse = "Snake Point"
+        val entrySnakePoint = MemberSearchEntry().individualId(111L).name("Smith, John").club("Snake Point Golf Club")
+        val entryOther = MemberSearchEntry().individualId(222L).name("Smith, John").club("Other Club")
+        val response = MemberSearchResponse().totalCount(2).members(listOf(entrySnakePoint, entryOther))
+        val profile = Profile().individualId(111L).cardId("6100099999").homeCourse("Snake Point Golf Club")
+        `when`(membersApi.searchMembers(0, 20, "Smith, John")).thenReturn(response)
+        `when`(membersApi.getProfile(111L)).thenReturn(profile)
+
+        val match = service.findMember(
+            ParsedPlayerHistory(
+                playerName = "Smith, John",
+                memberId = null,
+                homeCourse = null,
+                rounds = emptyList()
+            )
+        )
+
+        assertEquals(111L, match?.individualId)
+        assertEquals("6100099999", match?.golfCanadaCardId)
+    }
+
+    @Test
+    fun `findMember uses file home course ahead of configured default home course`() {
+        appSettings.defaultHomeCourse = "Snake Point"
+        val entryBlueSprings = MemberSearchEntry().individualId(333L).name("Smith, John").club("Blue Springs Golf Club")
+        val entrySnakePoint = MemberSearchEntry().individualId(444L).name("Smith, John").club("Snake Point Golf Club")
+        val response = MemberSearchResponse().totalCount(2).members(listOf(entryBlueSprings, entrySnakePoint))
+        val profile = Profile().individualId(333L).cardId("6100088888").homeCourse("Blue Springs Golf Club")
+        `when`(membersApi.searchMembers(0, 20, "Smith, John")).thenReturn(response)
+        `when`(membersApi.getProfile(333L)).thenReturn(profile)
+
+        val match = service.findMember(
+            ParsedPlayerHistory(
+                playerName = "Smith, John",
+                memberId = null,
+                homeCourse = "Blue Springs",
+                rounds = emptyList()
+            )
+        )
+
+        assertEquals(333L, match?.individualId)
+        assertEquals("6100088888", match?.golfCanadaCardId)
     }
 
     @Test
