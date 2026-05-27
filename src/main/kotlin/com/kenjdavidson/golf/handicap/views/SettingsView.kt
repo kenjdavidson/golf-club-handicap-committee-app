@@ -8,6 +8,7 @@ import com.vaadin.flow.component.html.H2
 import com.vaadin.flow.component.html.Paragraph
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.select.Select
+import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.i18n.LocaleChangeEvent
 import com.vaadin.flow.i18n.LocaleChangeObserver
 import com.vaadin.flow.router.PageTitle
@@ -25,6 +26,7 @@ class SettingsView(
     private val title = H2()
     private val parserTypeSelect = Select<RoundParser>()
     private val parserTypeDescription = Paragraph()
+    private val defaultHomeCourseField = TextField()
 
     init {
         setSizeFull()
@@ -44,13 +46,21 @@ class SettingsView(
             updateParserDescription(event.value)
         }
 
-        add(title, parserTypeSelect, parserTypeDescription)
+        defaultHomeCourseField.value = appSettings.defaultHomeCourse.orEmpty()
+        defaultHomeCourseField.addValueChangeListener { event ->
+            appSettings.defaultHomeCourse = event.value
+        }
+
+        refreshDefaultHomeCourseFieldLabels()
+
+        add(title, parserTypeSelect, parserTypeDescription, defaultHomeCourseField)
     }
 
     override fun localeChange(event: LocaleChangeEvent) {
         title.text = AppMessages.translate(event.locale, "settings.title")
         refreshParserTypeLabels()
         updateParserDescription(parserTypeSelect.value)
+        refreshDefaultHomeCourseFieldLabels()
     }
 
     private fun refreshParserTypeLabels() {
@@ -70,5 +80,9 @@ class SettingsView(
             ?.let { AppMessages.translateCurrent(it) }
             ?: ""
     }
-}
 
+    private fun refreshDefaultHomeCourseFieldLabels() {
+        defaultHomeCourseField.label = AppMessages.translateCurrent("settings.defaultHomeCourse.label")
+        defaultHomeCourseField.placeholder = AppMessages.translateCurrent("settings.defaultHomeCourse.placeholder")
+    }
+}
