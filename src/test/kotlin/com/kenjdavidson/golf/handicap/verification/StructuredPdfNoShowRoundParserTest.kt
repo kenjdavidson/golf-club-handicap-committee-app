@@ -17,7 +17,7 @@ class StructuredPdfNoShowRoundParserTest {
             5/09/2026,08:45,9,"Adderley, Jim",Blue Springs,Regular,Yes,No
         """.trimIndent()
 
-        val parser = StructuredPdfNoShowRoundParser(FakeExtractor(text), VerificationProperties(20))
+        val parser = StructuredPdfNoShowRoundParser(FakeExtractor(text), testSettings())
 
         val parsed = parser.parse(ByteArray(0))
 
@@ -35,7 +35,7 @@ class StructuredPdfNoShowRoundParserTest {
             6/01/2026	10:00	18	Smith, John	White	Regular	Yes	No
         """.trimIndent()
 
-        val parser = StructuredPdfNoShowRoundParser(FakeExtractor(text), VerificationProperties(20))
+        val parser = StructuredPdfNoShowRoundParser(FakeExtractor(text), testSettings())
 
         val parsed = parser.parse(ByteArray(0))
 
@@ -50,7 +50,7 @@ class StructuredPdfNoShowRoundParserTest {
             5/10/2026,09:00,18,"Adderley, Jim",Blue Springs,Regular,Yes,Yes
         """.trimIndent()
 
-        val parser = StructuredPdfNoShowRoundParser(FakeExtractor(text), VerificationProperties(20))
+        val parser = StructuredPdfNoShowRoundParser(FakeExtractor(text), testSettings())
 
         assertThrows(VerificationProcessingException::class.java) {
             parser.parse(ByteArray(0))
@@ -60,4 +60,8 @@ class StructuredPdfNoShowRoundParserTest {
     private class FakeExtractor(private val text: String) : PdfTextExtractor {
         override fun extract(pdfBytes: ByteArray): String = text
     }
+
+    private fun testSettings(maxRounds: Int = 20): VerificationSettings = VerificationSettings(
+        VerificationProperties(maxRounds)
+    )
 }

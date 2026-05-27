@@ -4,10 +4,12 @@ import com.kenjdavidson.golf.handicap.i18n.AppMessages
 import com.kenjdavidson.golf.handicap.settings.AppSettings
 import com.kenjdavidson.golf.handicap.verification.ParserDefinition
 import com.kenjdavidson.golf.handicap.verification.RoundParser
+import com.kenjdavidson.golf.handicap.verification.VerificationSettings
 import com.vaadin.flow.component.html.H2
 import com.vaadin.flow.component.html.Paragraph
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.select.Select
+import com.vaadin.flow.component.textfield.IntegerField
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.i18n.LocaleChangeEvent
 import com.vaadin.flow.i18n.LocaleChangeObserver
@@ -20,12 +22,14 @@ import jakarta.annotation.security.PermitAll
 @PermitAll
 class SettingsView(
     private val appSettings: AppSettings,
+    private val verificationSettings: VerificationSettings,
     private val roundParsers: List<RoundParser>
 ) : VerticalLayout(), LocaleChangeObserver {
 
     private val title = H2()
     private val parserTypeSelect = Select<RoundParser>()
     private val parserTypeDescription = Paragraph()
+    private val maxRoundsField = IntegerField()
     private val defaultHomeCourseField = TextField()
 
     init {
@@ -46,20 +50,33 @@ class SettingsView(
             updateParserDescription(event.value)
         }
 
+        maxRoundsField.isStepButtonsVisible = true
+        maxRoundsField.min = 1
+        maxRoundsField.value = verificationSettings.maxRounds
+        maxRoundsField.addValueChangeListener { event ->
+            val value = event.value ?: verificationSettings.maxRounds
+            verificationSettings.maxRounds = value
+            if (value < 1) {
+                maxRoundsField.value = verificationSettings.maxRounds
+            }
+        }
+
         defaultHomeCourseField.value = appSettings.defaultHomeCourse.orEmpty()
         defaultHomeCourseField.addValueChangeListener { event ->
             appSettings.defaultHomeCourse = event.value
         }
 
+        refreshMaxRoundsFieldLabels()
         refreshDefaultHomeCourseFieldLabels()
 
-        add(title, parserTypeSelect, parserTypeDescription, defaultHomeCourseField)
+        add(title, parserTypeSelect, parserTypeDescription, maxRoundsField, defaultHomeCourseField)
     }
 
     override fun localeChange(event: LocaleChangeEvent) {
         title.text = AppMessages.translate(event.locale, "settings.title")
         refreshParserTypeLabels()
         updateParserDescription(parserTypeSelect.value)
+        refreshMaxRoundsFieldLabels()
         refreshDefaultHomeCourseFieldLabels()
     }
 
@@ -84,5 +101,10 @@ class SettingsView(
     private fun refreshDefaultHomeCourseFieldLabels() {
         defaultHomeCourseField.label = AppMessages.translateCurrent("settings.defaultHomeCourse.label")
         defaultHomeCourseField.placeholder = AppMessages.translateCurrent("settings.defaultHomeCourse.placeholder")
+    }
+
+    private fun refreshMaxRoundsFieldLabels() {
+        maxRoundsField.label = AppMessages.translateCurrent("settings.maxRounds.label")
+        maxRoundsField.helperText = AppMessages.translateCurrent("settings.maxRounds.helper")
     }
 }

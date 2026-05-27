@@ -20,7 +20,7 @@ class StructuredPdfRoundParserTest {
                 primaryClub = "Snake Point Golf Club"
             )
         }
-        val parser = StructuredPdfRoundParser(FakeExtractor("Ellis, Dean\n$rows"), VerificationProperties(20))
+        val parser = StructuredPdfRoundParser(FakeExtractor("Ellis, Dean\n$rows"), testSettings())
 
         val parsed = parser.parse(ByteArray(0))
 
@@ -39,7 +39,7 @@ class StructuredPdfRoundParserTest {
             152314,"Ellis, Dean","2/10/2024","North
             Course","08:00","created","time","Mon","BClass","A","Snake Point Golf Club"
         """.trimIndent()
-        val parser = StructuredPdfRoundParser(FakeExtractor(text), VerificationProperties(20))
+        val parser = StructuredPdfRoundParser(FakeExtractor(text), testSettings())
 
         val parsed = parser.parse(ByteArray(0))
 
@@ -56,7 +56,7 @@ class StructuredPdfRoundParserTest {
             152314 Adderley, JimHandicap Committee Heron Point 7/29/202509:10:00 7/24/2025 10:58:57 5 Tuesday MEMBER ONTARIOPL PL Handicap Committee 1 152314 Adderley, Jim Handicap Committee 1
             152314 Adderley, JimHandicap Committee RattleSnake Point-Ac9/2/2025 17:45:00 8/31/2025 07:07:58 2 Tuesday ACADEMY PL PL Handicap Committee Web-User 1 152314 Adderley, Jim Handicap Committee 1
         """.trimIndent()
-        val parser = StructuredPdfRoundParser(FakeExtractor(text), VerificationProperties(20))
+        val parser = StructuredPdfRoundParser(FakeExtractor(text), testSettings())
 
         val parsed = parser.parse(ByteArray(0))
 
@@ -70,7 +70,7 @@ class StructuredPdfRoundParserTest {
 
     @Test
     fun `throws when no round rows can be detected`() {
-        val parser = StructuredPdfRoundParser(FakeExtractor("Ellis, Dean"), VerificationProperties(20))
+        val parser = StructuredPdfRoundParser(FakeExtractor("Ellis, Dean"), testSettings())
 
         assertThrows(VerificationProcessingException::class.java) {
             parser.parse("pdf".toByteArray())
@@ -101,4 +101,8 @@ class StructuredPdfRoundParserTest {
     private class FakeExtractor(private val text: String) : PdfTextExtractor {
         override fun extract(pdfBytes: ByteArray): String = text
     }
+
+    private fun testSettings(maxRounds: Int = 20): VerificationSettings = VerificationSettings(
+        VerificationProperties(maxRounds)
+    )
 }

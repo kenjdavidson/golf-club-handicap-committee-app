@@ -16,15 +16,15 @@ class RoundsComparisonGrid(comparisons: List<RoundComparison>) : VerticalLayout(
             setWidthFull()
             isAllRowsVisible = true
 
-            addColumn { it.pdfRound.playedDate.format(DATE_FORMATTER) }
+            addColumn { it.date.format(DATE_FORMATTER) }
                 .setHeader(AppMessages.translateCurrent("main.rounds.date"))
                 .setFlexGrow(0).setWidth("110px")
 
-            addColumn { it.pdfRound.playDistance ?: "" }
+            addColumn { it.scheduledRound?.playDistance ?: "" }
                 .setHeader(AppMessages.translateCurrent("main.rounds.course"))
                 .setFlexGrow(1)
 
-            addColumn { it.pdfRound.playingPartners.joinToString(", ") }
+            addColumn { it.scheduledRound?.playingPartners?.joinToString(", ").orEmpty() }
                 .setHeader(AppMessages.translateCurrent("main.rounds.playingWith"))
                 .setFlexGrow(1)
 
@@ -43,13 +43,16 @@ class RoundsComparisonGrid(comparisons: List<RoundComparison>) : VerticalLayout(
                 .setFlexGrow(0).setWidth("100px")
 
             addComponentColumn { comp ->
-                val matched = comp.isMatched
+                val statusText = when {
+                    comp.isMatched -> AppMessages.translateCurrent("main.rounds.matched")
+                    comp.scheduledRound != null -> AppMessages.translateCurrent("main.rounds.scheduledOnly")
+                    else -> AppMessages.translateCurrent("main.rounds.gcOnly")
+                }
                 Span(
-                    if (matched) AppMessages.translateCurrent("main.rounds.matched")
-                    else AppMessages.translateCurrent("main.rounds.unmatched")
+                    statusText
                 ).apply {
                     addClassNames(LumoUtility.FontSize.XSMALL, LumoUtility.FontWeight.BOLD)
-                    style["color"] = if (matched) "var(--lumo-success-color)" else "var(--lumo-error-color)"
+                    style["color"] = if (comp.isMatched) "var(--lumo-success-color)" else "var(--lumo-warning-text-color)"
                 }
             }.setHeader(AppMessages.translateCurrent("main.result.status"))
                 .setFlexGrow(0).setWidth("110px")
