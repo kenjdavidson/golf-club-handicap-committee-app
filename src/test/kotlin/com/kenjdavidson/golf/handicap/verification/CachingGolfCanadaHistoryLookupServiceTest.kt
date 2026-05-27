@@ -29,7 +29,7 @@ class CachingGolfCanadaHistoryLookupServiceTest {
     @Test
     fun `uses cache for same day and refreshes when request date changes`() {
         val entry = HistoryEntry().date(LocalDateTime.of(2026, 5, 18, 0, 0))
-        `when`(membersApi.getHistory(123L, 0, 20)).thenReturn(
+        `when`(membersApi.getHistory(123L, 0, 60)).thenReturn(
             HistoryResponse().data(listOf(entry))
         )
 
@@ -38,12 +38,12 @@ class CachingGolfCanadaHistoryLookupServiceTest {
 
         assertEquals(listOf(entry), first)
         assertEquals(first, second)
-        verify(membersApi, times(1)).getHistory(123L, 0, 20)
+        verify(membersApi, times(1)).getHistory(123L, 0, 60)
 
         clock.advanceDays(1)
         service.getHistory(123L)
 
-        verify(membersApi, times(2)).getHistory(123L, 0, 20)
+        verify(membersApi, times(2)).getHistory(123L, 0, 60)
     }
 
     @Test

@@ -24,12 +24,16 @@ class CachingGolfCanadaHistoryLookupService(
 
         return cache.computeIfAbsent(cacheKey) {
             try {
-                membersApi.getHistory(individualId, 0, verificationSettings.maxRounds)
+                membersApi.getHistory(individualId, 0, verificationSettings.maxRounds * GOLF_CANADA_HISTORY_LOOKBACK_MULTIPLIER)
                     ?.data
                     .orEmpty()
             } catch (exception: Exception) {
                 throw VerificationProcessingException("Unable to retrieve Golf Canada history.", exception)
             }
         }
+    }
+
+    companion object {
+        private const val GOLF_CANADA_HISTORY_LOOKBACK_MULTIPLIER = 3
     }
 }
