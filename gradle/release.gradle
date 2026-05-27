@@ -21,6 +21,11 @@ def jpackageIconFile = isMac
     : (isWindows ? new File(jpackageResourceDir, 'app-icon.ico') : new File(jpackageResourceDir, 'app-icon.png'))
 def jpackageMacPackageIdentifier = project.findProperty('jpackage.mac.package.identifier') ?: 'com.kenjdavidson.golf.handicap.committee'
 def jpackageMacPackageName = project.findProperty('jpackage.mac.package.name') ?: 'Golf Handicap Committee'
+def jpackageMacOptions = [
+    '--mac-package-identifier', jpackageMacPackageIdentifier,
+    '--mac-package-name', jpackageMacPackageName,
+    '--mac-sign-identity', ''
+]
 def jpackageWindowsUpgradeUuid = project.findProperty('jpackage.win.upgrade.uuid') ?: '11ad890c-5257-4cdd-bf76-bbe2f250f557'
 def versionFile = rootProject.file('gradle.properties')
 def versionFilePath = rootProject.relativePath(versionFile)
@@ -211,10 +216,7 @@ tasks.register('jpackageAppImage', Exec) {
             command.addAll(['--icon', jpackageIconFile.absolutePath])
         }
         if (isMac) {
-            command.addAll([
-                '--mac-package-identifier', jpackageMacPackageIdentifier,
-                '--mac-package-name', jpackageMacPackageName
-            ])
+            command.addAll(jpackageMacOptions)
         }
 
         commandLine(command)
