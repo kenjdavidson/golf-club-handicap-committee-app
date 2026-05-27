@@ -10,11 +10,18 @@ def projectVersion = project.version.toString()
 def jpackageVendor = project.findProperty('jpackage.vendor') ?: 'Golf Club Handicap Committee'
 def jpackageInputDir = layout.buildDirectory.dir('jpackage-input')
 def jpackageOutputDir = layout.buildDirectory.dir('jpackage')
+def jpackageResourceDir = file("$projectDir/src/main/resources/static/icons")
 def osName = System.getProperty('os.name').toLowerCase()
 def isWindows = osName.contains('windows')
 def isMac = osName.contains('mac')
 def jpackageImageName = isMac ? "${jpackageAppName}.app" : jpackageAppName
 def jpackageArchiveClassifier = isWindows ? 'windows' : (isMac ? 'macos' : 'linux')
+def jpackageIconFile = isMac
+    ? new File(jpackageResourceDir, 'app-icon.icns')
+    : (isWindows ? new File(jpackageResourceDir, 'app-icon.ico') : new File(jpackageResourceDir, 'app-icon.png'))
+def jpackageMacPackageIdentifier = project.findProperty('jpackage.mac.package.identifier') ?: 'com.kenjdavidson.golf.handicap.committee'
+def jpackageMacPackageName = project.findProperty('jpackage.mac.package.name') ?: 'Golf Handicap Committee'
+def jpackageWindowsUpgradeUuid = project.findProperty('jpackage.win.upgrade.uuid') ?: '11ad890c-5257-4cdd-bf76-bbe2f250f557'
 def versionFile = rootProject.file('gradle.properties')
 def versionFilePath = rootProject.relativePath(versionFile)
 def snapshotSuffix = '-SNAPSHOT'
@@ -185,6 +192,7 @@ tasks.register('jpackageAppImage', Exec) {
     doFirst {
         def bootJarTask = tasks.named('bootJar').get()
         outputDir.mkdirs()
+        delete(new File(outputDir, jpackageImageName))
 
         def command = [
             'jpackage',
@@ -198,6 +206,16 @@ tasks.register('jpackageAppImage', Exec) {
             '--main-class', 'org.springframework.boot.loader.launch.JarLauncher',
             '--dest', outputDir.absolutePath
         ]
+
+        if (jpackageIconFile.exists()) {
+            command.addAll(['--icon', jpackageIconFile.absolutePath])
+        }
+        if (isMac) {
+            command.addAll([
+                '--mac-package-identifier', jpackageMacPackageIdentifier,
+                '--mac-package-name', jpackageMacPackageName
+            ])
+        }
 
         commandLine(command)
     }
@@ -241,9 +259,11 @@ tasks.register('jpackageInstaller', Exec) {
             '--main-jar', bootJarTask.archiveFileName.get(),
             '--main-class', 'org.springframework.boot.loader.launch.JarLauncher',
             '--dest', outputDir.absolutePath,
+            '--icon', jpackageIconFile.absolutePath,
             '--win-shortcut',
             '--win-menu',
-            '--win-menu-group', 'Golf Club'
+            '--win-menu-group', 'Golf Club',
+            '--win-upgrade-uuid', jpackageWindowsUpgradeUuid
         )
     }
 }
