@@ -2,8 +2,8 @@ package com.kenjdavidson.golf.handicap.verification.api
 
 import com.kenjdavidson.golf.handicap.golfcanada.api.MembersApi
 import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryEntry
+import com.kenjdavidson.golf.handicap.settings.AppSettings
 import com.kenjdavidson.golf.handicap.verification.VerificationProcessingException
-import com.kenjdavidson.golf.handicap.verification.VerificationSettings
 import org.springframework.stereotype.Service
 import java.time.Clock
 import java.time.LocalDate
@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap
 @Service
 class CachingGolfCanadaHistoryLookupService(
     private val membersApi: MembersApi,
-    private val verificationSettings: VerificationSettings,
+    private val appSettings: AppSettings,
     private val clock: Clock = Clock.systemDefaultZone()
 ) : GolfCanadaHistoryLookupService {
     private val cache = ConcurrentHashMap<Pair<Long, LocalDate>, List<HistoryEntry>>()
@@ -26,7 +26,7 @@ class CachingGolfCanadaHistoryLookupService(
 
         return cache.computeIfAbsent(cacheKey) {
             try {
-                membersApi.getHistory(individualId, 0, verificationSettings.maxRounds * GOLF_CANADA_HISTORY_LOOKBACK_MULTIPLIER)
+                membersApi.getHistory(individualId, 0, appSettings.maxRounds * GOLF_CANADA_HISTORY_LOOKBACK_MULTIPLIER)
                     ?.data
                     .orEmpty()
             } catch (exception: Exception) {

@@ -1,7 +1,9 @@
 package com.kenjdavidson.golf.handicap.verification
 
 import com.kenjdavidson.golf.handicap.verification.file.PdfTextExtractor
+import com.kenjdavidson.golf.handicap.verification.file.RoundParser
 import com.kenjdavidson.golf.handicap.verification.file.StructuredPdfRoundParser
+import com.kenjdavidson.golf.handicap.settings.AppSettings
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -104,7 +106,12 @@ class StructuredPdfRoundParserTest {
         override fun extract(pdfBytes: ByteArray): String = text
     }
 
-    private fun testSettings(maxRounds: Int = 20): VerificationSettings = VerificationSettings(
-        VerificationProperties(maxRounds)
+    private fun testSettings(maxRounds: Int = 20): AppSettings = AppSettings(
+        parsers = listOf(NoopRoundParser()),
+        verificationProperties = VerificationProperties(maxRounds)
     )
+
+    private class NoopRoundParser : RoundParser {
+        override fun parse(fileBytes: ByteArray): ParsedPlayerHistory = error("Not used in parser tests.")
+    }
 }

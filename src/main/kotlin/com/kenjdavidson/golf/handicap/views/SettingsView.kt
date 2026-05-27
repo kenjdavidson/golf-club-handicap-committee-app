@@ -2,7 +2,6 @@ package com.kenjdavidson.golf.handicap.views
 
 import com.kenjdavidson.golf.handicap.i18n.AppMessages
 import com.kenjdavidson.golf.handicap.settings.AppSettings
-import com.kenjdavidson.golf.handicap.verification.VerificationSettings
 import com.kenjdavidson.golf.handicap.verification.file.ParserDefinition
 import com.kenjdavidson.golf.handicap.verification.file.RoundParser
 import com.vaadin.flow.component.html.H2
@@ -22,7 +21,6 @@ import jakarta.annotation.security.PermitAll
 @PermitAll
 class SettingsView(
     private val appSettings: AppSettings,
-    private val verificationSettings: VerificationSettings,
     private val roundParsers: List<RoundParser>
 ) : VerticalLayout(), LocaleChangeObserver {
 
@@ -52,12 +50,12 @@ class SettingsView(
 
         maxRoundsField.isStepButtonsVisible = true
         maxRoundsField.min = 1
-        maxRoundsField.value = verificationSettings.maxRounds
+        maxRoundsField.value = appSettings.maxRounds
         maxRoundsField.addValueChangeListener { event ->
-            val value = event.value ?: verificationSettings.maxRounds
-            verificationSettings.maxRounds = value
+            val value = event.value ?: appSettings.maxRounds
+            appSettings.maxRounds = value
             if (value < 1) {
-                maxRoundsField.value = verificationSettings.maxRounds
+                maxRoundsField.value = appSettings.maxRounds
             }
         }
 

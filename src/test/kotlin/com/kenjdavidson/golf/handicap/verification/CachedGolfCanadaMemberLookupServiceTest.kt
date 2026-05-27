@@ -23,7 +23,7 @@ import org.mockito.Mockito.`when`
 class CachedGolfCanadaMemberLookupServiceTest {
     private val membersApi = mock(MembersApi::class.java)
     private val parser = mock(RoundParser::class.java)
-    private val appSettings = AppSettings(listOf(parser))
+    private val appSettings = AppSettings(listOf(parser), VerificationProperties(20))
     private val service = CachedGolfCanadaMemberLookupService(membersApi, appSettings)
 
     // ── Name-search primary path ───────────────────────────────────────────────
