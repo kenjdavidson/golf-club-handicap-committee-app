@@ -1,6 +1,6 @@
 package com.kenjdavidson.golf.handicap.verification.file
 
-import com.kenjdavidson.golf.handicap.settings.AppSettings
+import com.kenjdavidson.golf.handicap.settings.UserSettingsService
 import com.kenjdavidson.golf.handicap.util.operation
 import com.kenjdavidson.golf.handicap.verification.ParsedPlayerHistory
 import com.kenjdavidson.golf.handicap.verification.ParsedRound
@@ -20,7 +20,7 @@ import java.util.Locale
 )
 class StructuredPdfRoundParser(
     private val textExtractor: PdfTextExtractor,
-    private val appSettings: AppSettings
+    private val appSettings: UserSettingsService
 ) : RoundParser {
 
     override fun parse(fileBytes: ByteArray): ParsedPlayerHistory = operation("Parsing PDF rounds") {

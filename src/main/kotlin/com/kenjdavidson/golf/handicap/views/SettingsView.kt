@@ -1,7 +1,7 @@
 package com.kenjdavidson.golf.handicap.views
 
 import com.kenjdavidson.golf.handicap.i18n.AppMessages
-import com.kenjdavidson.golf.handicap.settings.AppSettings
+import com.kenjdavidson.golf.handicap.settings.UserSettingsService
 import com.kenjdavidson.golf.handicap.verification.file.ParserDefinition
 import com.kenjdavidson.golf.handicap.verification.file.RoundParser
 import com.vaadin.flow.component.html.H2
@@ -20,7 +20,7 @@ import jakarta.annotation.security.PermitAll
 @PageTitle("Settings | Handicap Committee App")
 @PermitAll
 class SettingsView(
-    private val appSettings: AppSettings,
+    private val appSettings: UserSettingsService,
     private val roundParsers: List<RoundParser>
 ) : VerticalLayout(), LocaleChangeObserver {
 

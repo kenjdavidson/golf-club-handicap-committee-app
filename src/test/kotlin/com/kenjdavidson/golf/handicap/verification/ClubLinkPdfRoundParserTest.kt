@@ -1,6 +1,6 @@
 package com.kenjdavidson.golf.handicap.verification
 
-import com.kenjdavidson.golf.handicap.settings.AppSettings
+import com.kenjdavidson.golf.handicap.settings.UserSettingsService
 import com.kenjdavidson.golf.handicap.verification.file.ClubLinkPdfRoundParser
 import com.kenjdavidson.golf.handicap.verification.file.PdfTextExtractor
 import com.kenjdavidson.golf.handicap.verification.file.RoundParser
@@ -187,7 +187,7 @@ class ClubLinkPdfRoundParserTest {
         override fun extract(pdfBytes: ByteArray): String = text
     }
 
-    private fun testSettings(maxRounds: Int = 20): AppSettings = AppSettings(
+    private fun testSettings(maxRounds: Int = 20): UserSettingsService = UserSettingsService(
         parsers = listOf(NoopRoundParser()),
         verificationProperties = VerificationProperties(maxRounds)
     )

@@ -4,7 +4,7 @@ import com.kenjdavidson.golf.handicap.golfcanada.api.MembersApi
 import com.kenjdavidson.golf.handicap.golfcanada.model.MemberSearchEntry
 import com.kenjdavidson.golf.handicap.golfcanada.model.MemberSearchResponse
 import com.kenjdavidson.golf.handicap.golfcanada.model.Profile
-import com.kenjdavidson.golf.handicap.settings.AppSettings
+import com.kenjdavidson.golf.handicap.settings.UserSettingsService
 import com.kenjdavidson.golf.handicap.verification.api.CachedGolfCanadaMemberLookupService
 import com.kenjdavidson.golf.handicap.verification.file.RoundParser
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -23,7 +23,10 @@ import org.mockito.Mockito.`when`
 class CachedGolfCanadaMemberLookupServiceTest {
     private val membersApi = mock(MembersApi::class.java)
     private val parser = mock(RoundParser::class.java)
-    private val appSettings = AppSettings(listOf(parser), VerificationProperties(20))
+    private val appSettings = UserSettingsService(
+        parsers = listOf(parser),
+        verificationProperties = VerificationProperties(20)
+    )
     private val service = CachedGolfCanadaMemberLookupService(membersApi, appSettings)
 
     // ── Name-search primary path ───────────────────────────────────────────────

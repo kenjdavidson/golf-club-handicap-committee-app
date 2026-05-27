@@ -11,13 +11,13 @@ import org.springframework.web.context.annotation.SessionScope
 
 @SessionScope
 @Component
-class AppSettings(
+class UserSettingsService(
     private val parsers: List<RoundParser>,
-    verificationProperties: VerificationProperties,
-    private val userSettingsRepository: UserSettingsRepository? = null
+    private val userSettingsRepository: UserSettingsRepository? = null,
+    verificationProperties: VerificationProperties
 ) {
     private val defaultParser: RoundParser = parsers.firstOrNull()
-        ?: throw IllegalStateException("AppSettings requires at least one RoundParser to be registered in the Spring context.")
+        ?: throw IllegalStateException("UserSettingsService requires at least one RoundParser to be registered in the Spring context.")
     private val parsersByClassName: Map<String, RoundParser> = parsers.associateBy { it.javaClass.name }
 
     @Volatile

@@ -3,7 +3,7 @@ package com.kenjdavidson.golf.handicap.verification
 import com.kenjdavidson.golf.handicap.golfcanada.api.MembersApi
 import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryEntry
 import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryResponse
-import com.kenjdavidson.golf.handicap.settings.AppSettings
+import com.kenjdavidson.golf.handicap.settings.UserSettingsService
 import com.kenjdavidson.golf.handicap.verification.api.CachingGolfCanadaHistoryLookupService
 import com.kenjdavidson.golf.handicap.verification.file.RoundParser
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -23,7 +23,10 @@ class CachingGolfCanadaHistoryLookupServiceTest {
     private val membersApi = mock(MembersApi::class.java)
     private val clock = MutableClock(Instant.parse("2026-05-19T00:00:00Z"), ZoneOffset.UTC)
     private val parser = mock(RoundParser::class.java)
-    private val appSettings = AppSettings(listOf(parser), VerificationProperties(20))
+    private val appSettings = UserSettingsService(
+        parsers = listOf(parser),
+        verificationProperties = VerificationProperties(20)
+    )
     private val service = CachingGolfCanadaHistoryLookupService(
         membersApi = membersApi,
         appSettings = appSettings,

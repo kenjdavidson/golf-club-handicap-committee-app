@@ -14,7 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder
 import java.nio.file.Path
 
-class AppSettingsTest {
+class UserSettingsServiceTest {
     @TempDir
     lateinit var tempHome: Path
 
@@ -39,7 +39,11 @@ class AppSettingsTest {
                     defaultHomeCourse = "Snake Point"
                 )
             )
-            val appSettings = AppSettings(listOf(parserOne, parserTwo), VerificationProperties(20), repository)
+            val appSettings = UserSettingsService(
+                parsers = listOf(parserOne, parserTwo),
+                userSettingsRepository = repository,
+                verificationProperties = VerificationProperties(20)
+            )
 
             appSettings.loadCurrentUserSettings()
 
@@ -54,7 +58,11 @@ class AppSettingsTest {
         authenticate("committee.user")
         withTemporaryUserHome(tempHome) {
             val repository = UserSettingsRepository()
-            val appSettings = AppSettings(listOf(parserOne, parserTwo), VerificationProperties(20), repository)
+            val appSettings = UserSettingsService(
+                parsers = listOf(parserOne, parserTwo),
+                userSettingsRepository = repository,
+                verificationProperties = VerificationProperties(20)
+            )
             appSettings.loadCurrentUserSettings()
 
             appSettings.selectedParser = parserTwo
@@ -99,10 +107,10 @@ class AppSettingsTest {
     }
 
     private class ParserOne : RoundParser {
-        override fun parse(fileBytes: ByteArray): ParsedPlayerHistory = error("Not used in AppSettings tests.")
+        override fun parse(fileBytes: ByteArray): ParsedPlayerHistory = error("Not used in UserSettingsService tests.")
     }
 
     private class ParserTwo : RoundParser {
-        override fun parse(fileBytes: ByteArray): ParsedPlayerHistory = error("Not used in AppSettings tests.")
+        override fun parse(fileBytes: ByteArray): ParsedPlayerHistory = error("Not used in UserSettingsService tests.")
     }
 }
