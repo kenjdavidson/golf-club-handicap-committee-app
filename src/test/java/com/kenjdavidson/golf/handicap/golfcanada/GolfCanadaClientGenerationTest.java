@@ -8,6 +8,8 @@ import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryEntry;
 import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryResponse;
 import com.kenjdavidson.golf.handicap.golfcanada.model.Profile;
 import com.kenjdavidson.golf.handicap.golfcanada.model.ProfileClub;
+import com.kenjdavidson.golf.handicap.golfcanada.model.ProfileClubDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;

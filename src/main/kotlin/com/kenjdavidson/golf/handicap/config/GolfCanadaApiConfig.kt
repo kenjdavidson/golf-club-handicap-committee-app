@@ -13,7 +13,7 @@ class GolfCanadaApiConfig(
     @Value($$"${app.golf-canada.base-url:https://scg.golfcanada.ca}") private val golfCanadaBaseUrl: String
 ) {
     @Bean
-    fun golfCanadaApiClient(): ApiClient = ApiClient().setBasePath(golfCanadaBaseUrl.removeSuffix("/"))
+    fun golfCanadaApiClient(): ApiClient = GolfCanadaApiClient().setBasePath(golfCanadaBaseUrl.removeSuffix("/"))
 
     @Bean
     fun authenticationApi(apiClient: ApiClient): AuthenticationApi = AuthenticationApi(apiClient)
@@ -23,7 +23,7 @@ class GolfCanadaApiConfig(
         apiClient: ApiClient,
         currentAuthenticatedUserProvider: CurrentAuthenticatedUserProvider
     ): MembersApi {
-        val authenticatedApiClient = ApiClient().setBasePath(apiClient.basePath)
+        val authenticatedApiClient = GolfCanadaApiClient().setBasePath(apiClient.basePath)
         authenticatedApiClient.setBearerToken { currentAuthenticatedUserProvider.requireAccessToken() }
         return MembersApi(authenticatedApiClient)
     }
