@@ -2,6 +2,8 @@ package com.kenjdavidson.golf.handicap.golfcanada
 
 import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryEntry
 import com.kenjdavidson.golf.handicap.golfcanada.model.Profile
+import com.kenjdavidson.golf.handicap.config.GolfCanadaApiClient
+import com.kenjdavidson.golf.handicap.golfcanada.invoker.ApiClient
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -9,6 +11,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 
 class GolfCanadaNullableGenerationTest {
     private val objectMapper = JsonMapper.builder()
@@ -80,6 +83,28 @@ class GolfCanadaNullableGenerationTest {
         """.trimIndent()
 
         val profile = objectMapper.readValue(profileJson, Profile::class.java)
+
+        assertEquals(11111111L, requireNotNull(profile.individualId))
+        assertEquals("Blue Springs Golf Club", profile.club?.name)
+    }
+
+    @Test
+    fun `profile payload with club as string deserializes with api client mapper`() {
+        val profileJson = """
+            {
+              "individualId": 11111111,
+              "club": "Blue Springs Golf Club"
+            }
+        """.trimIndent()
+
+        val restTemplateField = ApiClient::class.java.getDeclaredField("restTemplate")
+        restTemplateField.isAccessible = true
+        val restTemplate = restTemplateField.get(GolfCanadaApiClient()) as org.springframework.web.client.RestTemplate
+        val converter = restTemplate.messageConverters
+            .filterIsInstance<MappingJackson2HttpMessageConverter>()
+            .first()
+
+        val profile = converter.objectMapper.readValue(profileJson, Profile::class.java)
 
         assertEquals(11111111L, requireNotNull(profile.individualId))
         assertEquals("Blue Springs Golf Club", profile.club?.name)
