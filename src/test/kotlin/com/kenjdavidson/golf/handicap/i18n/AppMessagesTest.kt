@@ -10,6 +10,9 @@ class AppMessagesTest {
     fun `translates english and french bundles`() {
         assertEquals("Logout", AppMessages.translate(Locale.ENGLISH, "menu.logout"))
         assertEquals("Se déconnecter", AppMessages.translate(Locale.FRENCH, "menu.logout"))
+        assertEquals("Scheduled Course", AppMessages.translate(Locale.ENGLISH, "main.rounds.course"))
+        assertEquals("Played Course", AppMessages.translate(Locale.ENGLISH, "main.rounds.gcCourse"))
+        assertEquals("No Matching Score", AppMessages.translate(Locale.ENGLISH, "main.rounds.scheduledOnly"))
     }
 
     @Test
