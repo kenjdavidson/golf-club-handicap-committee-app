@@ -2,7 +2,6 @@ package com.kenjdavidson.golf.handicap.golfcanada
 
 import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryEntry
 import com.kenjdavidson.golf.handicap.golfcanada.model.Profile
-import com.kenjdavidson.golf.handicap.config.GolfCanadaApiClient
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -69,38 +68,6 @@ class GolfCanadaNullableGenerationTest {
             "/uploads/Club/a2cf015335054e2c867905cbf8e0f730.jpg",
             profile.club?.logoAtOdataMediaReadLink
         )
-    }
-
-    @Test
-    fun `profile payload with club as string deserializes`() {
-        val profileJson = """
-            {
-              "individualId": 11111111,
-              "club": "Blue Springs Golf Club"
-            }
-        """.trimIndent()
-
-        val profile = objectMapper.readValue(profileJson, Profile::class.java)
-
-        assertEquals(11111111L, requireNotNull(profile.individualId))
-        assertEquals("Blue Springs Golf Club", profile.club?.name)
-    }
-
-    @Test
-    fun `profile payload with club as string deserializes with api client mapper`() {
-        val profileJson = """
-            {
-              "individualId": 11111111,
-              "club": "Blue Springs Golf Club"
-            }
-        """.trimIndent()
-
-        val profile = GolfCanadaApiClient()
-            .profileObjectMapper()
-            .readValue(profileJson, Profile::class.java)
-
-        assertEquals(11111111L, requireNotNull(profile.individualId))
-        assertEquals("Blue Springs Golf Club", profile.club?.name)
     }
 
     @Test

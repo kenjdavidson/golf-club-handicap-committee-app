@@ -29,7 +29,7 @@ class MemberProfileCard(profile: MemberProfile) : VerticalLayout() {
         }
 
         val homeCourseSpan = Span(
-            "${AppMessages.translateCurrent("member.homeCourseTitle")}: ${profile.profile?.homeCourse ?: AppMessages.translateCurrent(" member . notAvailable ")}"
+            "${AppMessages.translateCurrent("member.homeCourseTitle")}: ${profile.profile?.club?.name ?: AppMessages.translateCurrent(" member.notAvailable ")}"
         ).apply {
             addClassNames(LumoUtility.FontSize.SMALL, LumoUtility.TextColor.SECONDARY)
         }
