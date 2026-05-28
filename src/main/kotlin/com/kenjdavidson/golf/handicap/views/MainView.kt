@@ -1,5 +1,7 @@
 package com.kenjdavidson.golf.handicap.views
 
+import com.kenjdavidson.golf.handicap.components.ErrorLoggedEvent
+import com.kenjdavidson.golf.handicap.components.LoggingMessageService
 import com.kenjdavidson.golf.handicap.components.StatusUpdateEvent
 import com.kenjdavidson.golf.handicap.components.MemberProfileCard
 import com.kenjdavidson.golf.handicap.components.RoundsComparisonGrid
@@ -16,6 +18,8 @@ import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.html.ListItem
 import com.vaadin.flow.component.html.Paragraph
 import com.vaadin.flow.component.html.UnorderedList
+import com.vaadin.flow.component.notification.Notification
+import com.vaadin.flow.component.notification.NotificationVariant
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
@@ -34,7 +38,8 @@ class MainView(
     private val authenticationContext: AuthenticationContext,
     private val userProfileResolver: UserProfileResolver,
     private val singleFileVerificationService: SingleFileVerificationService,
-    private val eventPublisher: ApplicationEventPublisher
+    private val eventPublisher: ApplicationEventPublisher,
+    private val loggingMessageService: LoggingMessageService
 ) : VerticalLayout(), LocaleChangeObserver {
 
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
@@ -80,10 +85,14 @@ class MainView(
         } catch (exception: NonUniqueMemberFoundException) {
             val message = AppMessages.translateCurrent("main.status.failed")
             publishStatus(message)
+            loggingMessageService.logError(message, exception)
+            showErrorNotification(message)
             renderCandidates(exception)
         } catch (exception: VerificationProcessingException) {
             val message = exception.message ?: AppMessages.translateCurrent("main.status.failed")
             publishStatus(message)
+            loggingMessageService.logError(message, exception)
+            showErrorNotification(message)
             renderError(message)
         }
     }
@@ -138,5 +147,10 @@ class MainView(
 
     private fun publishStatus(message: String) {
         eventPublisher.publishEvent(StatusUpdateEvent(message))
+    }
+
+    private fun showErrorNotification(message: String) {
+        val notification = Notification.show(message, 5000, Notification.Position.BOTTOM_START)
+        notification.addThemeVariants(NotificationVariant.LUMO_ERROR)
     }
 }
