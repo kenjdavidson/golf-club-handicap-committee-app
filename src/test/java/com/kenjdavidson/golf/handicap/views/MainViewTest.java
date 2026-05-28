@@ -1,5 +1,6 @@
 package com.kenjdavidson.golf.handicap.views;
 
+import com.kenjdavidson.golf.handicap.components.LoggingMessageService;
 import com.kenjdavidson.golf.handicap.components.Navbar;
 import com.kenjdavidson.golf.handicap.components.StatusBar;
 import com.kenjdavidson.golf.handicap.components.UserProfile;
@@ -11,6 +12,7 @@ import com.kenjdavidson.golf.handicap.verification.SingleFileVerificationService
 import com.kenjdavidson.golf.handicap.verification.VerificationProcessingException;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.TextField;
@@ -70,8 +72,9 @@ class MainViewTest {
         );
         SingleFileVerificationService verificationService = mock(SingleFileVerificationService.class);
         ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
+        LoggingMessageService loggingMessageService = mock(LoggingMessageService.class);
         Navbar navbar = new Navbar(authenticationContext, userProfileResolver);
-        StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver);
+        StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver, loggingMessageService);
 
         // Vaadin 25 requires an active service/UI context for several components:
         //   - UploadManager needs UI.getCurrentOrThrow() to register a stream resource.
@@ -90,7 +93,7 @@ class MainViewTest {
              MockedStatic<VaadinService> ignored2 = mockStatic(VaadinService.class, RETURNS_DEEP_STUBS);
              MockedStatic<RouteConfiguration> routeConfigStatic = mockStatic(RouteConfiguration.class)) {
             routeConfigStatic.when(() -> RouteConfiguration.forRegistry(any())).thenReturn(mockRouteConfig);
-            MainView view = new MainView(authenticationContext, userProfileResolver, verificationService, eventPublisher);
+            MainView view = new MainView(authenticationContext, userProfileResolver, verificationService, eventPublisher, loggingMessageService);
             AuthenticatedView shell = new AuthenticatedView(navbar, statusBar);
             shell.showRouterLayoutContent(view);
 
@@ -138,6 +141,7 @@ class MainViewTest {
         when(verificationService.verify(anyString(), any(byte[].class), any(GolfCanadaAuthenticatedUser.class)))
             .thenThrow(new VerificationProcessingException("No valid played dates were found in the uploaded PDF.", null));
         ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
+        LoggingMessageService loggingMessageService = mock(LoggingMessageService.class);
 
         RouteConfiguration mockRouteConfig = mock(RouteConfiguration.class,
             inv -> "getUrl".equals(inv.getMethod().getName()) ? "" : RETURNS_DEFAULTS.answer(inv));
@@ -147,13 +151,19 @@ class MainViewTest {
              MockedStatic<VaadinService> ignored2 = mockStatic(VaadinService.class, RETURNS_DEEP_STUBS);
              MockedStatic<RouteConfiguration> routeConfigStatic = mockStatic(RouteConfiguration.class)) {
             routeConfigStatic.when(() -> RouteConfiguration.forRegistry(any())).thenReturn(mockRouteConfig);
-            MainView view = new MainView(authenticationContext, userProfileResolver, verificationService, eventPublisher);
+            MainView view = new MainView(authenticationContext, userProfileResolver, verificationService, eventPublisher, loggingMessageService);
 
-            var verifyFile = MainView.class.getDeclaredMethod("verifyFile", String.class, byte[].class);
-            verifyFile.setAccessible(true);
-            verifyFile.invoke(view, "Adderley, Jim - May 12.pdf", "pdf".getBytes(StandardCharsets.UTF_8));
+            UI ui = new UI();
+            UI.setCurrent(ui);
+            try {
+                var verifyFile = MainView.class.getDeclaredMethod("verifyFile", String.class, byte[].class);
+                verifyFile.setAccessible(true);
+                verifyFile.invoke(view, "Adderley, Jim - May 12.pdf", "pdf".getBytes(StandardCharsets.UTF_8));
 
-            assertTrue(containsText(view, "No valid played dates were found in the uploaded PDF."));
+                assertTrue(containsText(view, "No valid played dates were found in the uploaded PDF."));
+            } finally {
+                UI.setCurrent(null);
+            }
         }
     }
 

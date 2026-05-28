@@ -25,13 +25,14 @@ class StatusBarTest {
     void updateStatusReplacesDisplayedText() {
         AuthenticationContext authenticationContext = mock(AuthenticationContext.class);
         UserProfileResolver userProfileResolver = mock(UserProfileResolver.class);
+        LoggingMessageService loggingMessageService = mock(LoggingMessageService.class);
         GolfCanadaAuthenticatedUser user = authenticatedUser();
         when(authenticationContext.getAuthenticatedUser(GolfCanadaAuthenticatedUser.class)).thenReturn(Optional.of(user));
         when(userProfileResolver.resolveAuthenticatedUser(authenticationContext)).thenReturn(user);
         when(userProfileResolver.buildUserProfile(user)).thenReturn(
             new UserProfile("Committee User", "committee.user@example.com • HCP 8.4 • Gold", "CU")
         );
-        StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver);
+        StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver, loggingMessageService);
         UI ui = attachToUi(statusBar);
 
         try {
@@ -49,13 +50,14 @@ class StatusBarTest {
     void statusUpdateEventReplacesDisplayedText() {
         AuthenticationContext authenticationContext = mock(AuthenticationContext.class);
         UserProfileResolver userProfileResolver = mock(UserProfileResolver.class);
+        LoggingMessageService loggingMessageService = mock(LoggingMessageService.class);
         GolfCanadaAuthenticatedUser user = authenticatedUser();
         when(authenticationContext.getAuthenticatedUser(GolfCanadaAuthenticatedUser.class)).thenReturn(Optional.of(user));
         when(userProfileResolver.resolveAuthenticatedUser(authenticationContext)).thenReturn(user);
         when(userProfileResolver.buildUserProfile(user)).thenReturn(
             new UserProfile("Committee User", "committee.user@example.com • HCP 8.4 • Gold", "CU")
         );
-        StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver);
+        StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver, loggingMessageService);
         UI ui = attachToUi(statusBar);
 
         try {
