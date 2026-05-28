@@ -23,19 +23,25 @@ class MemberProfileCard(profile: MemberProfile) : VerticalLayout() {
         }
 
         val idSpan = Span(
-            if (profile.cardId != null) AppMessages.translateCurrent("member.number", profile.cardId)
-            else AppMessages.translateCurrent("member.notAvailable")
+            profile.profile?.cardId ?: AppMessages.translateCurrent("member.notAvailable")
         ).apply {
             addClassNames(LumoUtility.FontSize.SMALL, LumoUtility.TextColor.SECONDARY)
         }
 
         val homeCourseSpan = Span(
-            profile.homeCourse ?: AppMessages.translateCurrent("member.notAvailable")
+            "${AppMessages.translateCurrent("member.homeCourseTitle")}: ${profile.profile?.homeCourse ?: AppMessages.translateCurrent(" member . notAvailable ")}"
         ).apply {
             addClassNames(LumoUtility.FontSize.SMALL, LumoUtility.TextColor.SECONDARY)
         }
 
-        val infoLayout = VerticalLayout(nameSpan, idSpan, homeCourseSpan).apply {
+        val handicapSpan = Span(
+            "${AppMessages.translateCurrent("member.handicapTitle")}: ${profile.profile?.handicap ?: AppMessages.translateCurrent("member.notAvailable")}"
+
+        ).apply {
+            addClassNames(LumoUtility.FontSize.SMALL, LumoUtility.TextColor.SECONDARY)
+        }
+
+        val infoLayout = VerticalLayout(nameSpan, idSpan, homeCourseSpan, handicapSpan).apply {
             isPadding = false
             isSpacing = false
         }
