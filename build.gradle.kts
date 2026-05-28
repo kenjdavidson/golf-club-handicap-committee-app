@@ -144,22 +144,32 @@ tasks.named("openApiGenerate") {
                 .replace("UriComponentsBuilder.fromHttpUrl(", "UriComponentsBuilder.fromUriString(")
             apiClientFile.writeText(content)
         }
-        if (profileClubFile.exists()) {
-            var content = profileClubFile.readText()
-            content = content.replace(
-                "  public ProfileClub() {\n  }\n",
-                """
+        check(profileClubFile.exists()) {
+            "Expected generated ProfileClub.java at ${profileClubFile.absolutePath}"
+        }
+        var content = profileClubFile.readText()
+        // Keep this replacement in sync with OpenAPI Generator 7.14.0 default constructor formatting.
+        val originalContent = content
+        content = content.replace(
+            "  public ProfileClub() {\n  }\n",
+            """
   public ProfileClub() {
   }
 
+  /**
+   * Supports Golf Canada payloads where {@code club} is a plain string value.
+   */
   @com.fasterxml.jackson.annotation.JsonCreator(mode = com.fasterxml.jackson.annotation.JsonCreator.Mode.DELEGATING)
   public static ProfileClub fromValue(String value) {
-    return value == null ? null : new ProfileClub().name(value);
+    return new ProfileClub().name(value);
   }
 """.trimIndent() + "\n"
-            )
-            profileClubFile.writeText(content)
+        )
+        check(content != originalContent) {
+            "Unable to patch generated ProfileClub.java for string deserialization. " +
+                "Update the replacement pattern if OpenAPI generator output changed."
         }
+        profileClubFile.writeText(content)
     }
 }
 
