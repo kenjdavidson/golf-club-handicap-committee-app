@@ -37,6 +37,12 @@ class AuthenticatedView(
         isSpacing = true
         isVisible = false
     }
+    private val navbarPanel = VerticalLayout().apply {
+        setWidthFull()
+        isPadding = false
+        isSpacing = false
+        add(navbar, mainMenuPanel)
+    }
     private val viewContainer = Div().apply {
         setSizeFull()
     }
@@ -59,7 +65,7 @@ class AuthenticatedView(
             mainMenuPanel.isVisible = !mainMenuPanel.isVisible
         }
 
-        addToNavbar(navbar, mainMenuPanel)
+        addToNavbar(navbarPanel)
 
         content = VerticalLayout(viewContainer, statusBar).apply {
             setSizeFull()
