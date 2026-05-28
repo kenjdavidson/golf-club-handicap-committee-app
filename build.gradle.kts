@@ -133,6 +133,9 @@ tasks.named("openApiGenerate") {
         val apiClientFile = layout.buildDirectory.file(
             "generated-sources/openapi/src/main/java/com/kenjdavidson/golf/handicap/golfcanada/invoker/ApiClient.java"
         ).get().asFile
+        val profileClubFile = layout.buildDirectory.file(
+            "generated-sources/openapi/src/main/java/com/kenjdavidson/golf/handicap/golfcanada/model/ProfileClub.java"
+        ).get().asFile
         if (apiClientFile.exists()) {
             var content = apiClientFile.readText()
             content = content
@@ -140,6 +143,22 @@ tasks.named("openApiGenerate") {
                 .replace("headers.entrySet()", "headers.headerSet()")
                 .replace("UriComponentsBuilder.fromHttpUrl(", "UriComponentsBuilder.fromUriString(")
             apiClientFile.writeText(content)
+        }
+        if (profileClubFile.exists()) {
+            var content = profileClubFile.readText()
+            content = content.replace(
+                "  public ProfileClub() {\n  }\n",
+                """
+  public ProfileClub() {
+  }
+
+  @com.fasterxml.jackson.annotation.JsonCreator(mode = com.fasterxml.jackson.annotation.JsonCreator.Mode.DELEGATING)
+  public static ProfileClub fromValue(String value) {
+    return value == null ? null : new ProfileClub().name(value);
+  }
+""".trimIndent() + "\n"
+            )
+            profileClubFile.writeText(content)
         }
     }
 }

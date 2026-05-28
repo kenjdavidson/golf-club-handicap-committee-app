@@ -62,6 +62,21 @@ class GolfCanadaNullableGenerationTest {
     }
 
     @Test
+    fun `profile payload with club as string deserializes`() {
+        val profileJson = """
+            {
+              "individualId": 11111111,
+              "club": "Blue Springs Golf Club"
+            }
+        """.trimIndent()
+
+        val profile = objectMapper.readValue(profileJson, Profile::class.java)
+
+        assertEquals(11111111L, requireNotNull(profile.individualId))
+        assertEquals("Blue Springs Golf Club", profile.club?.name)
+    }
+
+    @Test
     fun `history payload scale type id string deserializes`() {
         val historyEntryJson = """
             {
