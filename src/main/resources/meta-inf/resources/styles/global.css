@@ -27,6 +27,7 @@ vaadin-app-layout::part(content) {
     border: none;
     border-radius: 0;
     box-shadow: none;
+    overflow: visible;
 }
 
 .main-menu-panel {
