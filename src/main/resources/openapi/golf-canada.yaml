@@ -296,7 +296,13 @@ components:
         handicap:
           type: string
         club:
+          $ref: '#/components/schemas/ProfileClub'
+        city:
           type: string
+          nullable: true
+        region:
+          type: string
+          nullable: true
         membershipType:
           type: string
         expirationDate:
@@ -394,7 +400,7 @@ components:
           type: number
           format: double
         scaleTypeId:
-          type: integer
+          type: string
           nullable: true
         adjustedDifferential:
           type: number
@@ -459,3 +465,24 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/HistoryEntry'
+    ProfileClub:
+      type: object
+      properties:
+        name:
+          type: string
+        line1:
+          type: string
+        line2:
+          type: string
+          nullable: true
+        city:
+          type: string
+        region:
+          type: string
+        phone:
+          type: string
+        url:
+          type: string
+        logo@odata.mediaReadLink:
+          type: string
+          nullable: true
