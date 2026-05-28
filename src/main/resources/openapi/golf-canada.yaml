@@ -426,6 +426,7 @@ components:
           nullable: true
     ProfileClub:
       type: object
+      x-class-extra-annotation: "@tools.jackson.databind.annotation.JsonDeserialize(using = com.kenjdavidson.golf.handicap.golfcanada.model.ProfileClubDeserializer.class)"
       properties:
         name:
           type: string
