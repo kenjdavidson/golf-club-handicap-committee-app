@@ -264,22 +264,29 @@ components:
         individualId:
           type: integer
           format: int64
+          nullable: true
         name:
           type: string
+          nullable: true
         club:
           type: string
+          nullable: true
         region:
           type: string
+          nullable: true
         handicap:
           type: string
+          nullable: true
     MemberSearchResponse:
       type: object
       description: Response payload from the Golf Canada member search endpoint.
       properties:
         totalCount:
           type: integer
+          nullable: true
         members:
           type: array
+          nullable: true
           items:
             $ref: '#/components/schemas/MemberSearchEntry'
     Profile:
@@ -289,115 +296,161 @@ components:
         individualId:
           type: integer
           format: int64
+          nullable: true
         cardId:
           type: string
+          nullable: true
         name:
           type: string
+          nullable: true
         handicap:
           type: string
+          nullable: true
         club:
           $ref: '#/components/schemas/ProfileClub'
+          nullable: true
         level:
           type: string
+          nullable: true
         city:
           type: string
+          nullable: true
         region:
           type: string
+          nullable: true
         total:
           type: integer
+          nullable: true
         isFriend:
           type: boolean
+          nullable: true
         showComplete:
           type: boolean
+          nullable: true
         email:
           type: string
+          nullable: true
         membershipType:
           type: string
+          nullable: true
         expirationDate:
           type: string
           format: date-time
+          nullable: true
         homeCourse:
           type: string
+          nullable: true
         defaultTee:
           type: string
+          nullable: true
         courseHandicap:
           type: string
+          nullable: true
         winterHandicap:
           type: string
+          nullable: true
         winterCourseHandicap:
           type: string
+          nullable: true
         isWinterHandicapDisplayed:
           type: boolean
+          nullable: true
         scores:
           type: array
+          nullable: true
           items:
             type: object
             additionalProperties: true
         clubManagementGroup:
           type: string
+          nullable: true
         ytdScoreCount:
           type: integer
+          nullable: true
         ytdScoreAverage:
           type: number
           format: double
+          nullable: true
         ytdYear:
           type: integer
+          nullable: true
         transferClubName:
           type: string
+          nullable: true
         transferRequestDate:
           type: string
           format: date-time
+          nullable: true
         lastCardRequestedOn:
           type: string
           format: date-time
+          nullable: true
         expectedDeliveryOn:
           type: string
           format: date-time
+          nullable: true
         isCardsSentToClub:
           type: boolean
+          nullable: true
         lowHandicap:
           type: string
+          nullable: true
         lowHandicapOn:
           type: string
           format: date-time
+          nullable: true
         adjustedLowHandicap:
           type: string
+          nullable: true
         displayLowHandicap:
           type: string
+          nullable: true
         adjustedLowHandicapStartOn:
           type: string
           format: date-time
+          nullable: true
         adjustedLowHandicapEndOn:
           type: string
           format: date-time
+          nullable: true
         lowHandicapAdjustedOn:
           type: string
           format: date-time
+          nullable: true
         isLowIndexAdjusted:
           type: boolean
+          nullable: true
         subscriptionRenewsOn:
           type: string
           format: date-time
+          nullable: true
     ProfileClub:
       type: object
       properties:
         name:
           type: string
+          nullable: true
         line1:
           type: string
+          nullable: true
         line2:
           type: string
           nullable: true
         city:
           type: string
+          nullable: true
         region:
           type: string
+          nullable: true
         phone:
           type: string
+          nullable: true
         url:
           type: string
+          nullable: true
         "logo@odata.mediaReadLink":
           type: string
+          nullable: true
     HistoryEntry:
       type: object
       description: Handicap history entry payload as returned by Golf Canada.
@@ -405,34 +458,45 @@ components:
         id:
           type: integer
           format: int64
+          nullable: true
         date:
           type: string
           format: date-time
+          nullable: true
         course:
           type: string
+          nullable: true
         tee:
           type: string
+          nullable: true
         holes:
           type: string
+          nullable: true
         score:
           type: integer
+          nullable: true
         rating:
           type: number
           format: double
+          nullable: true
         slope:
           type: integer
+          nullable: true
         handicap:
           type: number
           format: double
+          nullable: true
         differential:
           type: number
           format: double
+          nullable: true
         scaleTypeId:
-          type: integer
+          type: string
           nullable: true
         adjustedDifferential:
           type: number
           format: double
+          nullable: true
         playedDifferential:
           type: number
           format: double
@@ -454,42 +518,57 @@ components:
         adjustment:
           type: number
           format: double
+          nullable: true
         pccAdjustment:
           type: number
           format: double
+          nullable: true
         isPCC:
           type: boolean
+          nullable: true
         type:
           type: string
+          nullable: true
         isHandicapScore:
           type: boolean
+          nullable: true
         isUsedInCalc:
           type: boolean
+          nullable: true
         isEdited:
           type: boolean
+          nullable: true
         canEdit:
           type: boolean
+          nullable: true
         canDelete:
           type: boolean
+          nullable: true
         adjustments:
           type: array
+          nullable: true
           items:
             type: object
             additionalProperties: true
         lowHandicap:
           type: number
           format: double
+          nullable: true
     HistoryResponse:
       type: object
       properties:
         individualId:
           type: integer
           format: int64
+          nullable: true
         total:
           type: integer
+          nullable: true
         showComplete:
           type: boolean
+          nullable: true
         data:
           type: array
+          nullable: true
           items:
             $ref: '#/components/schemas/HistoryEntry'

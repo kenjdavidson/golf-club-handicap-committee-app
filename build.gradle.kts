@@ -109,7 +109,8 @@ openApiGenerate {
     configOptions.set(
         mapOf(
             "useJakartaEe" to "true",
-            "dateLibrary" to "java8"
+            "dateLibrary" to "java8",
+            "openApiNullable" to "false"
         )
     )
     generateApiTests.set(false)
