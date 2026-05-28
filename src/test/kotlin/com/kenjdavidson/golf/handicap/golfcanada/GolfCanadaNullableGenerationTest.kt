@@ -58,7 +58,16 @@ class GolfCanadaNullableGenerationTest {
 
         assertEquals(11111111L, requireNotNull(profile.individualId))
         assertEquals("Blue Springs Golf Club", profile.club?.name)
+        assertEquals("13448 Dublin Line", profile.club?.line1)
         assertNull(profile.club?.line2)
+        assertEquals("Acton", profile.club?.city)
+        assertEquals("ON", profile.club?.region)
+        assertEquals("(519) 853-0904", profile.club?.phone)
+        assertEquals("http://bluesprings.clublink.ca/", profile.club?.url)
+        assertEquals(
+            "/uploads/Club/a2cf015335054e2c867905cbf8e0f730.jpg",
+            profile.club?.logoAtOdataMediaReadLink
+        )
     }
 
     @Test

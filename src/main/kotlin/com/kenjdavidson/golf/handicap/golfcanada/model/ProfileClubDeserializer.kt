@@ -12,11 +12,7 @@ class ProfileClubDeserializer : JsonDeserializer<ProfileClub?>() {
             JsonToken.VALUE_STRING -> ProfileClub().name(parser.valueAsString)
             JsonToken.VALUE_NULL -> null
             JsonToken.START_OBJECT -> deserializeObject(parser)
-            else -> context.reportInputMismatch(
-                ProfileClub::class.java,
-                "Expected club as string or object but got %s",
-                parser.currentToken()
-            )
+            else -> context.handleUnexpectedToken(ProfileClub::class.java, parser) as ProfileClub?
         }
     }
 
