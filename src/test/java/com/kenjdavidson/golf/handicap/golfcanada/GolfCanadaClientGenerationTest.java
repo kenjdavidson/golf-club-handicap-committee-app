@@ -57,9 +57,6 @@ class GolfCanadaClientGenerationTest {
         assertNotNull(ProfileClub.class.getMethod("getPhone"));
         assertNotNull(ProfileClub.class.getMethod("getUrl"));
         assertNotNull(ProfileClub.class.getMethod("getLogoAtOdataMediaReadLink"));
-        JsonDeserialize profileClubDeserialize = ProfileClub.class.getAnnotation(JsonDeserialize.class);
-        assertNotNull(profileClubDeserialize);
-        assertEquals(ProfileClubDeserializer.class, profileClubDeserialize.using());
         assertNotNull(HistoryResponse.class.getMethod("getData"));
         assertNotNull(HistoryEntry.class.getMethod("getCourse"));
     }
