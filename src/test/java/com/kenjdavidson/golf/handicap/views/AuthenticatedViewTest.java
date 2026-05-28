@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 
 class AuthenticatedViewTest {
     @Test
-    void rendersStatusBarAsBottomRowAndMainMenuAsSecondToolbar() throws Exception {
+    void menuPanelSpacingAndCursorBehavior() throws Exception {
         AuthenticationContext authenticationContext = mock(AuthenticationContext.class);
         UserProfileResolver userProfileResolver = mock(UserProfileResolver.class);
         GolfCanadaAuthenticatedUser user = authenticatedUser();
@@ -40,6 +40,7 @@ class AuthenticatedViewTest {
         );
 
         LoggingMessageService loggingMessageService = mock(LoggingMessageService.class);
+        when(loggingMessageService.getMessageCount()).thenReturn(0);
         Navbar navbar = new Navbar(authenticationContext, userProfileResolver);
         StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver, loggingMessageService);
         AuthenticatedView shell = new AuthenticatedView(navbar, statusBar);
