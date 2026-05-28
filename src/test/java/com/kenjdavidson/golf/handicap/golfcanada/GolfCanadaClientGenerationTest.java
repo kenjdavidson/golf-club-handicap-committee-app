@@ -7,6 +7,7 @@ import com.kenjdavidson.golf.handicap.golfcanada.model.AuthToken;
 import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryEntry;
 import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryResponse;
 import com.kenjdavidson.golf.handicap.golfcanada.model.Profile;
+import com.kenjdavidson.golf.handicap.golfcanada.model.ProfileClub;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
@@ -37,6 +38,23 @@ class GolfCanadaClientGenerationTest {
         assertEquals(HistoryResponse.class, getHistoryMethod.getReturnType());
 
         assertNotNull(Profile.class.getMethod("getClub"));
+        assertNotNull(Profile.class.getMethod("getHandicap"));
+        assertNotNull(Profile.class.getMethod("getLevel"));
+        assertNotNull(Profile.class.getMethod("getCity"));
+        assertNotNull(Profile.class.getMethod("getRegion"));
+        assertNotNull(Profile.class.getMethod("getTotal"));
+        assertNotNull(Profile.class.getMethod("getIsFriend"));
+        assertNotNull(Profile.class.getMethod("getShowComplete"));
+        assertNotNull(Profile.class.getMethod("getEmail"));
+        assertEquals(ProfileClub.class, Profile.class.getMethod("getClub").getReturnType());
+        assertNotNull(ProfileClub.class.getMethod("getName"));
+        assertNotNull(ProfileClub.class.getMethod("getLine1"));
+        assertNotNull(ProfileClub.class.getMethod("getLine2"));
+        assertNotNull(ProfileClub.class.getMethod("getCity"));
+        assertNotNull(ProfileClub.class.getMethod("getRegion"));
+        assertNotNull(ProfileClub.class.getMethod("getPhone"));
+        assertNotNull(ProfileClub.class.getMethod("getUrl"));
+        assertNotNull(ProfileClub.class.getMethod("getLogoAtOdataMediaReadLink"));
         assertNotNull(HistoryResponse.class.getMethod("getData"));
         assertNotNull(HistoryEntry.class.getMethod("getCourse"));
     }

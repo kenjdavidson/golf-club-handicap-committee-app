@@ -298,6 +298,19 @@ components:
         club:
           $ref: '#/components/schemas/ProfileClub'
         city:
+        level:
+          type: string
+        city:
+          type: string
+        region:
+          type: string
+        total:
+          type: integer
+        isFriend:
+          type: boolean
+        showComplete:
+          type: boolean
+        email:
           type: string
           nullable: true
         region:
@@ -370,6 +383,26 @@ components:
         subscriptionRenewsOn:
           type: string
           format: date-time
+    ProfileClub:
+      type: object
+      properties:
+        name:
+          type: string
+        line1:
+          type: string
+        line2:
+          type: string
+          nullable: true
+        city:
+          type: string
+        region:
+          type: string
+        phone:
+          type: string
+        url:
+          type: string
+        "logo@odata.mediaReadLink":
+          type: string
     HistoryEntry:
       type: object
       description: Handicap history entry payload as returned by Golf Canada.

@@ -1,6 +1,7 @@
 package com.kenjdavidson.golf.handicap.views;
 
 import com.kenjdavidson.golf.handicap.components.Navbar;
+import com.kenjdavidson.golf.handicap.components.LoggingMessageService;
 import com.kenjdavidson.golf.handicap.components.StatusBar;
 import com.kenjdavidson.golf.handicap.components.UserProfile;
 import com.kenjdavidson.golf.handicap.components.UserProfileResolver;
@@ -38,12 +39,19 @@ class AuthenticatedViewTest {
             new UserProfile("Committee User", "committee.user@example.com • HCP 8.4 • Gold", "CU")
         );
 
+        LoggingMessageService loggingMessageService = mock(LoggingMessageService.class);
         Navbar navbar = new Navbar(authenticationContext, userProfileResolver);
-        StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver);
+        StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver, loggingMessageService);
         AuthenticatedView shell = new AuthenticatedView(navbar, statusBar);
 
         HorizontalLayout mainMenuPanel = readMainMenuPanel(shell);
         assertFalse(mainMenuPanel.isVisible());
+
+        VerticalLayout navbarPanel = readNavbarPanel(shell);
+        List<Component> toolbarRows = navbarPanel.getChildren().toList();
+        assertEquals(2, toolbarRows.size());
+        assertEquals(navbar, toolbarRows.get(0));
+        assertEquals(mainMenuPanel, toolbarRows.get(1));
 
         VerticalLayout content = assertInstanceOf(VerticalLayout.class, shell.getContent());
         List<Component> rows = content.getChildren().toList();
@@ -59,6 +67,12 @@ class AuthenticatedViewTest {
         var field = AuthenticatedView.class.getDeclaredField("mainMenuPanel");
         field.setAccessible(true);
         return (HorizontalLayout) field.get(shell);
+    }
+
+    private VerticalLayout readNavbarPanel(AuthenticatedView shell) throws Exception {
+        var field = AuthenticatedView.class.getDeclaredField("navbarPanel");
+        field.setAccessible(true);
+        return (VerticalLayout) field.get(shell);
     }
 
     private Button readAppMenuButton(Navbar navbar) throws Exception {
