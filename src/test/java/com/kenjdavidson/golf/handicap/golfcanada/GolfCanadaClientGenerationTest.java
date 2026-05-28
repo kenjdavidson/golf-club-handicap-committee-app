@@ -8,6 +8,8 @@ import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryEntry;
 import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryResponse;
 import com.kenjdavidson.golf.handicap.golfcanada.model.Profile;
 import com.kenjdavidson.golf.handicap.golfcanada.model.ProfileClub;
+import com.kenjdavidson.golf.handicap.golfcanada.model.ProfileClubDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
@@ -55,6 +57,9 @@ class GolfCanadaClientGenerationTest {
         assertNotNull(ProfileClub.class.getMethod("getPhone"));
         assertNotNull(ProfileClub.class.getMethod("getUrl"));
         assertNotNull(ProfileClub.class.getMethod("getLogoAtOdataMediaReadLink"));
+        JsonDeserialize profileClubDeserialize = ProfileClub.class.getAnnotation(JsonDeserialize.class);
+        assertNotNull(profileClubDeserialize);
+        assertEquals(ProfileClubDeserializer.class, profileClubDeserialize.using());
         assertNotNull(HistoryResponse.class.getMethod("getData"));
         assertNotNull(HistoryEntry.class.getMethod("getCourse"));
     }
