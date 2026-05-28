@@ -66,10 +66,6 @@ class SingleFileUploadCard : HorizontalLayout(), LocaleChangeObserver {
             isPadding = true
             isSpacing = true
             defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
-            style["border-width"] = "1px"
-            style["border-style"] = "dashed"
-            style["border-color"] = "var(--lumo-primary-color-50pct)"
-            style["border-radius"] = "var(--lumo-border-radius-m)"
             style["background"] = "var(--lumo-primary-color-10pct)"
             style["box-sizing"] = "border-box"
         }
