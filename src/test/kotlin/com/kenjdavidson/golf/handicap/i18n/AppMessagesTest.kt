@@ -13,6 +13,9 @@ class AppMessagesTest {
         assertEquals("Scheduled Course", AppMessages.translate(Locale.ENGLISH, "main.rounds.course"))
         assertEquals("Played Course", AppMessages.translate(Locale.ENGLISH, "main.rounds.gcCourse"))
         assertEquals("No Matching Score", AppMessages.translate(Locale.ENGLISH, "main.rounds.scheduledOnly"))
+        assertEquals("Terrain planifié", AppMessages.translate(Locale.FRENCH, "main.rounds.course"))
+        assertEquals("Terrain joué", AppMessages.translate(Locale.FRENCH, "main.rounds.gcCourse"))
+        assertEquals("Aucun score correspondant", AppMessages.translate(Locale.FRENCH, "main.rounds.scheduledOnly"))
     }
 
     @Test
