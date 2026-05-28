@@ -293,6 +293,8 @@ components:
           type: string
         name:
           type: string
+        handicap:
+          type: string
         club:
           type: string
         membershipType:
