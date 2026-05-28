@@ -23,11 +23,10 @@ vaadin-context-menu-item {
 }
 
 .main-menu-panel {
-    background: var(--lumo-primary-color-10pct);
-    border-radius: var(--lumo-border-radius-l);
-    margin: 0.5rem 1rem 0;
-    padding: 0.5rem 0.75rem;
-    width: calc(100% - 2rem);
+    background: var(--lumo-contrast-5pct);
+    border-bottom: 1px solid var(--lumo-contrast-10pct);
+    margin: 0;
+    padding: 0.5rem 1rem;
     box-sizing: border-box;
 }
 
@@ -35,6 +34,7 @@ vaadin-context-menu-item {
     border: 1px solid var(--lumo-primary-color-30pct);
     border-radius: 999px;
     background: var(--lumo-base-color);
+    cursor: pointer;
     transition: background-color 120ms ease, border-color 120ms ease;
 }
 
