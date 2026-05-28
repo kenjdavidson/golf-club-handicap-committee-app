@@ -51,7 +51,10 @@ class Navbar(
         element.setAttribute("role", "button")
     }
     private val appMenuButton = Button(VaadinIcon.GRID_BIG.create()).apply {
-        addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_TERTIARY_INLINE)
+        addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_TERTIARY)
+        style["width"] = "var(--lumo-size-m)"
+        style["height"] = "var(--lumo-size-m)"
+        style["min-width"] = "var(--lumo-size-m)"
         style["cursor"] = "pointer"
         element.setAttribute("role", "button")
         addClickListener {
@@ -95,7 +98,7 @@ class Navbar(
         userMenu.addSeparator()
 
         return HorizontalLayout(appMenuButton, avatar).apply {
-            isSpacing = false
+            isSpacing = true
             defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
 
             style["margin-left"] = "auto"

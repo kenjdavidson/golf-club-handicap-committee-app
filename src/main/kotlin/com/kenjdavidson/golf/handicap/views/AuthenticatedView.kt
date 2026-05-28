@@ -9,7 +9,6 @@ import com.vaadin.flow.component.applayout.AppLayout
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.dependency.StyleSheet
 import com.vaadin.flow.component.html.Div
-import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.i18n.LocaleChangeEvent
@@ -36,11 +35,10 @@ class AuthenticatedView(
         setWidthFull()
         isPadding = false
         isSpacing = true
-        defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
         isVisible = false
     }
     private val viewContainer = Div().apply {
-        setWidthFull()
+        setSizeFull()
     }
 
     init {
@@ -61,19 +59,13 @@ class AuthenticatedView(
             mainMenuPanel.isVisible = !mainMenuPanel.isVisible
         }
 
-        addToNavbar(
-            VerticalLayout(navbar, statusBar).apply {
-                setWidthFull()
-                isPadding = false
-                isSpacing = false
-                defaultHorizontalComponentAlignment = FlexComponent.Alignment.STRETCH
-            }
-        )
+        addToNavbar(navbar, mainMenuPanel)
 
-        content = VerticalLayout(mainMenuPanel, viewContainer).apply {
-            setWidthFull()
+        content = VerticalLayout(viewContainer, statusBar).apply {
+            setSizeFull()
             isPadding = false
             isSpacing = false
+            expand(viewContainer)
         }
     }
 
