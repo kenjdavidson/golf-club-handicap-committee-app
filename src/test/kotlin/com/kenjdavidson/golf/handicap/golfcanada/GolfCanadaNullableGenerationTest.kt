@@ -56,7 +56,7 @@ class GolfCanadaNullableGenerationTest {
 
         val profile = objectMapper.readValue(profileJson, Profile::class.java)
 
-        assertEquals(11111111L, profile.individualId?.toLong())
+        assertEquals(11111111L, requireNotNull(profile.individualId))
         assertEquals("Blue Springs Golf Club", profile.club?.name)
         assertNull(profile.club?.line2)
     }
