@@ -46,6 +46,8 @@ class AuthenticatedViewTest {
 
         HorizontalLayout mainMenuPanel = readMainMenuPanel(shell);
         assertFalse(mainMenuPanel.isVisible());
+        assertEquals("var(--lumo-space-m)", mainMenuPanel.getStyle().get("padding-left"));
+        assertEquals("var(--lumo-space-m)", mainMenuPanel.getStyle().get("padding-right"));
 
         VerticalLayout navbarPanel = readNavbarPanel(shell);
         List<Component> toolbarRows = navbarPanel.getChildren().toList();
@@ -61,6 +63,8 @@ class AuthenticatedViewTest {
 
         readAppMenuButton(navbar).click();
         assertTrue(mainMenuPanel.isVisible());
+        assertEquals("pointer", readSingleFileButton(shell).getStyle().get("cursor"));
+        assertEquals("pointer", readWorkspaceButton(shell).getStyle().get("cursor"));
     }
 
     private HorizontalLayout readMainMenuPanel(AuthenticatedView shell) throws Exception {
@@ -79,6 +83,18 @@ class AuthenticatedViewTest {
         var field = Navbar.class.getDeclaredField("appMenuButton");
         field.setAccessible(true);
         return (Button) field.get(navbar);
+    }
+
+    private Button readSingleFileButton(AuthenticatedView shell) throws Exception {
+        var field = AuthenticatedView.class.getDeclaredField("singleFileButton");
+        field.setAccessible(true);
+        return (Button) field.get(shell);
+    }
+
+    private Button readWorkspaceButton(AuthenticatedView shell) throws Exception {
+        var field = AuthenticatedView.class.getDeclaredField("workspaceButton");
+        field.setAccessible(true);
+        return (Button) field.get(shell);
     }
 
     private GolfCanadaAuthenticatedUser authenticatedUser() {

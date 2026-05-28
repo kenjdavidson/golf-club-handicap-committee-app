@@ -26,9 +26,11 @@ class AuthenticatedView(
 ) : AppLayout(), LocaleChangeObserver {
     private val singleFileButton = Button().apply {
         addClassName("main-menu-action-button")
+        style["cursor"] = "pointer"
     }
     private val workspaceButton = Button().apply {
         addClassName("main-menu-action-button")
+        style["cursor"] = "pointer"
     }
     private val mainMenuPanel = HorizontalLayout(singleFileButton, workspaceButton).apply {
         addClassName("main-menu-panel")
@@ -36,6 +38,8 @@ class AuthenticatedView(
         isPadding = false
         isSpacing = true
         isVisible = false
+        style["padding-left"] = "var(--lumo-space-m)"
+        style["padding-right"] = "var(--lumo-space-m)"
     }
     private val navbarPanel = VerticalLayout().apply {
         setWidthFull()
