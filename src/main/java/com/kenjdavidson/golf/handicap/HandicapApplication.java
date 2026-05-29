@@ -2,6 +2,9 @@ package com.kenjdavidson.golf.handicap;
 
 import com.kenjdavidson.golf.handicap.config.GolfCanadaSslTrustConfigurator;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.Transport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -17,6 +20,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  */
 @Slf4j
 @SpringBootApplication
+@Push(value = PushMode.AUTOMATIC, transport = Transport.LONG_POLLING)
 public class HandicapApplication implements AppShellConfigurator {
     public static void main(String[] args) {
         GolfCanadaSslTrustConfigurator.configureDefaultSslTrust();
