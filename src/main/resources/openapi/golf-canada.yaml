@@ -29,7 +29,7 @@ paths:
         '401':
           description: Not authorized
 
-  /api/members/{userId}/getSnapshot:
+  /api/scores/getProfile:
     get:
       summary: Retrieve member profile information
       tags: [Members]
@@ -37,8 +37,8 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - name: userId
-          in: path
+        - name: individualId
+          in: query
           required: true
           schema:
             type: integer
