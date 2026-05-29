@@ -1,6 +1,9 @@
 package com.kenjdavidson.golf.handicap;
 
 import com.kenjdavidson.golf.handicap.config.GolfCanadaSslTrustConfigurator;
+import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.theme.lumo.Lumo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;

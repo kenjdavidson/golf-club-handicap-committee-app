@@ -32,7 +32,8 @@ class StatusBar(
     private val status = Span().apply {
         addClassNames(
             LumoUtility.FontSize.SMALL,
-            LumoUtility.TextColor.SECONDARY
+            LumoUtility.TextColor.SECONDARY,
+            LumoUtility.Flex.GROW_NONE
         )
     }
 
@@ -41,7 +42,8 @@ class StatusBar(
     ).apply {
         addClassNames(
             LumoUtility.FontSize.SMALL,
-            LumoUtility.TextColor.SECONDARY
+            LumoUtility.TextColor.SECONDARY,
+            LumoUtility.Flex.GROW_NONE
         )
     }
 
@@ -58,14 +60,14 @@ class StatusBar(
         add(status, errorIndicator, context)
         setWidthFull()
         defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
-        expand(status)
         addClassNames(
             LumoUtility.Padding.Horizontal.MEDIUM,
-            LumoUtility.Padding.Vertical.SMALL
+            LumoUtility.Padding.Vertical.SMALL,
         )
         style["background"] = "var(--lumo-base-color)"
         style["border-top"] = "1px solid var(--lumo-contrast-10pct)"
         style["flex-shrink"] = "0"
+        style["justify-content"] = "space-between"
         refreshErrorIndicator(AppMessages.resolveLocale())
     }
 

@@ -9,11 +9,12 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.i18n.LocaleChangeEvent
 import com.vaadin.flow.i18n.LocaleChangeObserver
 import com.vaadin.flow.router.HasDynamicTitle
+import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
 import jakarta.annotation.security.PermitAll
 import org.springframework.beans.factory.annotation.Value
 
-@Route(value = "about", layout = AuthenticatedView::class)
+@Route(value = "about", layout = AuthenticatedLayout::class)
 @PermitAll
 class AboutView(
     private val markdownContentLoader: MarkdownContentLoader,
