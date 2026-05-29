@@ -41,7 +41,7 @@ class HandicapApplicationMainTest {
             verify(builder).headless(false);
             verify(builder).run(eq(args));
             sslConfigurator.verify(GolfCanadaSslTrustConfigurator::configureDefaultSslTrust);
-            desktopLauncher.verify(() -> DesktopAppLauncher.launchApp(args, "http://localhost:8080"));
+            desktopLauncher.verify(() -> DesktopAppLauncher.launchApp(args));
         }
     }
 }
