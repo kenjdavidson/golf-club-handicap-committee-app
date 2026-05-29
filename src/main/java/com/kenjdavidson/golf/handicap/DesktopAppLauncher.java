@@ -6,6 +6,8 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.Taskbar;
@@ -16,6 +18,7 @@ import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class DesktopAppLauncher extends Application {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DesktopAppLauncher.class);
     private static final String DEFAULT_URL = "http://localhost:8080";
     private static final AtomicReference<String> launchUrl = new AtomicReference<>(DEFAULT_URL);
 
@@ -53,6 +56,7 @@ public class DesktopAppLauncher extends Application {
             stage.getIcons().add(new Image(new ByteArrayInputStream(iconBytes)));
             setTaskbarIcon(iconBytes);
         } catch (IOException ignored) {
+            LOGGER.debug("Failed to load application icon from /static/icons/app-icon.png.", ignored);
         }
     }
 
@@ -69,7 +73,10 @@ public class DesktopAppLauncher extends Application {
             if (iconImage != null) {
                 taskbar.setIconImage(iconImage);
             }
-        } catch (IOException | UnsupportedOperationException | SecurityException ignored) {
+        } catch (IOException ignored) {
+            LOGGER.debug("Failed to decode application icon for taskbar usage.", ignored);
+        } catch (UnsupportedOperationException | SecurityException ignored) {
+            LOGGER.debug("Taskbar icon is not supported or allowed on this platform.", ignored);
         }
     }
 }
