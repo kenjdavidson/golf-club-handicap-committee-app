@@ -1,9 +1,7 @@
 package com.kenjdavidson.golf.handicap;
 
 import com.kenjdavidson.golf.handicap.config.GolfCanadaSslTrustConfigurator;
-import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.theme.lumo.Lumo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -18,11 +16,12 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
  */
 @Slf4j
 @SpringBootApplication
-public class HandicapApplication {
+public class HandicapApplication implements AppShellConfigurator {
     public static void main(String[] args) {
         GolfCanadaSslTrustConfigurator.configureDefaultSslTrust();
         new SpringApplicationBuilder(HandicapApplication.class)
                 .headless(false)
                 .run(args);
+        DesktopAppLauncher.launchApp(args);
     }
 }
