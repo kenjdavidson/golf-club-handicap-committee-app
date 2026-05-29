@@ -4,6 +4,7 @@ plugins {
     id("org.springframework.boot") version "4.0.0"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.vaadin") version "25.1.5"
+    id("org.openjfx.javafxplugin") version "0.1.0"
     id("org.openapi.generator") version "7.14.0"
     id("org.graalvm.buildtools.native") version "0.10.3" apply false
     kotlin("jvm") version "2.2.0"
@@ -31,6 +32,11 @@ val isProduction = project.hasProperty("production")
 
 vaadin {
     productionMode = isProduction
+}
+
+javafx {
+    version = "21.0.7"
+    modules("javafx.controls", "javafx.web")
 }
 
 dependencyManagement {

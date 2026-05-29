@@ -3,7 +3,7 @@ Desktop application used by Handicap Committees to verify members
 
 Includes the Golf Canada SSL certificate at `src/main/resources/certs/golfcanada.pem`, loaded into the application's SSL trust configuration during startup.
 
-Sign in with a valid Golf Canada username and password when the application opens the login page.
+Sign in with a valid Golf Canada username and password when the desktop window opens the login page.
 
 For local development or testing against a mock auth endpoint, the Golf Canada base URL can be overridden with `APP_GOLF_CANADA_BASE_URL`.
 

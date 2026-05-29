@@ -17,14 +17,14 @@ import java.util.Objects;
  * Attempts to open the local browser pointing to the application.
  */
 @Component
-public class OpenBrowserApplicationRunner implements ApplicationRunner {
+public class BrowserLauncher implements ApplicationRunner {
 
-    private static final Logger log = LoggerFactory.getLogger(OpenBrowserApplicationRunner.class);
+    private static final Logger log = LoggerFactory.getLogger(BrowserLauncher.class);
 
     private final Environment environment;
     private final WebServerApplicationContext webServerContext;
 
-    public OpenBrowserApplicationRunner(
+    public BrowserLauncher(
             Environment environment,
             WebServerApplicationContext webServerContext
     ) {
