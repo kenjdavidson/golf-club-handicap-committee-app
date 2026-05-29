@@ -65,8 +65,8 @@ class MainView(
         }
 
         setWidthFull()
-        isPadding = true
-        isSpacing = true
+        isSpacing = false
+        isPadding = false
         element.setAttribute("tabindex", "0")
         element.setAttribute("aria-label", AppMessages.translateCurrent("main.aria.mainContent"))
         add(uploadCard, verificationResult)

@@ -37,7 +37,15 @@ class Navbar(
 ) : HorizontalLayout(), LocaleChangeObserver {
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
     private val userProfile = userProfileResolver.buildUserProfile(authenticatedUser)
-    private val heading = H2("⛳ ${AppMessages.translateCurrent("app.title")}").apply {
+    private val icon = H2("⛳").apply {
+        addClassNames(LumoUtility.Margin.Bottom.XSMALL)
+        style["cursor"] = "pointer"
+        element.setAttribute("role", "button")
+        addClickListener {
+            UI.getCurrent()?.navigate(MainView::class.java)
+        }
+    }
+    private val heading = H2(AppMessages.translateCurrent("app.title")).apply {
         addClassNames(LumoUtility.Margin.Bottom.XSMALL)
         style["cursor"] = "pointer"
         element.setAttribute("role", "button")
@@ -83,7 +91,7 @@ class Navbar(
     }
 
     init {
-        add(heading, buildUserSection())
+        add(buildTitleSection(), buildUserSection())
 
         setWidthFull()
         isPadding = true
@@ -91,6 +99,13 @@ class Navbar(
         defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
         initializeSavedLocale()
         refreshLocalizedText(AppMessages.resolveLocale())
+    }
+
+    private fun buildTitleSection(): HorizontalLayout {
+        return HorizontalLayout(icon, heading).apply {
+            isSpacing = true
+            defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
+        }
     }
 
     private fun buildUserSection(): HorizontalLayout {
@@ -136,7 +151,7 @@ class Navbar(
     }
 
     private fun refreshLocalizedText(locale: Locale) {
-        heading.text = "⛳ ${AppMessages.translate(locale, "app.title")}"
+        heading.text = AppMessages.translate(locale, "app.title")
         appMenuButton.element.setAttribute("aria-label", AppMessages.translate(locale, "menu.openMainMenu"))
         avatar.element.setAttribute("aria-label", AppMessages.translate(locale, "menu.openUserMenu"))
         memberNumber.text = buildMemberNumber(locale)
@@ -187,8 +202,8 @@ class Navbar(
     }
 
     private fun styleMenuItem(menuItem: MenuItem) {
-        menuItem.style["min-width"] = "200px"
-        menuItem.style["width"] = "200px"
+        menuItem.style["min-width"] = "250px"
+        menuItem.style["width"] = "250px"
     }
 
     private fun buildLanguageLabel(locale: Locale, optionLocale: Locale, currentLanguage: String): String {
