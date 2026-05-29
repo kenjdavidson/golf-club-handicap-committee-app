@@ -23,8 +23,7 @@ def jpackageMacPackageIdentifier = project.findProperty('jpackage.mac.package.id
 def jpackageMacPackageName = project.findProperty('jpackage.mac.package.name') ?: 'Golf Handicap Committee'
 def jpackageMacOptions = [
     '--mac-package-identifier', jpackageMacPackageIdentifier,
-    '--mac-package-name', jpackageMacPackageName,
-    '--mac-sign-identity', ''
+    '--mac-package-name', jpackageMacPackageName
 ]
 def jpackageWindowsUpgradeUuid = project.findProperty('jpackage.win.upgrade.uuid') ?: '11ad890c-5257-4cdd-bf76-bbe2f250f557'
 def versionFile = rootProject.file('gradle.properties')
