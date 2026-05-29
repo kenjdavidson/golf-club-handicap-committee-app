@@ -100,7 +100,7 @@ class MainViewTest {
             List<Component> viewChildren = view.getChildren().collect(Collectors.toList());
             assertEquals(2, viewChildren.size());
             assertEquals("sticky", viewChildren.get(0).getElement().getStyle().get("position"));
-            assertTrue(containsText(shell, "Verify"));
+            assertFalse(containsText(shell, "Verify"));
             assertTrue(containsText(shell, "Single File Validation"));
             assertTrue(containsText(shell, "Workspace Validation"));
             assertTrue(containsText(shell, "Logged in as Committee User"));

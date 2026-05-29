@@ -1,9 +1,7 @@
 package com.kenjdavidson.golf.handicap.components
 
 import com.kenjdavidson.golf.handicap.i18n.AppMessages
-import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.html.Span
-import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.upload.Upload
@@ -35,8 +33,8 @@ class SingleFileUploadCard : HorizontalLayout(), LocaleChangeObserver {
                     uploadedBytes = bytes
                     uploadedFileName = event.fileName
                     fileName.text = event.fileName
-                    syncVerifyEnabled()
                     fileSelectedListener?.invoke(event.fileName)
+                    verifyIfReady()
                 }
             } catch (exception: Exception) {
                 val message = "${AppMessages.translateCurrent("upload.failed")}: ${exception.message ?: AppMessages.translateCurrent("upload.unknownError")}"
@@ -51,15 +49,6 @@ class SingleFileUploadCard : HorizontalLayout(), LocaleChangeObserver {
         text = AppMessages.translateCurrent("upload.button")
     }
 
-    private val verifyButton = Button(AppMessages.translateCurrent("upload.verify"), VaadinIcon.CHECK.create()).apply {
-        isEnabled = false
-        addClickListener {
-            val fileBytes = uploadedBytes ?: return@addClickListener
-            val name = uploadedFileName ?: return@addClickListener
-            verifyHandler?.invoke(name, fileBytes)
-        }
-    }
-
     init {
         val uploadPanel = HorizontalLayout(fileName, upload).apply {
             setWidthFull()
@@ -70,7 +59,7 @@ class SingleFileUploadCard : HorizontalLayout(), LocaleChangeObserver {
             style["box-sizing"] = "border-box"
         }
 
-        add(uploadPanel, verifyButton)
+        add(uploadPanel)
         setWidthFull()
         isPadding = false
         isSpacing = true
@@ -84,11 +73,7 @@ class SingleFileUploadCard : HorizontalLayout(), LocaleChangeObserver {
 
     fun setVerifyHandler(handler: (String, ByteArray) -> Unit) {
         verifyHandler = handler
-        syncVerifyEnabled()
-    }
-
-    fun setVerifyButtonLabel(label: String) {
-        verifyButton.text = label
+        verifyIfReady()
     }
 
     fun setFileSelectedListener(listener: (String) -> Unit) {
@@ -103,16 +88,20 @@ class SingleFileUploadCard : HorizontalLayout(), LocaleChangeObserver {
         uploadedBytes = null
         uploadedFileName = null
         fileName.text = AppMessages.translateCurrent("upload.noFileSelected")
-        syncVerifyEnabled()
     }
 
-    private fun syncVerifyEnabled() {
-        verifyButton.isEnabled = verifyHandler != null && uploadedBytes?.isNotEmpty() == true
+    private fun verifyIfReady() {
+        val handler = verifyHandler ?: return
+        val name = uploadedFileName ?: return
+        val fileBytes = uploadedBytes ?: return
+        if (fileBytes.isEmpty()) {
+            return
+        }
+        handler.invoke(name, fileBytes)
     }
 
     private fun refreshLocalizedText(locale: Locale) {
         upload.text = AppMessages.translate(locale, "upload.button")
-        verifyButton.text = AppMessages.translate(locale, "upload.verify")
         if (uploadedFileName == null) {
             fileName.text = AppMessages.translate(locale, "upload.noFileSelected")
         }
