@@ -5,6 +5,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * Entry point for the Golf Club Handicap Committee desktop application.
@@ -19,9 +20,11 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 public class HandicapApplication implements AppShellConfigurator {
     public static void main(String[] args) {
         GolfCanadaSslTrustConfigurator.configureDefaultSslTrust();
-        new SpringApplicationBuilder(HandicapApplication.class)
+        ConfigurableApplicationContext context = new SpringApplicationBuilder(HandicapApplication.class)
                 .headless(false)
                 .run(args);
-        DesktopAppLauncher.launchApp(args);
+        String protocol = context.getEnvironment().getProperty("server.ssl.key-store") != null ? "https" : "http";
+        String port = context.getEnvironment().getProperty("server.port", "8080");
+        DesktopAppLauncher.launchApp(args, protocol + "://localhost:" + port);
     }
 }
