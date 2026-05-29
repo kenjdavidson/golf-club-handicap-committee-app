@@ -17,20 +17,20 @@ import kotlin.streams.toList
 
 class NavbarTest {
     @Test
-    fun `uses consistent 200px width for user menu and language submenu items`() {
+    fun `uses consistent 250px width for user menu and language submenu items`() {
         val navbar = buildNavbar()
         val menu = readUserMenu(navbar)
 
         menu.items.forEach { menuItem ->
-            assertEquals("200px", menuItem.style.get("min-width"))
-            assertEquals("200px", menuItem.style.get("width"))
+            assertEquals("250px", menuItem.style.get("min-width"))
+            assertEquals("250px", menuItem.style.get("width"))
         }
 
         val languageLabel = AppMessages.translate(Locale.ENGLISH, "menu.language")
         val languageItem = menu.items.first { it.text == languageLabel }
         languageItem.subMenu.items.forEach { menuItem ->
-            assertEquals("200px", menuItem.style.get("min-width"))
-            assertEquals("200px", menuItem.style.get("width"))
+            assertEquals("250px", menuItem.style.get("min-width"))
+            assertEquals("250px", menuItem.style.get("width"))
         }
     }
 
