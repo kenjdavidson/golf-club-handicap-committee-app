@@ -19,6 +19,7 @@ class SecurityConfig(
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http.authorizeHttpRequests { requests ->
+            requests.requestMatchers("/styles/**").permitAll()
             requests.requestMatchers("/h2-console/**").denyAll()
         }
         http.authenticationProvider(golfCanadaAuthenticationProvider)

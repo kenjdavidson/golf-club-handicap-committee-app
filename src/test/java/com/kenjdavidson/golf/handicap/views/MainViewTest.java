@@ -94,7 +94,7 @@ class MainViewTest {
              MockedStatic<RouteConfiguration> routeConfigStatic = mockStatic(RouteConfiguration.class)) {
             routeConfigStatic.when(() -> RouteConfiguration.forRegistry(any())).thenReturn(mockRouteConfig);
             MainView view = new MainView(authenticationContext, userProfileResolver, verificationService, eventPublisher, loggingMessageService);
-            AuthenticatedView shell = new AuthenticatedView(navbar, statusBar);
+            AuthenticatedLayout shell = new AuthenticatedLayout(navbar, statusBar);
             shell.showRouterLayoutContent(view);
 
             List<Component> viewChildren = view.getChildren().collect(Collectors.toList());

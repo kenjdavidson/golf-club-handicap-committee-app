@@ -23,7 +23,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-@Route(value = "messages", layout = AuthenticatedView::class)
+@Route(value = "messages", layout = AuthenticatedLayout::class)
 @PageTitle("Messages | Handicap Committee App")
 @PermitAll
 class MessagesView(

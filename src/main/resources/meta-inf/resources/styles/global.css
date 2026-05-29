@@ -19,23 +19,7 @@ vaadin-context-menu-item:hover {
 }
 
 vaadin-context-menu-item {
-    min-width: 150px;
-}
-
-vaadin-app-layout::part(content) {
-    margin: 0;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-    overflow: visible;
-}
-
-.main-menu-panel {
-    background: var(--lumo-contrast-5pct);
-    border-bottom: 1px solid var(--lumo-contrast-10pct);
-    margin: 0;
-    padding: 0.5rem 1rem;
-    box-sizing: border-box;
+    min-width: 250px;
 }
 
 .main-menu-action-button {
@@ -49,4 +33,31 @@ vaadin-app-layout::part(content) {
 .main-menu-action-button:hover {
     background: var(--lumo-primary-color-10pct);
     border-color: var(--lumo-primary-color-50pct);
+}
+
+#app-shell-container {
+    margin: 0;
+    padding: 0;
+    height: 100vh; /* Force layout to take exactly the view height */
+    overflow: hidden; /* Prevents the outer window itself from scrolling */
+}
+
+.app-header {
+    flex-shrink: 0; /* Header stays exactly its preferred size */
+    color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.app-main-content {
+    flex-grow: 1; /* Tells content area to expand and occupy all remaining space */
+    overflow-y: auto; /* Active scrolling ONLY on the main view area when overflowed */
+    padding: 2rem;
+    background-color: #f8f9fa;
+}
+
+.app-footer {
+    flex-shrink: 0; /* Footer stays pinned exactly at its preferred size */
+    border-top: 1px solid #e2e8f0;
+    color: #64748b;
+    text-align: center;
 }

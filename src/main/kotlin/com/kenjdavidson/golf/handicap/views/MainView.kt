@@ -31,7 +31,7 @@ import com.vaadin.flow.spring.security.AuthenticationContext
 import jakarta.annotation.security.PermitAll
 import org.springframework.context.ApplicationEventPublisher
 
-@Route(value = "", layout = AuthenticatedView::class)
+@Route(value = "", layout = AuthenticatedLayout::class)
 @PageTitle("Handicap Committee App")
 @PermitAll
 class MainView(
