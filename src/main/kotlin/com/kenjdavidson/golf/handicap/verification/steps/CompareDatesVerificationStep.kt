@@ -32,12 +32,10 @@ class CompareDatesVerificationStep(
             .groupBy({ it.first }, { it.second })
 
         val roundsByDate = parsedHistory.rounds.groupBy { it.playedDate }
-        val sortedRoundDates = (roundsByDate.keys + entriesByDate.keys).sortedDescending()
-        val roundComparisons = sortedRoundDates.flatMap { date ->
+        val roundComparisons = roundsByDate.keys.sortedDescending().flatMap { date ->
             val scheduledRounds = roundsByDate[date].orEmpty()
             val golfCanadaRounds = entriesByDate[date].orEmpty()
-            val rowCount = maxOf(scheduledRounds.size, golfCanadaRounds.size)
-            (0 until rowCount).map { index ->
+            scheduledRounds.indices.map { index ->
                 RoundComparison(
                     date = date,
                     scheduledRound = scheduledRounds.getOrNull(index),
