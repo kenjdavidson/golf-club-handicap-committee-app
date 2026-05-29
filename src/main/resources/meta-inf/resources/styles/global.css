@@ -33,6 +33,7 @@ vaadin-context-menu-item:hover {
 
 vaadin-context-menu-item::after {
     margin: 0 !important;
+}
 
 #app-shell-container {
     margin: 0;
