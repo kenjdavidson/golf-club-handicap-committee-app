@@ -1,5 +1,7 @@
 package com.kenjdavidson.golf.handicap.settings
 
+import com.kenjdavidson.golf.handicap.ai.AiIntegrationType
+import com.kenjdavidson.golf.handicap.ai.AiSettingsService
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser
 import com.kenjdavidson.golf.handicap.verification.VerificationProperties
 import com.kenjdavidson.golf.handicap.verification.file.RoundParser
@@ -13,6 +15,7 @@ import org.springframework.web.context.annotation.SessionScope
 @Component
 class UserSettingsService(
     private val parsers: List<RoundParser>,
+    private val aiSettingsService: AiSettingsService,
     private val userSettingsRepository: UserSettingsRepository? = null,
     verificationProperties: VerificationProperties
 ) {
@@ -57,10 +60,24 @@ class UserSettingsService(
             ?: defaultParser
         maxRoundsValue = (persisted.maxRounds ?: maxRoundsValue).coerceAtLeast(1)
         defaultHomeCourseValue = persisted.defaultHomeCourse?.trim()?.takeIf { it.isNotBlank() }
+
+        aiSettingsService.applySettings(
+            integrationType = persisted.aiIntegrationType ?: AiIntegrationType.NONE,
+            selectedModelTag = persisted.aiSelectedModelTag
+        )
     }
 
+    /**
+     * Spring lifecycle callback – persists settings when the session ends.
+     * Delegates to [persistSettings] so callers only need to know one method.
+     */
     @PreDestroy
     fun saveCurrentUserSettings() {
+        persistSettings()
+    }
+
+    /** Explicitly persists the current in-memory settings to the user-home store. */
+    fun persistSettings() {
         persistCurrentUserSettings()
     }
 
@@ -71,7 +88,9 @@ class UserSettingsService(
             userSettings = UserSettings(
                 selectedParserClassName = selectedParserValue.javaClass.name,
                 maxRounds = maxRoundsValue,
-                defaultHomeCourse = defaultHomeCourseValue
+                defaultHomeCourse = defaultHomeCourseValue,
+                aiIntegrationType = aiSettingsService.integrationType,
+                aiSelectedModelTag = aiSettingsService.selectedModelTag
             )
         )
     }

@@ -18,6 +18,9 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
+import com.kenjdavidson.golf.handicap.ai.AiSettingsService
+import com.kenjdavidson.golf.handicap.ai.OllamaProperties
+import com.kenjdavidson.golf.handicap.verification.VerificationProperties
 
 class CachingGolfCanadaHistoryLookupServiceTest {
     private val membersApi = mock(MembersApi::class.java)
@@ -25,6 +28,7 @@ class CachingGolfCanadaHistoryLookupServiceTest {
     private val parser = mock(RoundParser::class.java)
     private val appSettings = UserSettingsService(
         parsers = listOf(parser),
+        aiSettingsService = AiSettingsService(OllamaProperties("http://localhost:11434")),
         verificationProperties = VerificationProperties(20)
     )
     private val service = CachingGolfCanadaHistoryLookupService(
