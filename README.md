@@ -28,7 +28,9 @@ For convenience in development, run:
 ./scripts/run-ollama-sidecar.sh
 ```
 
-The helper script starts the sidecar, pulls a default model, and prints role guidance for AI reviews. Use AI assistance in the role of a handicap committee member and golf professional to review member scoring history for suspicious patterns (for example, missing rounds compared to schedules, or very strong front holes followed by repeated double/triple-bogey finishes).
+The helper script starts the sidecar, pulls a default model, and prints role guidance for AI reviews.
+Use AI assistance in the role of a handicap committee member and golf professional.
+Review member scoring history for suspicious patterns (for example, missing rounds compared to schedules, or very strong front holes followed by repeated double/triple-bogey finishes).
 
 ## Release builds
 
