@@ -8,7 +8,7 @@ DOCKERFILE_PATH="${REPO_ROOT}/Dockerfile.ollama-sidecar"
 IMAGE_TAG="${OLLAMA_IMAGE_TAG:-golf-club-handicap-committee-app/ollama-sidecar:dev}"
 CONTAINER_NAME="${OLLAMA_CONTAINER_NAME:-golf-club-handicap-ollama}"
 HOST_PORT="${OLLAMA_HOST_PORT:-11434}"
-MODEL_TAG="${OLLAMA_MODEL_TAG:-llama3.2:1b}"
+CUSTOM_MODEL_NAME="${OLLAMA_CUSTOM_MODEL_NAME:-golf-compliance}"
 
 if [[ ! -f "${DOCKERFILE_PATH}" ]]; then
   echo "❌ Expected Dockerfile not found at: ${DOCKERFILE_PATH}" >&2
@@ -23,13 +23,21 @@ docker run -d \
   --volume ollama-data:/root/.ollama \
   "${IMAGE_TAG}"
 
-if ! docker exec "${CONTAINER_NAME}" ollama pull "${MODEL_TAG}"; then
-  echo "❌ Failed to pull model '${MODEL_TAG}'. Check container logs with: docker logs ${CONTAINER_NAME}" >&2
+for _ in $(seq 1 120); do
+  if docker exec "${CONTAINER_NAME}" ollama list | awk 'NR > 1 {print $1}' | grep -Eq "^${CUSTOM_MODEL_NAME}(:|$)"; then
+    break
+  fi
+  sleep 1
+done
+
+if ! docker exec "${CONTAINER_NAME}" ollama list | awk 'NR > 1 {print $1}' | grep -Eq "^${CUSTOM_MODEL_NAME}(:|$)"; then
+  echo "❌ Failed to initialize custom model '${CUSTOM_MODEL_NAME}'. Check container logs with: docker logs ${CONTAINER_NAME}" >&2
   exit 1
 fi
 
 cat <<EOF
 ✅ Ollama sidecar is running as container '${CONTAINER_NAME}' on http://localhost:${HOST_PORT}
+✅ Custom model is ready: ${CUSTOM_MODEL_NAME}
 
 Set this when launching the app:
   APP_AI_OLLAMA_BASE_URL=http://localhost:${HOST_PORT}

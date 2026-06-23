@@ -16,13 +16,19 @@ For local development or testing against a mock auth endpoint, the Golf Canada b
 ## Ollama sidecar (Docker)
 
 This repository ships a development sidecar Dockerfile for Ollama at `Dockerfile.ollama-sidecar`, so the app can connect to an Ollama container running alongside it.
+It also includes a root-level `Modelfile` that creates a custom `golf-compliance` model (base: `llama3`) with a handicap-committee system prompt.
 
 - Build the sidecar image: `docker build -f Dockerfile.ollama-sidecar -t golf-club-handicap-committee-app/ollama-sidecar:dev .`
 - Run it on the default Ollama port: `docker run -d --name golf-club-handicap-ollama -p 11434:11434 -v ollama-data:/root/.ollama golf-club-handicap-committee-app/ollama-sidecar:dev`
 - Set the application endpoint to the sidecar: `APP_AI_OLLAMA_BASE_URL=http://localhost:11434`
 - In app settings, choose **AI Integration → External (Docker)**
 
-The Dockerfile only runs the Ollama API service. The review instructions are applied in the prompt sent by this app at request time (or by using a custom Ollama model with a baked-in system prompt).
+On startup, the sidecar initializes the custom model by:
+- starting Ollama,
+- pulling `llama3`,
+- creating `golf-compliance` from `./Modelfile`.
+
+The model is stored under `/root/.ollama` and persists via the `ollama-data` Docker volume, so subsequent runs are immediately ready.
 
 For convenience in development, run:
 
@@ -30,7 +36,7 @@ For convenience in development, run:
 ./scripts/run-ollama-sidecar.sh
 ```
 
-The helper script starts the sidecar, pulls a default model, and prints role guidance for AI reviews.
+The helper script starts the sidecar, waits for `golf-compliance` model initialization, and prints role guidance for AI reviews.
 Use AI assistance in the role of a handicap committee member and golf professional.
 Review member scoring history for suspicious patterns (for example, missing rounds compared to schedules, or very strong front holes followed by repeated double/triple-bogey finishes).
 
