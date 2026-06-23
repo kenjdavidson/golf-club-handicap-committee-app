@@ -233,7 +233,7 @@ class SettingsView(
         aiModelSelect.addValueChangeListener { event ->
             val model = event.value ?: return@addValueChangeListener
             // Re-register download listener for the newly selected model
-            val currentUi = ui.orElse(null) ?: return@addValueChangeListener
+            val attachedUi = ui.orElse(null) ?: return@addValueChangeListener
             downloadListener?.let { l ->
                 aiSettingsService.selectedModelTag?.let { oldTag ->
                     downloadService.removeListener(oldTag, l)
@@ -244,7 +244,7 @@ class SettingsView(
             updateAiModelDescription(model)
 
             val newListener = OllamaModelDownloadService.StateChangeListener { modelTag, state ->
-                currentUi.access { applyDownloadState(modelTag, state) }
+                attachedUi.access { applyDownloadState(modelTag, state) }
             }
             downloadListener = newListener
             downloadService.addListener(model.tag, newListener)

@@ -28,8 +28,10 @@ class OllamaModelDownloadService(
     private val log = LoggerFactory.getLogger(OllamaModelDownloadService::class.java)
 
     private val objectMapper = ObjectMapper()
+    private val threadCounter = java.util.concurrent.atomic.AtomicInteger(0)
     private val executor = Executors.newCachedThreadPool { r ->
-        Thread(r, "ollama-download").also { it.isDaemon = true }
+        val count = threadCounter.incrementAndGet()
+        Thread(r, "ollama-download-$count").also { it.isDaemon = true }
     }
 
     /** Latest known state for each model tag. */
