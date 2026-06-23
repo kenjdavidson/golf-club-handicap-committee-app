@@ -67,9 +67,13 @@ class UserSettingsService(
         )
     }
 
+    /**
+     * Spring lifecycle callback – persists settings when the session ends.
+     * Delegates to [persistSettings] so callers only need to know one method.
+     */
     @PreDestroy
     fun saveCurrentUserSettings() {
-        persistCurrentUserSettings()
+        persistSettings()
     }
 
     /** Explicitly persists the current in-memory settings to the user-home store. */

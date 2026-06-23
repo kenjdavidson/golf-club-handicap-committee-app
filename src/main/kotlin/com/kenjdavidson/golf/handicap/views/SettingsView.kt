@@ -91,11 +91,7 @@ class SettingsView(
     )
     private val aboutContent = createSettingsPage(aboutTitle, githubLink, downloadLink, versionInfo, contactInfo)
     private lateinit var aiFeaturesContent: VerticalLayout
-    private val pageContentByTab get() = mapOf(
-        clubManagementTab to clubManagementContent,
-        aiFeaturesTab to aiFeaturesContent,
-        aboutTab to aboutContent
-    )
+    private lateinit var pageContentByTab: Map<Tab, VerticalLayout>
 
     init {
         setSizeFull()
@@ -136,6 +132,11 @@ class SettingsView(
         setupAiModelSelect()
         setupAiModelDownloadButton()
         aiFeaturesContent = buildAiFeaturesPage()
+        pageContentByTab = mapOf(
+            clubManagementTab to clubManagementContent,
+            aiFeaturesTab to aiFeaturesContent,
+            aboutTab to aboutContent
+        )
 
         // ── Navigation ─────────────────────────────────────────────────────────
         navigationTabs.orientation = Tabs.Orientation.VERTICAL
@@ -233,7 +234,7 @@ class SettingsView(
         aiModelSelect.addValueChangeListener { event ->
             val model = event.value ?: return@addValueChangeListener
             // Re-register download listener for the newly selected model
-            val attachedUi = ui.orElse(null) ?: return@addValueChangeListener
+            val currentUi = ui.orElse(null) ?: return@addValueChangeListener
             downloadListener?.let { l ->
                 aiSettingsService.selectedModelTag?.let { oldTag ->
                     downloadService.removeListener(oldTag, l)
@@ -244,7 +245,7 @@ class SettingsView(
             updateAiModelDescription(model)
 
             val newListener = OllamaModelDownloadService.StateChangeListener { modelTag, state ->
-                attachedUi.access { applyDownloadState(modelTag, state) }
+                currentUi.access { applyDownloadState(modelTag, state) }
             }
             downloadListener = newListener
             downloadService.addListener(model.tag, newListener)

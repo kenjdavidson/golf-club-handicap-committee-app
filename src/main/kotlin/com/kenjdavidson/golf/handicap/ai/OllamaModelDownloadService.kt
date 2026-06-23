@@ -124,12 +124,14 @@ class OllamaModelDownloadService(
                     if (newState is ModelDownloadState.Complete || newState is ModelDownloadState.Failed) break
                 }
             }
-        } catch (ex: InterruptedException) {
-            Thread.currentThread().interrupt()
-            updateState(modelTag, ModelDownloadState.Idle)
         } catch (ex: Exception) {
-            log.error("Error downloading model '{}'", modelTag, ex)
-            updateState(modelTag, ModelDownloadState.Failed("Download error: ${ex.message}"))
+            if (Thread.currentThread().isInterrupted) {
+                // Download was cancelled – state was already set to Idle by cancelDownload()
+                Thread.currentThread().interrupt()
+            } else {
+                log.error("Error downloading model '{}'", modelTag, ex)
+                updateState(modelTag, ModelDownloadState.Failed("Download error: ${ex.message}"))
+            }
         } finally {
             activeFutures.remove(modelTag)
         }
