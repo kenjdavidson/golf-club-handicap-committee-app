@@ -1,0 +1,7 @@
+FROM ollama/ollama:latest
+
+EXPOSE 11434
+
+VOLUME ["/root/.ollama"]
+
+CMD ["serve"]

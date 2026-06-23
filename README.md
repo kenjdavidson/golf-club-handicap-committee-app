@@ -13,6 +13,23 @@ For local development or testing against a mock auth endpoint, the Golf Canada b
 - Run app with remote debug on port 5005: `./gradlew debugApp`
 - VS Code tasks/launch configs are included in `.vscode/tasks.json` and `.vscode/launch.json`.
 
+## Ollama sidecar (Docker)
+
+This repository ships a development sidecar Dockerfile for Ollama at `Dockerfile.ollama-sidecar`, so the app can connect to an Ollama container running alongside it.
+
+- Build the sidecar image: `docker build -f Dockerfile.ollama-sidecar -t golf-club-handicap-committee-app/ollama-sidecar:dev .`
+- Run it on the default Ollama port: `docker run -d --name golf-club-handicap-ollama -p 11434:11434 -v ollama-data:/root/.ollama golf-club-handicap-committee-app/ollama-sidecar:dev`
+- Set the application endpoint to the sidecar: `APP_AI_OLLAMA_BASE_URL=http://localhost:11434`
+- In app settings, choose **AI Integration → External (Docker)**
+
+For convenience in development, run:
+
+```bash
+./scripts/run-ollama-sidecar.sh
+```
+
+The helper script starts the sidecar, pulls a default model, and prints role guidance for AI reviews. Use AI assistance in the role of a handicap committee member and golf professional to review member scoring history for suspicious patterns (for example, missing rounds compared to schedules, or very strong front holes followed by repeated double/triple-bogey finishes).
+
 ## Release builds
 
 - Build a self-contained zip for the current platform: `./gradlew -Pproduction jpackageAppArchive`
