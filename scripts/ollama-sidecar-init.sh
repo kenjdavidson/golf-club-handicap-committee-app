@@ -30,9 +30,14 @@ if ! ollama list >/dev/null 2>&1; then
 fi
 
 if ! ollama list | awk 'NR > 1 {print $1}' | grep -Eq "^${MODEL_NAME}(:|$)"; then
-  ollama pull "${BASE_MODEL}"
-  ollama create "${MODEL_NAME}" -f "${MODELFILE_PATH}"
+  ollama pull "${BASE_MODEL}" || {
+    echo "❌ Failed to pull base model '${BASE_MODEL}'." >&2
+    exit 1
+  }
+  ollama create "${MODEL_NAME}" -f "${MODELFILE_PATH}" || {
+    echo "❌ Failed to create custom model '${MODEL_NAME}' from '${MODELFILE_PATH}'." >&2
+    exit 1
+  }
 fi
 
-trap - EXIT
 wait "${ollama_pid}"
