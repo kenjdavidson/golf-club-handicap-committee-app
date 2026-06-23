@@ -72,6 +72,11 @@ class UserSettingsService(
         persistCurrentUserSettings()
     }
 
+    /** Explicitly persists the current in-memory settings to the user-home store. */
+    fun persistSettings() {
+        persistCurrentUserSettings()
+    }
+
     private fun persistCurrentUserSettings() {
         val username = currentUsernameOrNull() ?: return
         userSettingsRepository?.save(

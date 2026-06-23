@@ -211,7 +211,7 @@ class SettingsView(
         aiIntegrationTypeSelect.addValueChangeListener { event ->
             val type = event.value ?: AiIntegrationType.NONE
             aiSettingsService.integrationType = type
-            appSettings.selectedParser = appSettings.selectedParser // triggers persist
+            appSettings.persistSettings()
             updateAiIntegrationDescription(type)
             aiModelSection.isVisible = type != AiIntegrationType.NONE
         }
@@ -233,17 +233,18 @@ class SettingsView(
         aiModelSelect.addValueChangeListener { event ->
             val model = event.value ?: return@addValueChangeListener
             // Re-register download listener for the newly selected model
-            val ui = ui.orElse(null) ?: return@addValueChangeListener
+            val currentUi = ui.orElse(null) ?: return@addValueChangeListener
             downloadListener?.let { l ->
                 aiSettingsService.selectedModelTag?.let { oldTag ->
                     downloadService.removeListener(oldTag, l)
                 }
             }
             aiSettingsService.selectedModelTag = model.tag
+            appSettings.persistSettings()
             updateAiModelDescription(model)
 
             val newListener = OllamaModelDownloadService.StateChangeListener { modelTag, state ->
-                ui.access { applyDownloadState(modelTag, state) }
+                currentUi.access { applyDownloadState(modelTag, state) }
             }
             downloadListener = newListener
             downloadService.addListener(model.tag, newListener)
