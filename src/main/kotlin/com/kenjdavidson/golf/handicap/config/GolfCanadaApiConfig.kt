@@ -2,6 +2,7 @@ package com.kenjdavidson.golf.handicap.config
 
 import com.kenjdavidson.golf.handicap.golfcanada.api.AuthenticationApi
 import com.kenjdavidson.golf.handicap.golfcanada.api.MembersApi
+import com.kenjdavidson.golf.handicap.golfcanada.api.ScoresApi
 import com.kenjdavidson.golf.handicap.golfcanada.invoker.ApiClient
 import com.kenjdavidson.golf.handicap.security.CurrentAuthenticatedUserProvider
 import org.springframework.beans.factory.annotation.Value
@@ -26,5 +27,15 @@ class GolfCanadaApiConfig(
         val authenticatedApiClient = GolfCanadaApiClient().setBasePath(apiClient.basePath)
         authenticatedApiClient.setBearerToken { currentAuthenticatedUserProvider.requireAccessToken() }
         return MembersApi(authenticatedApiClient)
+    }
+
+    @Bean
+    fun scoresApi(
+        apiClient: ApiClient,
+        currentAuthenticatedUserProvider: CurrentAuthenticatedUserProvider
+    ): ScoresApi {
+        val authenticatedApiClient = GolfCanadaApiClient().setBasePath(apiClient.basePath)
+        authenticatedApiClient.setBearerToken { currentAuthenticatedUserProvider.requireAccessToken() }
+        return ScoresApi(authenticatedApiClient)
     }
 }
