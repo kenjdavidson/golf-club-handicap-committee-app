@@ -22,6 +22,8 @@ This repository ships a development sidecar Dockerfile for Ollama at `Dockerfile
 - Set the application endpoint to the sidecar: `APP_AI_OLLAMA_BASE_URL=http://localhost:11434`
 - In app settings, choose **AI Integration → External (Docker)**
 
+The Dockerfile only runs the Ollama API service. The review instructions are applied in the prompt sent by this app at request time (or by using a custom Ollama model with a baked-in system prompt).
+
 For convenience in development, run:
 
 ```bash
