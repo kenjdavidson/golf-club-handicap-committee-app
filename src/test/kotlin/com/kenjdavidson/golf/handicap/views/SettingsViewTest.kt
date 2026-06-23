@@ -1,5 +1,8 @@
 package com.kenjdavidson.golf.handicap.views
 
+import com.kenjdavidson.golf.handicap.ai.AiSettingsService
+import com.kenjdavidson.golf.handicap.ai.OllamaModelDownloadService
+import com.kenjdavidson.golf.handicap.ai.OllamaProperties
 import com.kenjdavidson.golf.handicap.settings.UserSettingsService
 import com.kenjdavidson.golf.handicap.verification.ParsedPlayerHistory
 import com.kenjdavidson.golf.handicap.verification.VerificationProperties
@@ -23,6 +26,7 @@ class SettingsViewTest {
 
     private val parserOne = StructuredParser()
     private val parserTwo = NoShowParser()
+    private val ollamaProperties = OllamaProperties("http://localhost:11434")
 
     @Test
     fun `renders grouped settings navigation with club management selected by default`() {
@@ -44,7 +48,7 @@ class SettingsViewTest {
     @Test
     fun `updates bound settings and shows about links when selected`() {
         val settingsService = buildSettingsService()
-        val view = SettingsView(settingsService, listOf(parserOne, parserTwo))
+        val view = buildView(settingsService)
 
         val parserTypeSelect = readField<Select<RoundParser>>(view, "parserTypeSelect")
         val maxRoundsField = readField<IntegerField>(view, "maxRoundsField")
@@ -68,13 +72,18 @@ class SettingsViewTest {
         assertTrue(containsText(contentArea, "Contact: Open a GitHub issue for support or feature requests."))
     }
 
-    private fun buildView(): SettingsView {
-        return SettingsView(buildSettingsService(), listOf(parserOne, parserTwo))
+    private fun buildView(
+        settingsService: UserSettingsService = buildSettingsService()
+    ): SettingsView {
+        val aiSettingsService = AiSettingsService(ollamaProperties)
+        val downloadService = OllamaModelDownloadService(ollamaProperties)
+        return SettingsView(settingsService, aiSettingsService, downloadService, listOf(parserOne, parserTwo))
     }
 
     private fun buildSettingsService(): UserSettingsService {
         return UserSettingsService(
             parsers = listOf(parserOne, parserTwo),
+            aiSettingsService = AiSettingsService(ollamaProperties),
             userSettingsRepository = null,
             verificationProperties = VerificationProperties(20)
         )

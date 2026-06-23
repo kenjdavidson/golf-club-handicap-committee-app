@@ -19,12 +19,16 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import com.kenjdavidson.golf.handicap.ai.AiSettingsService
+import com.kenjdavidson.golf.handicap.ai.OllamaProperties
+import com.kenjdavidson.golf.handicap.verification.VerificationProperties
 
 class CachedGolfCanadaMemberLookupServiceTest {
     private val membersApi = mock(MembersApi::class.java)
     private val parser = mock(RoundParser::class.java)
     private val appSettings = UserSettingsService(
         parsers = listOf(parser),
+        aiSettingsService = AiSettingsService(OllamaProperties("http://localhost:11434")),
         verificationProperties = VerificationProperties(20)
     )
     private val service = CachedGolfCanadaMemberLookupService(membersApi, appSettings)

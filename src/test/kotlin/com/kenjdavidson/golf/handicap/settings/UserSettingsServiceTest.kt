@@ -1,5 +1,8 @@
 package com.kenjdavidson.golf.handicap.settings
 
+import com.kenjdavidson.golf.handicap.ai.AiIntegrationType
+import com.kenjdavidson.golf.handicap.ai.AiSettingsService
+import com.kenjdavidson.golf.handicap.ai.OllamaProperties
 import com.kenjdavidson.golf.handicap.golfcanada.model.AuthToken
 import com.kenjdavidson.golf.handicap.golfcanada.model.User
 import com.kenjdavidson.golf.handicap.security.GolfCanadaAuthenticatedUser
@@ -20,6 +23,7 @@ class UserSettingsServiceTest {
 
     private val parserOne = ParserOne()
     private val parserTwo = ParserTwo()
+    private val aiSettingsService = AiSettingsService(OllamaProperties("http://localhost:11434"))
 
     @AfterEach
     fun clearSecurityContext() {
@@ -41,6 +45,7 @@ class UserSettingsServiceTest {
             )
             val appSettings = UserSettingsService(
                 parsers = listOf(parserOne, parserTwo),
+                aiSettingsService = aiSettingsService,
                 userSettingsRepository = repository,
                 verificationProperties = VerificationProperties(20)
             )
@@ -60,6 +65,7 @@ class UserSettingsServiceTest {
             val repository = UserSettingsRepository()
             val appSettings = UserSettingsService(
                 parsers = listOf(parserOne, parserTwo),
+                aiSettingsService = aiSettingsService,
                 userSettingsRepository = repository,
                 verificationProperties = VerificationProperties(20)
             )
@@ -73,6 +79,57 @@ class UserSettingsServiceTest {
             assertEquals(parserTwo.javaClass.name, persisted?.selectedParserClassName)
             assertEquals(9, persisted?.maxRounds)
             assertEquals("Blue Springs", persisted?.defaultHomeCourse)
+        }
+    }
+
+    @Test
+    fun `persists and restores AI settings`() {
+        authenticate("committee.user")
+        withTemporaryUserHome(tempHome) {
+            val repository = UserSettingsRepository()
+            repository.save(
+                "committee.user",
+                UserSettings(
+                    aiIntegrationType = AiIntegrationType.LOCAL,
+                    aiSelectedModelTag = "llama3.2:1b"
+                )
+            )
+            val localAiSettings = AiSettingsService(OllamaProperties("http://localhost:11434"))
+            val appSettings = UserSettingsService(
+                parsers = listOf(parserOne),
+                aiSettingsService = localAiSettings,
+                userSettingsRepository = repository,
+                verificationProperties = VerificationProperties(20)
+            )
+
+            appSettings.loadCurrentUserSettings()
+
+            assertEquals(AiIntegrationType.LOCAL, localAiSettings.integrationType)
+            assertEquals("llama3.2:1b", localAiSettings.selectedModelTag)
+        }
+    }
+
+    @Test
+    fun `AI settings default to NONE when not persisted`() {
+        authenticate("committee.user")
+        withTemporaryUserHome(tempHome) {
+            val repository = UserSettingsRepository()
+            repository.save(
+                "committee.user",
+                UserSettings(selectedParserClassName = parserOne.javaClass.name)
+            )
+            val localAiSettings = AiSettingsService(OllamaProperties("http://localhost:11434"))
+            val appSettings = UserSettingsService(
+                parsers = listOf(parserOne),
+                aiSettingsService = localAiSettings,
+                userSettingsRepository = repository,
+                verificationProperties = VerificationProperties(20)
+            )
+
+            appSettings.loadCurrentUserSettings()
+
+            assertEquals(AiIntegrationType.NONE, localAiSettings.integrationType)
+            assertEquals(null, localAiSettings.selectedModelTag)
         }
     }
 
