@@ -13,6 +13,8 @@ class GeminiProperties(
     val temperature: Double
 ) {
     init {
-        require(temperature in 0.0..2.0) { "app.ai.gemini.temperature must be between 0.0 and 2.0" }
+        require(temperature in 0.0..2.0) {
+            "Gemini temperature must be between 0.0 and 2.0 (configured via app.ai.gemini.temperature)"
+        }
     }
 }
