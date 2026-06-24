@@ -67,6 +67,8 @@ Use Google Gemini with a user-managed API key.
 - Enter your Gemini API key in the **Gemini API Key** field
 - Keep your selected review workflow/prompt text the same as other integration types
 
+### AI review guidance
+
 Use AI assistance in the role of a handicap committee member and golf professional.
 Review member scoring history for suspicious patterns (for example, missing rounds compared to schedules, or very strong front holes followed by repeated double/triple-bogey finishes).
 
