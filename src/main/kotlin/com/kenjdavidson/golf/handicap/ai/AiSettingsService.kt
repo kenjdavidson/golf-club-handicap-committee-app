@@ -16,13 +16,17 @@ import org.springframework.web.context.annotation.SessionScope
 @SessionScope
 @Component
 class AiSettingsService(
-    private val ollamaProperties: OllamaProperties
+    private val ollamaProperties: OllamaProperties,
+    private val geminiProperties: GeminiProperties
 ) {
     @Volatile
     private var integrationTypeValue: AiIntegrationType = AiIntegrationType.NONE
 
     @Volatile
     private var selectedModelTagValue: String? = null
+
+    @Volatile
+    private var geminiApiKeyValue: String? = null
 
     var integrationType: AiIntegrationType
         get() = integrationTypeValue
@@ -35,6 +39,13 @@ class AiSettingsService(
         get() = selectedModelTagValue
         set(value) {
             selectedModelTagValue = value
+            rebuildService()
+        }
+
+    var geminiApiKey: String?
+        get() = geminiApiKeyValue
+        set(value) {
+            geminiApiKeyValue = value?.trim()?.takeIf { it.isNotBlank() }
             rebuildService()
         }
 
@@ -54,10 +65,11 @@ class AiSettingsService(
         rebuildService()
     }
 
-    /** Applies [integrationType] and [selectedModelTag] atomically without triggering extra rebuilds. */
-    fun applySettings(integrationType: AiIntegrationType, selectedModelTag: String?) {
+    /** Applies AI settings atomically without triggering extra rebuilds. */
+    fun applySettings(integrationType: AiIntegrationType, selectedModelTag: String?, geminiApiKey: String? = null) {
         this.integrationTypeValue = integrationType
         this.selectedModelTagValue = selectedModelTag
+        this.geminiApiKeyValue = geminiApiKey?.trim()?.takeIf { it.isNotBlank() }
         rebuildService()
     }
 
@@ -71,6 +83,16 @@ class AiSettingsService(
                 val tag = selectedModelTagValue
                 if (tag.isNullOrBlank()) NoopOllamaService()
                 else OllamaHttpService(ollamaProperties.baseUrl, tag)
+            }
+            AiIntegrationType.GEMINI -> {
+                val key = geminiApiKeyValue
+                if (key.isNullOrBlank()) NoopOllamaService()
+                else GeminiHttpService(
+                    baseUrl = geminiProperties.baseUrl,
+                    model = geminiProperties.model,
+                    apiKey = key,
+                    temperature = geminiProperties.temperature
+                )
             }
         }
     }

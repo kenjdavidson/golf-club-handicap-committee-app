@@ -38,10 +38,10 @@ class OllamaHttpService(
                 .body(request)
                 .retrieve()
                 .body(GenerateResponse::class.java)
-                ?: throw OllamaServiceException("Ollama returned an empty response for model '$modelTag'.")
+                ?: throw AiIntegrationException("Ollama returned an empty response for model '$modelTag'.")
             response.response
         } catch (ex: RestClientException) {
-            throw OllamaServiceException("Failed to communicate with Ollama at $baseUrl: ${ex.message}", ex)
+            throw AiIntegrationException("Failed to communicate with Ollama at $baseUrl: ${ex.message}", ex)
         }
     }
 

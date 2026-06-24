@@ -31,6 +31,7 @@ import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.tabs.Tab
 import com.vaadin.flow.component.tabs.Tabs
 import com.vaadin.flow.component.textfield.IntegerField
+import com.vaadin.flow.component.textfield.PasswordField
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.i18n.LocaleChangeEvent
 import com.vaadin.flow.i18n.LocaleChangeObserver
@@ -73,6 +74,9 @@ class SettingsView(
     private val aiModelProgressBar = ProgressBar().apply { isIndeterminate = true; isVisible = false }
     private val aiModelProgressLabel = Span().apply { isVisible = false }
     private val aiModelSection = VerticalLayout()
+    private val aiGeminiApiKeyField = PasswordField()
+    private val aiGeminiApiKeyDescription = Paragraph()
+    private val aiGeminiSection = VerticalLayout()
 
     // ── About controls ─────────────────────────────────────────────────────────
     private val aboutTitle = H3()
@@ -131,6 +135,7 @@ class SettingsView(
         setupAiIntegrationTypeSelect()
         setupAiModelSelect()
         setupAiModelDownloadButton()
+        setupGeminiApiKeyField()
         aiFeaturesContent = buildAiFeaturesPage()
         pageContentByTab = mapOf(
             clubManagementTab to clubManagementContent,
@@ -174,6 +179,9 @@ class SettingsView(
 
     override fun onAttach(attachEvent: AttachEvent) {
         super.onAttach(attachEvent)
+        if (aiSettingsService.integrationType != AiIntegrationType.EXTERNAL &&
+            aiSettingsService.integrationType != AiIntegrationType.LOCAL
+        ) return
         val currentModel = aiSettingsService.selectedModelTag ?: return
         val ui = attachEvent.ui
         val listener = OllamaModelDownloadService.StateChangeListener { modelTag, state ->
@@ -185,6 +193,9 @@ class SettingsView(
 
     override fun onDetach(detachEvent: DetachEvent) {
         super.onDetach(detachEvent)
+        if (aiSettingsService.integrationType != AiIntegrationType.EXTERNAL &&
+            aiSettingsService.integrationType != AiIntegrationType.LOCAL
+        ) return
         val tag = aiSettingsService.selectedModelTag ?: return
         downloadListener?.let { downloadService.removeListener(tag, it) }
         downloadListener = null
@@ -214,7 +225,8 @@ class SettingsView(
             aiSettingsService.integrationType = type
             appSettings.persistSettings()
             updateAiIntegrationDescription(type)
-            aiModelSection.isVisible = type != AiIntegrationType.NONE
+            aiModelSection.isVisible = type == AiIntegrationType.EXTERNAL || type == AiIntegrationType.LOCAL
+            aiGeminiSection.isVisible = type == AiIntegrationType.GEMINI
         }
         updateAiIntegrationDescription(aiSettingsService.integrationType)
     }
@@ -265,6 +277,16 @@ class SettingsView(
         }
     }
 
+    private fun setupGeminiApiKeyField() {
+        aiGeminiApiKeyField.setWidthFull()
+        aiGeminiApiKeyField.isRevealButtonVisible = false
+        aiGeminiApiKeyField.value = aiSettingsService.geminiApiKey.orEmpty()
+        aiGeminiApiKeyField.addValueChangeListener { event ->
+            aiSettingsService.geminiApiKey = event.value
+            appSettings.persistSettings()
+        }
+    }
+
     private fun buildAiFeaturesPage(): VerticalLayout {
         aiModelSection.apply {
             setWidthFull()
@@ -272,7 +294,8 @@ class SettingsView(
             isSpacing = false
             style.set("gap", "var(--lumo-space-s)")
             style.set("max-width", "36rem")
-            isVisible = aiSettingsService.integrationType != AiIntegrationType.NONE
+            isVisible = aiSettingsService.integrationType == AiIntegrationType.EXTERNAL ||
+                aiSettingsService.integrationType == AiIntegrationType.LOCAL
 
             val progressRow = HorizontalLayout(aiModelProgressBar, aiModelProgressLabel).apply {
                 setWidthFull()
@@ -285,8 +308,18 @@ class SettingsView(
             add(aiModelDescription, aiModelSelect, progressRow, aiModelDownloadButton)
         }
 
+        aiGeminiSection.apply {
+            setWidthFull()
+            isPadding = false
+            isSpacing = false
+            style.set("gap", "var(--lumo-space-s)")
+            style.set("max-width", "36rem")
+            isVisible = aiSettingsService.integrationType == AiIntegrationType.GEMINI
+            add(aiGeminiApiKeyDescription, aiGeminiApiKeyField)
+        }
+
         return createSettingsPage(
-            createSettingSection(aiIntegrationTypeSelect, aiIntegrationTypeDescription, aiModelSection)
+            createSettingSection(aiIntegrationTypeSelect, aiIntegrationTypeDescription, aiModelSection, aiGeminiSection)
         )
     }
 
@@ -402,6 +435,9 @@ class SettingsView(
 
         aiIntegrationTypeSelect.label = AppMessages.translateCurrent("ai.integration.type.label")
         aiModelSelect.label = AppMessages.translateCurrent("ai.model.label")
+        aiGeminiApiKeyField.label = AppMessages.translateCurrent("ai.gemini.apiKey.label")
+        aiGeminiApiKeyField.placeholder = AppMessages.translateCurrent("ai.gemini.apiKey.placeholder")
+        aiGeminiApiKeyDescription.text = AppMessages.translateCurrent("ai.gemini.apiKey.description")
         aiModelDownloadButton.text = when (
             aiSettingsService.selectedModelTag?.let { downloadService.getState(it) }
         ) {

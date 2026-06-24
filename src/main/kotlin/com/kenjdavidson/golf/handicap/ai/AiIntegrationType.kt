@@ -15,5 +15,10 @@ enum class AiIntegrationType {
      * A locally installed Ollama instance managed by this application.  The application
      * can download models on demand through Ollama's pull API and track download progress.
      */
-    LOCAL
+    LOCAL,
+
+    /**
+     * Gemini API integration using a user-provided API key.
+     */
+    GEMINI
 }

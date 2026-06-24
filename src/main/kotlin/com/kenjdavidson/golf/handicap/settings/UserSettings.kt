@@ -7,5 +7,6 @@ data class UserSettings(
     val maxRounds: Int? = null,
     val defaultHomeCourse: String? = null,
     val aiIntegrationType: AiIntegrationType? = null,
-    val aiSelectedModelTag: String? = null
+    val aiSelectedModelTag: String? = null,
+    val aiGeminiApiKey: String? = null
 )

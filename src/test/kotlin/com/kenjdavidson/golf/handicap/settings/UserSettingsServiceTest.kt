@@ -2,6 +2,7 @@ package com.kenjdavidson.golf.handicap.settings
 
 import com.kenjdavidson.golf.handicap.ai.AiIntegrationType
 import com.kenjdavidson.golf.handicap.ai.AiSettingsService
+import com.kenjdavidson.golf.handicap.ai.GeminiProperties
 import com.kenjdavidson.golf.handicap.ai.OllamaProperties
 import com.kenjdavidson.golf.handicap.golfcanada.model.AuthToken
 import com.kenjdavidson.golf.handicap.golfcanada.model.User
@@ -23,7 +24,10 @@ class UserSettingsServiceTest {
 
     private val parserOne = ParserOne()
     private val parserTwo = ParserTwo()
-    private val aiSettingsService = AiSettingsService(OllamaProperties("http://localhost:11434"))
+    private val aiSettingsService = AiSettingsService(
+        OllamaProperties("http://localhost:11434"),
+        GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1)
+    )
 
     @AfterEach
     fun clearSecurityContext() {
@@ -90,11 +94,15 @@ class UserSettingsServiceTest {
             repository.save(
                 "committee.user",
                 UserSettings(
-                    aiIntegrationType = AiIntegrationType.LOCAL,
-                    aiSelectedModelTag = "llama3.2:1b"
+                    aiIntegrationType = AiIntegrationType.GEMINI,
+                    aiSelectedModelTag = "llama3.2:1b",
+                    aiGeminiApiKey = "gemini-secret"
                 )
             )
-            val localAiSettings = AiSettingsService(OllamaProperties("http://localhost:11434"))
+            val localAiSettings = AiSettingsService(
+                OllamaProperties("http://localhost:11434"),
+                GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1)
+            )
             val appSettings = UserSettingsService(
                 parsers = listOf(parserOne),
                 aiSettingsService = localAiSettings,
@@ -104,8 +112,9 @@ class UserSettingsServiceTest {
 
             appSettings.loadCurrentUserSettings()
 
-            assertEquals(AiIntegrationType.LOCAL, localAiSettings.integrationType)
+            assertEquals(AiIntegrationType.GEMINI, localAiSettings.integrationType)
             assertEquals("llama3.2:1b", localAiSettings.selectedModelTag)
+            assertEquals("gemini-secret", localAiSettings.geminiApiKey)
         }
     }
 
@@ -118,7 +127,10 @@ class UserSettingsServiceTest {
                 "committee.user",
                 UserSettings(selectedParserClassName = parserOne.javaClass.name)
             )
-            val localAiSettings = AiSettingsService(OllamaProperties("http://localhost:11434"))
+            val localAiSettings = AiSettingsService(
+                OllamaProperties("http://localhost:11434"),
+                GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1)
+            )
             val appSettings = UserSettingsService(
                 parsers = listOf(parserOne),
                 aiSettingsService = localAiSettings,
@@ -130,6 +142,7 @@ class UserSettingsServiceTest {
 
             assertEquals(AiIntegrationType.NONE, localAiSettings.integrationType)
             assertEquals(null, localAiSettings.selectedModelTag)
+            assertEquals(null, localAiSettings.geminiApiKey)
         }
     }
 

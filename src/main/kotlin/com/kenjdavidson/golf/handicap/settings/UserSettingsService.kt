@@ -63,7 +63,8 @@ class UserSettingsService(
 
         aiSettingsService.applySettings(
             integrationType = persisted.aiIntegrationType ?: AiIntegrationType.NONE,
-            selectedModelTag = persisted.aiSelectedModelTag
+            selectedModelTag = persisted.aiSelectedModelTag,
+            geminiApiKey = persisted.aiGeminiApiKey
         )
     }
 
@@ -90,7 +91,8 @@ class UserSettingsService(
                 maxRounds = maxRoundsValue,
                 defaultHomeCourse = defaultHomeCourseValue,
                 aiIntegrationType = aiSettingsService.integrationType,
-                aiSelectedModelTag = aiSettingsService.selectedModelTag
+                aiSelectedModelTag = aiSettingsService.selectedModelTag,
+                aiGeminiApiKey = aiSettingsService.geminiApiKey
             )
         )
     }

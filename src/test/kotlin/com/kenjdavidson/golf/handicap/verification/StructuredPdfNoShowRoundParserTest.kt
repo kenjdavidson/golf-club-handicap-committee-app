@@ -5,6 +5,7 @@ import com.kenjdavidson.golf.handicap.verification.file.PdfTextExtractor
 import com.kenjdavidson.golf.handicap.verification.file.RoundParser
 import com.kenjdavidson.golf.handicap.verification.file.StructuredPdfNoShowRoundParser
 import com.kenjdavidson.golf.handicap.ai.AiSettingsService
+import com.kenjdavidson.golf.handicap.ai.GeminiProperties
 import com.kenjdavidson.golf.handicap.ai.OllamaProperties
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -69,7 +70,10 @@ class StructuredPdfNoShowRoundParserTest {
 
     private fun testSettings(maxRounds: Int = 20): UserSettingsService = UserSettingsService(
         parsers = listOf(NoopRoundParser()),
-        aiSettingsService = AiSettingsService(OllamaProperties("http://localhost:11434")),
+        aiSettingsService = AiSettingsService(
+            OllamaProperties("http://localhost:11434"),
+            GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1)
+        ),
         verificationProperties = VerificationProperties(maxRounds)
     )
 
