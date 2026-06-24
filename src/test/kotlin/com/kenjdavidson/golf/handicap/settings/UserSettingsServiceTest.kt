@@ -26,7 +26,7 @@ class UserSettingsServiceTest {
     private val parserTwo = ParserTwo()
     private val aiSettingsService = AiSettingsService(
         OllamaProperties("http://localhost:11434"),
-        GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash")
+        GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1)
     )
 
     @AfterEach
@@ -101,7 +101,7 @@ class UserSettingsServiceTest {
             )
             val localAiSettings = AiSettingsService(
                 OllamaProperties("http://localhost:11434"),
-                GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash")
+                GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1)
             )
             val appSettings = UserSettingsService(
                 parsers = listOf(parserOne),
@@ -129,7 +129,7 @@ class UserSettingsServiceTest {
             )
             val localAiSettings = AiSettingsService(
                 OllamaProperties("http://localhost:11434"),
-                GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash")
+                GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1)
             )
             val appSettings = UserSettingsService(
                 parsers = listOf(parserOne),

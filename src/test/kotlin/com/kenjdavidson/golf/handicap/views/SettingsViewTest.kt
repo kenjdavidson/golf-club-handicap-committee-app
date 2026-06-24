@@ -30,7 +30,7 @@ class SettingsViewTest {
     private val parserOne = StructuredParser()
     private val parserTwo = NoShowParser()
     private val ollamaProperties = OllamaProperties("http://localhost:11434")
-    private val geminiProperties = GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash")
+    private val geminiProperties = GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1)
 
     @Test
     fun `renders grouped settings navigation with club management selected by default`() {

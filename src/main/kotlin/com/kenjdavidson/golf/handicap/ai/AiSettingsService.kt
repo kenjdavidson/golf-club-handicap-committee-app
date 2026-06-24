@@ -17,10 +17,7 @@ import org.springframework.web.context.annotation.SessionScope
 @Component
 class AiSettingsService(
     private val ollamaProperties: OllamaProperties,
-    private val geminiProperties: GeminiProperties = GeminiProperties(
-        baseUrl = "https://generativelanguage.googleapis.com",
-        model = "gemini-2.5-flash"
-    )
+    private val geminiProperties: GeminiProperties
 ) {
     @Volatile
     private var integrationTypeValue: AiIntegrationType = AiIntegrationType.NONE
@@ -90,7 +87,12 @@ class AiSettingsService(
             AiIntegrationType.GEMINI -> {
                 val key = geminiApiKeyValue
                 if (key.isNullOrBlank()) NoopOllamaService()
-                else GeminiHttpService(geminiProperties.baseUrl, geminiProperties.model, key)
+                else GeminiHttpService(
+                    baseUrl = geminiProperties.baseUrl,
+                    model = geminiProperties.model,
+                    apiKey = key,
+                    temperature = geminiProperties.temperature
+                )
             }
         }
     }

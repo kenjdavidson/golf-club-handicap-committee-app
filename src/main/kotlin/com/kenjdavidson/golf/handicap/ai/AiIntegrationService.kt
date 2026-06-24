@@ -1,0 +1,22 @@
+package com.kenjdavidson.golf.handicap.ai
+
+/**
+ * Abstraction over configured AI integrations.
+ *
+ * Callers pass a plain-text [prompt] and receive the model's response as a
+ * plain string. Error handling (connection failures, model unavailability)
+ * is left to implementing classes which should throw descriptive runtime
+ * exceptions.
+ */
+interface AiIntegrationService {
+
+    /**
+     * Send [prompt] to the configured model and return the full response text.
+     *
+     * @throws AiIntegrationException when the request cannot be completed.
+     */
+    fun generate(prompt: String): String
+
+    /** Returns `true` when this service can reach the configured AI endpoint. */
+    fun isAvailable(): Boolean
+}

@@ -8,5 +8,7 @@ class GeminiProperties(
     @Value("\${app.ai.gemini.base-url:https://generativelanguage.googleapis.com}")
     val baseUrl: String,
     @Value("\${app.ai.gemini.model:gemini-2.5-flash}")
-    val model: String
+    val model: String,
+    @Value("\${app.ai.gemini.temperature:0.1}")
+    val temperature: Double
 )

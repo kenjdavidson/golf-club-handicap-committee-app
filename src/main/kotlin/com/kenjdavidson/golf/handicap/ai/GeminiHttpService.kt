@@ -8,12 +8,24 @@ import org.springframework.web.client.RestClientException
 class GeminiHttpService(
     private val baseUrl: String,
     private val model: String,
-    private val apiKey: String
+    private val apiKey: String,
+    private val temperature: Double
 ) : OllamaService {
 
     private val restClient: RestClient = RestClient.builder()
         .baseUrl(baseUrl)
         .build()
+
+    private val requestConfig = RequestConfig(
+        systemInstruction = Content(
+            parts = listOf(
+                TextPart(
+                    text = "You are an expert Golf Club Manager and head of the Handicap Committee. Your core responsibility is protecting the integrity of the club's handicap system. Analyze user scoring data for sandbagging, vanity handicapping, and anomalies."
+                )
+            )
+        ),
+        temperature = temperature
+    )
 
     override fun generate(prompt: String): String {
         val response = try {
@@ -25,22 +37,13 @@ class GeminiHttpService(
                         contents = listOf(
                             Content(parts = listOf(TextPart(text = prompt)))
                         ),
-                        config = RequestConfig(
-                            systemInstruction = Content(
-                                parts = listOf(
-                                    TextPart(
-                                        text = "You are an expert Golf Club Manager and head of the Handicap Committee. Your core responsibility is protecting the integrity of the club's handicap system. Analyze user scoring data for sandbagging, vanity handicapping, and anomalies."
-                                    )
-                                )
-                            ),
-                            temperature = 0.1
-                        )
+                        config = requestConfig
                     )
                 )
                 .retrieve()
                 .body(GenerateContentResponse::class.java)
         } catch (ex: RestClientException) {
-            throw OllamaServiceException("Failed to communicate with Gemini at $baseUrl: ${ex.message}", ex)
+            throw AiIntegrationException("Failed to communicate with Gemini at $baseUrl: ${ex.message}", ex)
         }
 
         return response?.candidates
@@ -50,7 +53,7 @@ class GeminiHttpService(
             ?.firstOrNull()
             ?.text
             ?.takeIf { it.isNotBlank() }
-            ?: throw OllamaServiceException("Gemini returned an empty response for model '$model'.")
+            ?: throw AiIntegrationException("Gemini returned an empty response for model '$model'.")
     }
 
     override fun isAvailable(): Boolean {

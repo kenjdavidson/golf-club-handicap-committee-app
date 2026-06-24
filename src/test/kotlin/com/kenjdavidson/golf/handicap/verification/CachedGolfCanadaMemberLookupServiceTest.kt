@@ -20,6 +20,7 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import com.kenjdavidson.golf.handicap.ai.AiSettingsService
+import com.kenjdavidson.golf.handicap.ai.GeminiProperties
 import com.kenjdavidson.golf.handicap.ai.OllamaProperties
 import com.kenjdavidson.golf.handicap.verification.VerificationProperties
 
@@ -28,7 +29,10 @@ class CachedGolfCanadaMemberLookupServiceTest {
     private val parser = mock(RoundParser::class.java)
     private val appSettings = UserSettingsService(
         parsers = listOf(parser),
-        aiSettingsService = AiSettingsService(OllamaProperties("http://localhost:11434")),
+        aiSettingsService = AiSettingsService(
+            OllamaProperties("http://localhost:11434"),
+            GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1)
+        ),
         verificationProperties = VerificationProperties(20)
     )
     private val service = CachedGolfCanadaMemberLookupService(membersApi, appSettings)

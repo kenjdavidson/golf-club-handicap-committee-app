@@ -11,7 +11,8 @@ class AiSettingsServiceTest {
     private val properties = OllamaProperties("http://localhost:11434")
     private val geminiProperties = GeminiProperties(
         baseUrl = "https://generativelanguage.googleapis.com",
-        model = "gemini-2.5-flash"
+        model = "gemini-2.5-flash",
+        temperature = 0.1
     )
     private val service = AiSettingsService(properties, geminiProperties)
 
@@ -113,8 +114,8 @@ class AiSettingsServiceTest {
     }
 
     @Test
-    fun `NoopOllamaService generate throws OllamaServiceException`() {
+    fun `NoopOllamaService generate throws AiIntegrationException`() {
         val ex = runCatching { service.ollamaService.generate("hello") }.exceptionOrNull()
-        assertTrue(ex is OllamaServiceException)
+        assertTrue(ex is AiIntegrationException)
     }
 }
