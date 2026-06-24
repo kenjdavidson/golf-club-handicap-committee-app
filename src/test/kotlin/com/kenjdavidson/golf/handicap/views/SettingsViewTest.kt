@@ -1,6 +1,8 @@
 package com.kenjdavidson.golf.handicap.views
 
 import com.kenjdavidson.golf.handicap.ai.AiSettingsService
+import com.kenjdavidson.golf.handicap.ai.AiIntegrationType
+import com.kenjdavidson.golf.handicap.ai.GeminiProperties
 import com.kenjdavidson.golf.handicap.ai.OllamaModelDownloadService
 import com.kenjdavidson.golf.handicap.ai.OllamaProperties
 import com.kenjdavidson.golf.handicap.settings.UserSettingsService
@@ -16,6 +18,7 @@ import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.tabs.Tab
 import com.vaadin.flow.component.tabs.Tabs
 import com.vaadin.flow.component.textfield.IntegerField
+import com.vaadin.flow.component.textfield.PasswordField
 import com.vaadin.flow.component.textfield.TextField
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -27,6 +30,7 @@ class SettingsViewTest {
     private val parserOne = StructuredParser()
     private val parserTwo = NoShowParser()
     private val ollamaProperties = OllamaProperties("http://localhost:11434")
+    private val geminiProperties = GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash")
 
     @Test
     fun `renders grouped settings navigation with club management selected by default`() {
@@ -43,6 +47,20 @@ class SettingsViewTest {
         assertTrue(containsComponent(contentArea, IntegerField::class.java))
         assertTrue(containsComponent(contentArea, TextField::class.java))
         assertFalse(containsText(contentArea, "GitHub Repository"))
+    }
+
+    @Test
+    fun `shows Gemini API key input when Gemini integration is selected`() {
+        val view = buildView()
+        val navigationTabs = readField<Tabs>(view, "navigationTabs")
+        val aiFeaturesTab = readField<Tab>(view, "aiFeaturesTab")
+        val aiIntegrationTypeSelect = readField<Select<AiIntegrationType>>(view, "aiIntegrationTypeSelect")
+        val contentArea = readField<VerticalLayout>(view, "contentArea")
+
+        navigationTabs.selectedTab = aiFeaturesTab
+        aiIntegrationTypeSelect.value = AiIntegrationType.GEMINI
+
+        assertTrue(containsComponent(contentArea, PasswordField::class.java))
     }
 
     @Test
@@ -75,7 +93,7 @@ class SettingsViewTest {
     private fun buildView(
         settingsService: UserSettingsService = buildSettingsService()
     ): SettingsView {
-        val aiSettingsService = AiSettingsService(ollamaProperties)
+        val aiSettingsService = AiSettingsService(ollamaProperties, geminiProperties)
         val downloadService = OllamaModelDownloadService(ollamaProperties)
         return SettingsView(settingsService, aiSettingsService, downloadService, listOf(parserOne, parserTwo))
     }
@@ -83,7 +101,7 @@ class SettingsViewTest {
     private fun buildSettingsService(): UserSettingsService {
         return UserSettingsService(
             parsers = listOf(parserOne, parserTwo),
-            aiSettingsService = AiSettingsService(ollamaProperties),
+            aiSettingsService = AiSettingsService(ollamaProperties, geminiProperties),
             userSettingsRepository = null,
             verificationProperties = VerificationProperties(20)
         )

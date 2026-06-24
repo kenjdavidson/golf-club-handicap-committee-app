@@ -9,7 +9,11 @@ import org.junit.jupiter.api.Test
 class AiSettingsServiceTest {
 
     private val properties = OllamaProperties("http://localhost:11434")
-    private val service = AiSettingsService(properties)
+    private val geminiProperties = GeminiProperties(
+        baseUrl = "https://generativelanguage.googleapis.com",
+        model = "gemini-2.5-flash"
+    )
+    private val service = AiSettingsService(properties, geminiProperties)
 
     @Test
     fun `defaults to NONE integration type`() {
@@ -19,6 +23,11 @@ class AiSettingsServiceTest {
     @Test
     fun `defaults to null selected model`() {
         assertEquals(null, service.selectedModelTag)
+    }
+
+    @Test
+    fun `defaults to null Gemini API key`() {
+        assertEquals(null, service.geminiApiKey)
     }
 
     @Test
@@ -74,6 +83,28 @@ class AiSettingsServiceTest {
         assertTrue(first is OllamaHttpService)
         assertTrue(second is OllamaHttpService)
         assertNotNull(second)
+    }
+
+    @Test
+    fun `builds GeminiHttpService when GEMINI with API key`() {
+        service.applySettings(
+            integrationType = AiIntegrationType.GEMINI,
+            selectedModelTag = null,
+            geminiApiKey = "gemini-api-key"
+        )
+
+        assertTrue(service.ollamaService is GeminiHttpService)
+    }
+
+    @Test
+    fun `falls back to NoopOllamaService when GEMINI without API key`() {
+        service.applySettings(
+            integrationType = AiIntegrationType.GEMINI,
+            selectedModelTag = null,
+            geminiApiKey = " "
+        )
+
+        assertTrue(service.ollamaService is NoopOllamaService)
     }
 
     @Test
