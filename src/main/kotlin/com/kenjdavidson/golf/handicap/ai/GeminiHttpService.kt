@@ -20,7 +20,7 @@ class GeminiHttpService(
         systemInstruction = Content(
             parts = listOf(
                 TextPart(
-                    text = "You are an expert Golf Club Manager and head of the Handicap Committee. Your core responsibility is protecting the integrity of the club's handicap system. Analyze user scoring data for sandbagging, vanity handicapping, and anomalies."
+                    text = DEFAULT_SYSTEM_INSTRUCTION
                 )
             )
         ),
@@ -106,4 +106,9 @@ class GeminiHttpService(
     private data class ResponsePart(
         val text: String = ""
     )
+
+    companion object {
+        private const val DEFAULT_SYSTEM_INSTRUCTION =
+            "You are an expert Golf Club Manager and head of the Handicap Committee. Your core responsibility is protecting the integrity of the club's handicap system. Analyze user scoring data for sandbagging, vanity handicapping, and anomalies."
+    }
 }

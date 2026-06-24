@@ -11,4 +11,8 @@ class GeminiProperties(
     val model: String,
     @Value("\${app.ai.gemini.temperature:0.1}")
     val temperature: Double
-)
+) {
+    init {
+        require(temperature in 0.0..2.0) { "app.ai.gemini.temperature must be between 0.0 and 2.0" }
+    }
+}
