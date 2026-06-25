@@ -1,7 +1,6 @@
 package com.kenjdavidson.golf.handicap.ai
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientException
@@ -26,16 +25,15 @@ class OllamaHttpService(
         .baseUrl(baseUrl)
         .build()
 
-    private val objectMapper = ObjectMapper()
-
-    override fun generate(prompt: String): String {
+    override fun generate(request: AiReviewRequest): String {
+        val prompt = request.toPromptText()
         log.debug("Sending prompt to Ollama [{}] model: {}", modelTag, prompt.take(80))
         return try {
-            val request = GenerateRequest(model = modelTag, prompt = prompt, stream = false)
+            val generateRequest = GenerateRequest(model = modelTag, prompt = prompt, stream = false)
             val response = restClient.post()
                 .uri("/api/generate")
                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-                .body(request)
+                .body(generateRequest)
                 .retrieve()
                 .body(GenerateResponse::class.java)
                 ?: throw AiIntegrationException("Ollama returned an empty response for model '$modelTag'.")

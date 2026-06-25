@@ -15,6 +15,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
  * Entry point for the Golf Club Handicap Committee desktop application.
@@ -26,6 +27,8 @@ import org.springframework.context.annotation.Bean;
  */
 @Slf4j
 @SpringBootApplication
+@EnableAsync
+@Push
 @PWA(name = "Golf Handicap Committee App", shortName = "Golf Handicap")
 public class HandicapApplication implements AppShellConfigurator {
 

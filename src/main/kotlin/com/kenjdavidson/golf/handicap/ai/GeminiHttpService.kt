@@ -27,7 +27,7 @@ class GeminiHttpService(
         temperature = temperature
     )
 
-    override fun generate(prompt: String): String {
+    override fun generate(request: AiReviewRequest): String {
         val response = try {
             restClient.post()
                 .uri("/v1beta/models/{model}:generateContent?key={apiKey}", model, apiKey)
@@ -35,7 +35,7 @@ class GeminiHttpService(
                 .body(
                     GenerateContentRequest(
                         contents = listOf(
-                            Content(parts = listOf(TextPart(text = prompt)))
+                            Content(parts = listOf(TextPart(text = request.toPromptText())))
                         ),
                         config = requestConfig
                     )

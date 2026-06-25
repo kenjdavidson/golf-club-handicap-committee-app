@@ -1,5 +1,7 @@
 package com.kenjdavidson.golf.handicap.views;
 
+import com.kenjdavidson.golf.handicap.ai.AiHandicapReviewService;
+import com.kenjdavidson.golf.handicap.ai.AiSettingsService;
 import com.kenjdavidson.golf.handicap.components.LoggingMessageService;
 import com.kenjdavidson.golf.handicap.components.Navbar;
 import com.kenjdavidson.golf.handicap.components.StatusBar;
@@ -73,6 +75,8 @@ class MainViewTest {
         SingleFileVerificationService verificationService = mock(SingleFileVerificationService.class);
         ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
         LoggingMessageService loggingMessageService = mock(LoggingMessageService.class);
+        AiSettingsService aiSettingsService = mock(AiSettingsService.class);
+        AiHandicapReviewService aiHandicapReviewService = mock(AiHandicapReviewService.class);
         Navbar navbar = new Navbar(authenticationContext, userProfileResolver);
         StatusBar statusBar = new StatusBar(authenticationContext, userProfileResolver, loggingMessageService);
 
@@ -93,7 +97,7 @@ class MainViewTest {
              MockedStatic<VaadinService> ignored2 = mockStatic(VaadinService.class, RETURNS_DEEP_STUBS);
              MockedStatic<RouteConfiguration> routeConfigStatic = mockStatic(RouteConfiguration.class)) {
             routeConfigStatic.when(() -> RouteConfiguration.forRegistry(any())).thenReturn(mockRouteConfig);
-            MainView view = new MainView(authenticationContext, userProfileResolver, verificationService, eventPublisher, loggingMessageService);
+            MainView view = new MainView(authenticationContext, userProfileResolver, verificationService, eventPublisher, loggingMessageService, aiSettingsService, aiHandicapReviewService);
             AuthenticatedLayout shell = new AuthenticatedLayout(navbar, statusBar);
             shell.showRouterLayoutContent(view);
 
@@ -142,6 +146,8 @@ class MainViewTest {
             .thenThrow(new VerificationProcessingException("No valid played dates were found in the uploaded PDF.", null));
         ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
         LoggingMessageService loggingMessageService = mock(LoggingMessageService.class);
+        AiSettingsService aiSettingsService = mock(AiSettingsService.class);
+        AiHandicapReviewService aiHandicapReviewService = mock(AiHandicapReviewService.class);
 
         RouteConfiguration mockRouteConfig = mock(RouteConfiguration.class,
             inv -> "getUrl".equals(inv.getMethod().getName()) ? "" : RETURNS_DEFAULTS.answer(inv));
@@ -151,7 +157,7 @@ class MainViewTest {
              MockedStatic<VaadinService> ignored2 = mockStatic(VaadinService.class, RETURNS_DEEP_STUBS);
              MockedStatic<RouteConfiguration> routeConfigStatic = mockStatic(RouteConfiguration.class)) {
             routeConfigStatic.when(() -> RouteConfiguration.forRegistry(any())).thenReturn(mockRouteConfig);
-            MainView view = new MainView(authenticationContext, userProfileResolver, verificationService, eventPublisher, loggingMessageService);
+            MainView view = new MainView(authenticationContext, userProfileResolver, verificationService, eventPublisher, loggingMessageService, aiSettingsService, aiHandicapReviewService);
 
             UI ui = new UI();
             UI.setCurrent(ui);

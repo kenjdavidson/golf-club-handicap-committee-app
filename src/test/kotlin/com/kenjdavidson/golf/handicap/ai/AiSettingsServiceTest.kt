@@ -115,7 +115,23 @@ class AiSettingsServiceTest {
 
     @Test
     fun `NoopOllamaService generate throws AiIntegrationException`() {
-        val ex = runCatching { service.ollamaService.generate("hello") }.exceptionOrNull()
+        val request = AiReviewRequest(
+            verificationResult = com.kenjdavidson.golf.handicap.verification.FileVerificationResult(
+                memberProfile = com.kenjdavidson.golf.handicap.verification.MemberProfile(
+                    fullName = "Test",
+                    cardId = null,
+                    isMatched = false,
+                    profile = null
+                ),
+                status = com.kenjdavidson.golf.handicap.verification.VerificationStatus.PASS,
+                matchPercentage = 0,
+                matchedCount = 0,
+                comparedCount = 0,
+                mismatchedDates = emptyList(),
+                notes = emptyList()
+            )
+        )
+        val ex = runCatching { service.ollamaService.generate(request) }.exceptionOrNull()
         assertTrue(ex is AiIntegrationException)
     }
 }
