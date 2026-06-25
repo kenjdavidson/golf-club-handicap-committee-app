@@ -8,7 +8,7 @@ package com.kenjdavidson.golf.handicap.ai
  */
 class NoopOllamaService : OllamaService {
 
-    override fun generate(prompt: String): String =
+    override fun generate(request: AiReviewRequest): String =
         throw AiIntegrationException("AI integration is disabled. Select an integration type in Settings → AI Features.")
 
     override fun isAvailable(): Boolean = false

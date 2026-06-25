@@ -2,6 +2,7 @@ package com.kenjdavidson.golf.handicap.ai
 
 import com.kenjdavidson.golf.handicap.golfcanada.model.HistoryEntry
 import com.kenjdavidson.golf.handicap.golfcanada.model.HoleScore
+import com.kenjdavidson.golf.handicap.golfcanada.model.Profile
 import com.kenjdavidson.golf.handicap.golfcanada.model.ScoreDetails
 import com.kenjdavidson.golf.handicap.verification.FileVerificationResult
 import com.kenjdavidson.golf.handicap.verification.MemberProfile
@@ -12,6 +13,7 @@ import com.kenjdavidson.golf.handicap.verification.api.GolfCanadaScoreDetailsLoo
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import java.time.LocalDateTime
@@ -29,13 +31,18 @@ class AiHandicapReviewServiceTest {
         verificationProperties
     )
 
-    private fun minimalResult(individualId: Long? = 42L): FileVerificationResult =
+    /** Kotlin-safe any() for AiReviewRequest: Mockito returns null but Kotlin needs non-null. */
+    private fun anyRequest(): AiReviewRequest =
+        ArgumentMatchers.any(AiReviewRequest::class.java) ?: AiReviewRequest(resultWithProfile())
+
+    /** Builds a result with a matched profile carrying the given [individualId]. */
+    private fun resultWithProfile(individualId: Long? = 42L): FileVerificationResult =
         FileVerificationResult(
             memberProfile = MemberProfile(
                 fullName = "Jim Test",
                 cardId = "12345",
-                isMatched = true,
-                profile = null
+                isMatched = individualId != null,
+                profile = individualId?.let { Profile().individualId(it) }
             ),
             status = VerificationStatus.PASS,
             matchPercentage = 100,
@@ -44,22 +51,21 @@ class AiHandicapReviewServiceTest {
             mismatchedDates = emptyList(),
             notes = emptyList(),
             parsedRounds = emptyList(),
-            roundComparisons = emptyList(),
-            individualId = individualId
+            roundComparisons = emptyList()
         )
 
     @Test
-    fun `review builds prompt containing member name and calls aiService`() {
+    fun `reviewAsync builds request containing member profile and calls aiService`() {
         `when`(historyLookupService.getHistory(42L)).thenReturn(emptyList())
-        `when`(aiService.generate(org.mockito.ArgumentMatchers.anyString())).thenReturn("No irregularities found.")
+        `when`(aiService.generate(anyRequest())).thenReturn("No irregularities found.")
 
-        val result = service.review(minimalResult(), aiService)
+        val result = service.reviewAsync(resultWithProfile(), aiService).get()
 
         assertTrue(result.isNotBlank())
     }
 
     @Test
-    fun `review includes score details in prompt when available`() {
+    fun `reviewAsync includes score details in request when available`() {
         val historyEntry = HistoryEntry().id(101L).date(LocalDateTime.of(2026, 5, 1, 9, 0))
         `when`(historyLookupService.getHistory(42L)).thenReturn(listOf(historyEntry))
 
@@ -79,34 +85,42 @@ class AiHandicapReviewServiceTest {
             )
         `when`(scoreDetailsLookupService.getScoreDetails(101L)).thenReturn(scoreDetails)
 
-        var capturedPrompt = ""
-        `when`(aiService.generate(org.mockito.ArgumentMatchers.anyString())).thenAnswer { inv ->
-            capturedPrompt = inv.getArgument(0)
+        var capturedRequest: AiReviewRequest? = null
+        `when`(aiService.generate(anyRequest())).thenAnswer { inv ->
+            capturedRequest = inv.getArgument(0)
             "No irregularities found."
         }
 
-        service.review(minimalResult(), aiService)
+        service.reviewAsync(resultWithProfile(), aiService).get()
 
-        assertTrue(capturedPrompt.contains("Blue Springs"), "Prompt should include course name")
-        assertTrue(capturedPrompt.contains("85"), "Prompt should include gross score")
+        val captured = capturedRequest
+        assertTrue(captured != null, "aiService.generate should have been called")
+        assertTrue(
+            captured!!.scoreDetails.any { it.course == "Blue Springs" },
+            "Request should include Blue Springs score details"
+        )
+        assertTrue(
+            captured.scoreDetails.any { it.gross == 85 },
+            "Request should include gross score"
+        )
     }
 
     @Test
-    fun `review returns ai response`() {
+    fun `reviewAsync returns ai response`() {
         `when`(historyLookupService.getHistory(42L)).thenReturn(emptyList())
-        `when`(aiService.generate(org.mockito.ArgumentMatchers.anyString()))
+        `when`(aiService.generate(anyRequest()))
             .thenReturn("Some irregularities may need further review.")
 
-        val result = service.review(minimalResult(), aiService)
+        val result = service.reviewAsync(resultWithProfile(), aiService).get()
 
         assertTrue(result.contains("irregularities"))
     }
 
     @Test
-    fun `review skips history fetch when individualId is null`() {
-        `when`(aiService.generate(org.mockito.ArgumentMatchers.anyString())).thenReturn("No irregularities found.")
+    fun `reviewAsync skips history fetch when profile has no individualId`() {
+        `when`(aiService.generate(anyRequest())).thenReturn("No irregularities found.")
 
-        val result = service.review(minimalResult(individualId = null), aiService)
+        val result = service.reviewAsync(resultWithProfile(individualId = null), aiService).get()
 
         assertFalse(result.isBlank())
         // historyLookupService should NOT have been called
@@ -116,7 +130,7 @@ class AiHandicapReviewServiceTest {
     }
 
     @Test
-    fun `review limits score lookups to maxRounds`() {
+    fun `reviewAsync limits score lookups to maxRounds`() {
         val entries = (1L..10L).map { id -> HistoryEntry().id(id) }
         `when`(historyLookupService.getHistory(42L)).thenReturn(entries)
         entries.forEach { e ->
@@ -124,9 +138,9 @@ class AiHandicapReviewServiceTest {
                 ScoreDetails().id(e.id).gross(80).par(72).differential(8.0)
             )
         }
-        `when`(aiService.generate(org.mockito.ArgumentMatchers.anyString())).thenReturn("ok")
+        `when`(aiService.generate(anyRequest())).thenReturn("ok")
 
-        service.review(minimalResult(), aiService)
+        service.reviewAsync(resultWithProfile(), aiService).get()
 
         // Only the first maxRounds=3 entries should be fetched
         org.mockito.Mockito.verify(scoreDetailsLookupService, org.mockito.Mockito.times(3))

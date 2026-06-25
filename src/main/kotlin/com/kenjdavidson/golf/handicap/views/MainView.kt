@@ -127,15 +127,13 @@ class MainView(
             verificationResult.add(aiReviewCard)
 
             val ui = UI.getCurrent()
-            Thread {
-                try {
-                    val reviewText = aiHandicapReviewService.review(result, aiService)
-                    ui?.access { aiReviewCard.showResult(reviewText) }
-                } catch (exception: Exception) {
-                    val message = exception.message ?: "Unknown error"
+            aiHandicapReviewService.reviewAsync(result, aiService)
+                .thenAccept { reviewText -> ui?.access { aiReviewCard.showResult(reviewText) } }
+                .exceptionally { throwable ->
+                    val message = throwable.cause?.message ?: throwable.message ?: "Unknown error"
                     ui?.access { aiReviewCard.showError(message) }
+                    null
                 }
-            }.also { it.isDaemon = true }.start()
         }
 
         if (result.roundComparisons.isNotEmpty()) {

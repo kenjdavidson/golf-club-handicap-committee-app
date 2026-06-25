@@ -63,8 +63,7 @@ class CompareDatesVerificationStep(
                 mismatchedDates = dateResult.mismatchedDates,
                 notes = notes,
                 parsedRounds = parsedHistory.rounds,
-                roundComparisons = roundComparisons,
-                individualId = context.matchedMember?.individualId
+                roundComparisons = roundComparisons
             )
         )
     }

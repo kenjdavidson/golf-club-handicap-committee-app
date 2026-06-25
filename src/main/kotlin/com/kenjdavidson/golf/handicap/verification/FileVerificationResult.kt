@@ -11,6 +11,5 @@ data class FileVerificationResult(
     val mismatchedDates: List<LocalDate>,
     val notes: List<String>,
     val parsedRounds: List<ParsedRound> = emptyList(),
-    val roundComparisons: List<RoundComparison> = emptyList(),
-    val individualId: Long? = null
+    val roundComparisons: List<RoundComparison> = emptyList()
 )
