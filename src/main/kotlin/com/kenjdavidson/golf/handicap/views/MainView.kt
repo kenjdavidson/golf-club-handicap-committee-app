@@ -1,5 +1,8 @@
 package com.kenjdavidson.golf.handicap.views
 
+import com.kenjdavidson.golf.handicap.ai.AiHandicapReviewService
+import com.kenjdavidson.golf.handicap.ai.AiSettingsService
+import com.kenjdavidson.golf.handicap.components.AiReviewCard
 import com.kenjdavidson.golf.handicap.components.ErrorLoggedEvent
 import com.kenjdavidson.golf.handicap.components.LoggingMessageService
 import com.kenjdavidson.golf.handicap.components.StatusUpdateEvent
@@ -14,6 +17,7 @@ import com.kenjdavidson.golf.handicap.verification.NonUniqueMemberFoundException
 import com.kenjdavidson.golf.handicap.verification.SingleFileVerificationService
 import com.kenjdavidson.golf.handicap.verification.VerificationProcessingException
 import com.kenjdavidson.golf.handicap.verification.VerificationStatus
+import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.html.ListItem
 import com.vaadin.flow.component.html.Paragraph
@@ -39,7 +43,9 @@ class MainView(
     private val userProfileResolver: UserProfileResolver,
     private val singleFileVerificationService: SingleFileVerificationService,
     private val eventPublisher: ApplicationEventPublisher,
-    private val loggingMessageService: LoggingMessageService
+    private val loggingMessageService: LoggingMessageService,
+    private val aiSettingsService: AiSettingsService,
+    private val aiHandicapReviewService: AiHandicapReviewService
 ) : VerticalLayout(), LocaleChangeObserver {
 
     private val authenticatedUser = userProfileResolver.resolveAuthenticatedUser(authenticationContext)
@@ -114,6 +120,23 @@ class MainView(
         topRow.setFlexGrow(1.0, profileCard, summaryCard)
 
         verificationResult.add(topRow)
+
+        val aiService = aiSettingsService.ollamaService
+        if (aiService.isAvailable()) {
+            val aiReviewCard = AiReviewCard()
+            verificationResult.add(aiReviewCard)
+
+            val ui = UI.getCurrent()
+            Thread {
+                try {
+                    val reviewText = aiHandicapReviewService.review(result, aiService)
+                    ui?.access { aiReviewCard.showResult(reviewText) }
+                } catch (exception: Exception) {
+                    val message = exception.message ?: "Unknown error"
+                    ui?.access { aiReviewCard.showError(message) }
+                }
+            }.also { it.isDaemon = true }.start()
+        }
 
         if (result.roundComparisons.isNotEmpty()) {
             verificationResult.add(RoundsComparisonGrid(result.roundComparisons))
