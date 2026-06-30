@@ -14,7 +14,8 @@ class AiSettingsServiceTest {
         model = "gemini-2.5-flash",
         temperature = 0.1
     )
-    private val service = AiSettingsService(properties, geminiProperties)
+    private val aiProperties = AiProperties("NONE,EXTERNAL,LOCAL,GEMINI")
+    private val service = AiSettingsService(properties, geminiProperties, aiProperties)
 
     @Test
     fun `defaults to NONE integration type`() {
@@ -106,6 +107,61 @@ class AiSettingsServiceTest {
         )
 
         assertTrue(service.ollamaService is NoopOllamaService)
+    }
+
+    @Test
+    fun `uses operator-configured Gemini API key when no user key is set`() {
+        val propsWithKey = GeminiProperties(
+            baseUrl = "https://generativelanguage.googleapis.com",
+            model = "gemini-2.5-flash",
+            temperature = 0.1,
+            apiKey = "operator-key"
+        )
+        val svc = AiSettingsService(properties, propsWithKey, aiProperties)
+
+        svc.applySettings(integrationType = AiIntegrationType.GEMINI, selectedModelTag = null, geminiApiKey = null)
+
+        assertTrue(svc.ollamaService is GeminiHttpService)
+    }
+
+    @Test
+    fun `user-entered Gemini API key overrides operator key`() {
+        val propsWithKey = GeminiProperties(
+            baseUrl = "https://generativelanguage.googleapis.com",
+            model = "gemini-2.5-flash",
+            temperature = 0.1,
+            apiKey = "operator-key"
+        )
+        val svc = AiSettingsService(properties, propsWithKey, aiProperties)
+
+        svc.applySettings(integrationType = AiIntegrationType.GEMINI, selectedModelTag = null, geminiApiKey = "user-key")
+
+        assertTrue(svc.ollamaService is GeminiHttpService)
+        assertEquals("user-key", svc.geminiApiKey)
+    }
+
+    @Test
+    fun `exposes allowed types from AiProperties`() {
+        assertEquals(listOf(AiIntegrationType.NONE, AiIntegrationType.EXTERNAL, AiIntegrationType.LOCAL, AiIntegrationType.GEMINI), service.allowedTypes)
+    }
+
+    @Test
+    fun `resets disallowed integration type to NONE on applySettings`() {
+        val restrictedProps = AiProperties("NONE,GEMINI")
+        val svc = AiSettingsService(properties, geminiProperties, restrictedProps)
+
+        svc.applySettings(integrationType = AiIntegrationType.LOCAL, selectedModelTag = "llama3.2")
+
+        assertEquals(AiIntegrationType.NONE, svc.integrationType)
+        assertTrue(svc.ollamaService is NoopOllamaService)
+    }
+
+    @Test
+    fun `NONE is always included in allowedTypes even if omitted from config`() {
+        val props = AiProperties("GEMINI")
+
+        assertTrue(AiIntegrationType.NONE in props.allowedTypes)
+        assertTrue(AiIntegrationType.GEMINI in props.allowedTypes)
     }
 
     @Test

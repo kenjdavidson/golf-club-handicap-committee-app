@@ -1,5 +1,6 @@
 package com.kenjdavidson.golf.handicap.views
 
+import com.kenjdavidson.golf.handicap.ai.AiProperties
 import com.kenjdavidson.golf.handicap.ai.AiSettingsService
 import com.kenjdavidson.golf.handicap.ai.AiIntegrationType
 import com.kenjdavidson.golf.handicap.ai.GeminiProperties
@@ -31,6 +32,7 @@ class SettingsViewTest {
     private val parserTwo = NoShowParser()
     private val ollamaProperties = OllamaProperties("http://localhost:11434")
     private val geminiProperties = GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1)
+    private val aiProperties = AiProperties("NONE,EXTERNAL,LOCAL,GEMINI")
 
     @Test
     fun `renders grouped settings navigation with club management selected by default`() {
@@ -64,6 +66,22 @@ class SettingsViewTest {
     }
 
     @Test
+    fun `integration type select only shows allowed types`() {
+        val restrictedProps = AiProperties("NONE,GEMINI")
+        val aiSettingsService = AiSettingsService(ollamaProperties, geminiProperties, restrictedProps)
+        val downloadService = OllamaModelDownloadService(ollamaProperties)
+        val settingsService = buildSettingsService(aiSettingsService)
+        val view = SettingsView(settingsService, aiSettingsService, downloadService, listOf(parserOne, parserTwo))
+
+        val aiIntegrationTypeSelect = readField<Select<AiIntegrationType>>(view, "aiIntegrationTypeSelect")
+        val items = aiIntegrationTypeSelect.genericDataView.items.toList()
+
+        assertEquals(listOf(AiIntegrationType.NONE, AiIntegrationType.GEMINI), items)
+        assertFalse(items.contains(AiIntegrationType.EXTERNAL))
+        assertFalse(items.contains(AiIntegrationType.LOCAL))
+    }
+
+    @Test
     fun `updates bound settings and shows about links when selected`() {
         val settingsService = buildSettingsService()
         val view = buildView(settingsService)
@@ -93,15 +111,17 @@ class SettingsViewTest {
     private fun buildView(
         settingsService: UserSettingsService = buildSettingsService()
     ): SettingsView {
-        val aiSettingsService = AiSettingsService(ollamaProperties, geminiProperties)
+        val aiSettingsService = AiSettingsService(ollamaProperties, geminiProperties, aiProperties)
         val downloadService = OllamaModelDownloadService(ollamaProperties)
         return SettingsView(settingsService, aiSettingsService, downloadService, listOf(parserOne, parserTwo))
     }
 
-    private fun buildSettingsService(): UserSettingsService {
+    private fun buildSettingsService(
+        aiSettingsService: AiSettingsService = AiSettingsService(ollamaProperties, geminiProperties, aiProperties)
+    ): UserSettingsService {
         return UserSettingsService(
             parsers = listOf(parserOne, parserTwo),
-            aiSettingsService = AiSettingsService(ollamaProperties, geminiProperties),
+            aiSettingsService = aiSettingsService,
             userSettingsRepository = null,
             verificationProperties = VerificationProperties(20)
         )
