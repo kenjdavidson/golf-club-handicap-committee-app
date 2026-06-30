@@ -214,7 +214,7 @@ class SettingsView(
     // ── AI Features setup ──────────────────────────────────────────────────────
 
     private fun setupAiIntegrationTypeSelect() {
-        aiIntegrationTypeSelect.setItems(AiIntegrationType.entries.toList())
+        aiIntegrationTypeSelect.setItems(aiSettingsService.allowedTypes)
         aiIntegrationTypeSelect.value = aiSettingsService.integrationType
         aiIntegrationTypeSelect.setItemLabelGenerator { type ->
             AppMessages.translateCurrent("ai.integration.${type.name.lowercase()}.label")

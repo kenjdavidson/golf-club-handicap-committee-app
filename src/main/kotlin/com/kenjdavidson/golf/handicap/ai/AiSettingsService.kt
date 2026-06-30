@@ -12,12 +12,18 @@ import org.springframework.web.context.annotation.SessionScope
  * [com.kenjdavidson.golf.handicap.settings.UserSettingsService] (also
  * session-scoped), so choices survive browser refreshes within the same
  * application run.
+ *
+ * The set of integration types available to users is governed by
+ * [AiProperties.allowedTypes], which can be restricted via the
+ * `APP_AI_ALLOWED_TYPES` environment variable (e.g. `NONE,GEMINI` for a
+ * cloud deployment that does not have Ollama/Docker available).
  */
 @SessionScope
 @Component
 class AiSettingsService(
     private val ollamaProperties: OllamaProperties,
-    private val geminiProperties: GeminiProperties
+    private val geminiProperties: GeminiProperties,
+    private val aiProperties: AiProperties = AiProperties("NONE,EXTERNAL,LOCAL,GEMINI")
 ) {
     @Volatile
     private var integrationTypeValue: AiIntegrationType = AiIntegrationType.NONE
@@ -27,6 +33,13 @@ class AiSettingsService(
 
     @Volatile
     private var geminiApiKeyValue: String? = null
+
+    /**
+     * The integration types available for selection in the Settings UI.
+     * Derived from [AiProperties.allowedTypes].
+     */
+    val allowedTypes: List<AiIntegrationType>
+        get() = aiProperties.allowedTypes
 
     var integrationType: AiIntegrationType
         get() = integrationTypeValue
@@ -65,9 +78,16 @@ class AiSettingsService(
         rebuildService()
     }
 
-    /** Applies AI settings atomically without triggering extra rebuilds. */
+    /**
+     * Applies AI settings atomically without triggering extra rebuilds.
+     *
+     * If [integrationType] is not in [allowedTypes] (e.g. a persisted Ollama setting
+     * loaded on a cloud deployment that only allows Gemini) it is silently reset to
+     * [AiIntegrationType.NONE].
+     */
     fun applySettings(integrationType: AiIntegrationType, selectedModelTag: String?, geminiApiKey: String? = null) {
-        this.integrationTypeValue = integrationType
+        this.integrationTypeValue =
+            if (integrationType in aiProperties.allowedTypes) integrationType else AiIntegrationType.NONE
         this.selectedModelTagValue = selectedModelTag
         this.geminiApiKeyValue = geminiApiKey?.trim()?.takeIf { it.isNotBlank() }
         rebuildService()
@@ -85,7 +105,8 @@ class AiSettingsService(
                 else OllamaHttpService(ollamaProperties.baseUrl, tag)
             }
             AiIntegrationType.GEMINI -> {
-                val key = geminiApiKeyValue
+                // Use the user-entered key; fall back to the operator-configured env key.
+                val key = geminiApiKeyValue ?: geminiProperties.apiKey?.takeIf { it.isNotBlank() }
                 if (key.isNullOrBlank()) NoopOllamaService()
                 else GeminiHttpService(
                     baseUrl = geminiProperties.baseUrl,
