@@ -4,7 +4,6 @@ import com.kenjdavidson.golf.handicap.i18n.AppMessages
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
-import com.vaadin.flow.component.upload.Upload
 import com.vaadin.flow.component.upload.UploadButton
 import com.vaadin.flow.component.upload.UploadManager
 import com.vaadin.flow.i18n.LocaleChangeEvent
@@ -25,27 +24,32 @@ class SingleFileUploadCard : HorizontalLayout(), LocaleChangeObserver {
         style["flex-grow"] = "1"
     }
 
-    private val upload = UploadButton(
-        UploadManager(this, UploadHandler { event ->
-            try {
-                val bytes = event.inputStream.readBytes()
-                event.ui.access {
-                    uploadedBytes = bytes
-                    uploadedFileName = event.fileName
-                    fileName.text = event.fileName
-                    fileSelectedListener?.invoke(event.fileName)
-                    verifyIfReady()
-                }
-            } catch (exception: Exception) {
-                val message = "${AppMessages.translateCurrent("upload.failed")}: ${exception.message ?: AppMessages.translateCurrent("upload.unknownError")}"
-                event.reject(message)
-                event.ui.access {
-                    clearFile()
-                    fileRejectedListener?.invoke(message)
-                }
+    private val uploadManager = UploadManager(this, UploadHandler { event ->
+        try {
+            val bytes = event.inputStream.readBytes()
+            event.ui.access {
+                uploadedBytes = bytes
+                uploadedFileName = event.fileName
+                fileName.text = event.fileName
+                fileSelectedListener?.invoke(event.fileName)
+                verifyIfReady()
             }
-        })
-    ).apply {
+        } catch (exception: Exception) {
+            val message = "${AppMessages.translateCurrent("upload.failed")}: ${exception.message ?: AppMessages.translateCurrent("upload.unknownError")}"
+            event.reject(message)
+            event.ui.access {
+                clearFile()
+                fileRejectedListener?.invoke(message)
+            }
+        }
+    }).apply {
+        setMaxFiles(1)
+        setAcceptedMimeTypes("application/pdf")
+        setAcceptedFileExtensions(".pdf")
+        setMaxFileSize(25L * 1024 * 1024)
+    }
+
+    private val upload = UploadButton(uploadManager).apply {
         text = AppMessages.translateCurrent("upload.button")
     }
 

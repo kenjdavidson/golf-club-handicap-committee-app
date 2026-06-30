@@ -15,15 +15,22 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
- * Entry point for the Golf Club Handicap Committee desktop application.
+ * Entry point for the Golf Club Handicap Committee application.
  *
- * <p>The application starts an embedded Tomcat server bound exclusively to
- * {@code 127.0.0.1} and, once ready, automatically opens the default system
- * browser at the local URL.  All data is held in an in-memory H2 database
- * so no PII survives after the process exits.
+ * <p>When started via {@link #main} the application defaults to the {@code desktop}
+ * Spring profile (via {@code spring.profiles.default=desktop}), which binds the
+ * embedded Tomcat server exclusively to {@code 127.0.0.1} and shuts down the JVM
+ * when the browser session ends.  For cloud deployments set
+ * {@code SPRING_PROFILES_ACTIVE} to any non-desktop value (e.g. {@code cloud});
+ * that overrides the default, so the desktop profile is never activated, the
+ * server listens on all interfaces, and the automatic JVM shutdown is disabled.
+ *
+ * <p>All data is held in an in-memory H2 database so no PII survives after
+ * the process exits.
  */
 @Slf4j
 @SpringBootApplication
@@ -38,6 +45,7 @@ public class HandicapApplication implements AppShellConfigurator {
         GolfCanadaSslTrustConfigurator.configureDefaultSslTrust();
         context = new SpringApplicationBuilder(HandicapApplication.class)
                 .headless(false)
+                .properties("spring.profiles.default=desktop")
                 .run(args);
     }
 
@@ -60,6 +68,7 @@ public class HandicapApplication implements AppShellConfigurator {
     }
 
     @Bean
+    @Profile("desktop")
     public VaadinServiceInitListener vaadinServiceInitListener() {
         return event -> event.getSource().addSessionDestroyListener((SessionDestroyListener) destroyEvent -> {
             log.info("🛑 Browser window closed and session heartbeats timed out. Shutting down Spring Boot backend...");
