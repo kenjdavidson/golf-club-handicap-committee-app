@@ -26,7 +26,7 @@ class HandicapApplicationMainTest {
              MockedConstruction<SpringApplicationBuilder> springBuilders = mockConstruction(SpringApplicationBuilder.class,
                      (mock, invocation) -> {
                          when(mock.headless(false)).thenReturn(mock);
-                         when(mock.profiles("desktop")).thenReturn(mock);
+                         when(mock.properties(any(String.class))).thenReturn(mock);
                          when(mock.run(any(String[].class))).thenReturn(context);
                      })) {
 
@@ -34,7 +34,7 @@ class HandicapApplicationMainTest {
 
             SpringApplicationBuilder builder = springBuilders.constructed().getFirst();
             verify(builder).headless(false);
-            verify(builder).profiles("desktop");
+            verify(builder).properties("spring.profiles.default=desktop");
             verify(builder).run(eq(args));
             sslConfigurator.verify(GolfCanadaSslTrustConfigurator::configureDefaultSslTrust);
         }
