@@ -6,7 +6,7 @@ plugins {
     id("com.vaadin") version "25.1.5"
     id("org.openjfx.javafxplugin") version "0.1.0"
     id("org.openapi.generator") version "7.14.0"
-    id("org.graalvm.buildtools.native") version "0.10.3" apply false
+    id("org.graalvm.buildtools.native") version "0.10.3"
     kotlin("jvm") version "2.2.0"
     kotlin("plugin.spring") version "2.2.0"
 }
@@ -28,7 +28,9 @@ repositories {
 }
 
 // Enable production mode with: ./gradlew -Pproduction build
-val isProduction = project.hasProperty("production")
+// Also activated by -Pvaadin.productionMode=true (used during native image compilation)
+val isProduction = project.hasProperty("production") ||
+    project.findProperty("vaadin.productionMode")?.toString() == "true"
 
 vaadin {
     productionMode = isProduction
@@ -85,20 +87,17 @@ dependencies {
 }
 
 // ── GraalVM Native Image support ──────────────────────────────────────────────
-// Activate with: ./gradlew -Pnative nativeCompile
-if (project.hasProperty("native")) {
-    apply(plugin = "org.graalvm.buildtools.native")
-    extensions.configure<org.graalvm.buildtools.gradle.dsl.GraalVMExtension> {
-        binaries {
-            named("main") {
-                imageName.set("HandicapCommitteeApp")
-                mainClass.set("com.kenjdavidson.golf.handicap.HandicapApplication")
-                buildArgs.addAll(
-                    "--no-fallback",
-                    "--initialize-at-build-time=org.slf4j",
-                    "-H:+ReportExceptionStackTraces"
-                )
-            }
+// Compile with: ./gradlew nativeCompile -Pvaadin.productionMode=true
+graalvmNative {
+    binaries {
+        named("main") {
+            imageName.set("HandicapCommitteeApp")
+            mainClass.set("com.kenjdavidson.golf.handicap.HandicapApplication")
+            buildArgs.addAll(
+                "--no-fallback",
+                "--initialize-at-build-time=org.slf4j",
+                "-H:+ReportExceptionStackTraces"
+            )
         }
     }
 }
