@@ -21,12 +21,13 @@ import org.springframework.scheduling.annotation.EnableAsync;
 /**
  * Entry point for the Golf Club Handicap Committee application.
  *
- * <p>When started via {@link #main} the application runs in desktop mode
- * (activating the {@code desktop} Spring profile) which binds the embedded
- * Tomcat server exclusively to {@code 127.0.0.1} and automatically opens the
- * default system browser.  For cloud deployments the {@code desktop} profile
- * should not be active; the server will then listen on all interfaces and the
- * desktop-specific shutdown behaviour is disabled.
+ * <p>When started via {@link #main} the application defaults to the {@code desktop}
+ * Spring profile (via {@code spring.profiles.default=desktop}), which binds the
+ * embedded Tomcat server exclusively to {@code 127.0.0.1} and shuts down the JVM
+ * when the browser session ends.  For cloud deployments set
+ * {@code SPRING_PROFILES_ACTIVE} to any non-desktop value (e.g. {@code cloud});
+ * that overrides the default, so the desktop profile is never activated, the
+ * server listens on all interfaces, and the automatic JVM shutdown is disabled.
  *
  * <p>All data is held in an in-memory H2 database so no PII survives after
  * the process exits.
@@ -44,7 +45,7 @@ public class HandicapApplication implements AppShellConfigurator {
         GolfCanadaSslTrustConfigurator.configureDefaultSslTrust();
         context = new SpringApplicationBuilder(HandicapApplication.class)
                 .headless(false)
-                .profiles("desktop")
+                .properties("spring.profiles.default=desktop")
                 .run(args);
     }
 
