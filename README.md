@@ -74,10 +74,8 @@ Review member scoring history for suspicious patterns (for example, missing roun
 
 ## Release builds
 
-- Build a self-contained zip for the current platform: `./gradlew -Pproduction jpackageAppArchive`
-- Create a Windows installer locally: `./gradlew -Pproduction jpackageInstaller`
-- Desktop package icons are sourced from `src/main/resources/static/icons` (same icon used by browser toolbar and jpackage bundles)
-- Override package metadata when needed: `-Pjpackage.mac.package.identifier=... -Pjpackage.mac.package.name=... -Pjpackage.win.upgrade.uuid=...`
+- Build a GraalVM native image locally: `./gradlew nativeCompile -Pvaadin.productionMode=true`
+  - Output binary: `build/native/nativeCompile/HandicapCommitteeApp` (or `.exe` on Windows)
 - Prepare a date-based snapshot tag without bumping the project version: `./gradlew prepareSnapshotRelease`
 - Prepare a semantic patch release and bump to the next patch snapshot: `./gradlew preparePatchRelease`
 - Prepare a semantic minor release and bump to the next minor snapshot: `./gradlew prepareMinorRelease`
@@ -87,8 +85,8 @@ Review member scoring history for suspicious patterns (for example, missing roun
   - Use `main` for snapshot and minor releases
   - Use the matching `releases/patch/...` branch for patch releases
 - Pushing a tag such as `v1.2.3` triggers the `Release` workflow, which:
-  - builds zipped application bundles for macOS and Windows
-  - publishes both zip files to the matching GitHub Release
+  - builds GraalVM AOT-compiled native image binaries for Linux, macOS, and Windows
+  - publishes all three zipped binaries to the matching GitHub Release
   - enables GitHub-generated release notes as the release changelog
 
 ### 🍏 Running on macOS
