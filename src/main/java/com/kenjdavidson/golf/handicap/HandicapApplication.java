@@ -15,15 +15,21 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
- * Entry point for the Golf Club Handicap Committee desktop application.
+ * Entry point for the Golf Club Handicap Committee application.
  *
- * <p>The application starts an embedded Tomcat server bound exclusively to
- * {@code 127.0.0.1} and, once ready, automatically opens the default system
- * browser at the local URL.  All data is held in an in-memory H2 database
- * so no PII survives after the process exits.
+ * <p>When started via {@link #main} the application runs in desktop mode
+ * (activating the {@code desktop} Spring profile) which binds the embedded
+ * Tomcat server exclusively to {@code 127.0.0.1} and automatically opens the
+ * default system browser.  For cloud deployments the {@code desktop} profile
+ * should not be active; the server will then listen on all interfaces and the
+ * desktop-specific shutdown behaviour is disabled.
+ *
+ * <p>All data is held in an in-memory H2 database so no PII survives after
+ * the process exits.
  */
 @Slf4j
 @SpringBootApplication
@@ -38,6 +44,7 @@ public class HandicapApplication implements AppShellConfigurator {
         GolfCanadaSslTrustConfigurator.configureDefaultSslTrust();
         context = new SpringApplicationBuilder(HandicapApplication.class)
                 .headless(false)
+                .profiles("desktop")
                 .run(args);
     }
 
@@ -60,6 +67,7 @@ public class HandicapApplication implements AppShellConfigurator {
     }
 
     @Bean
+    @Profile("desktop")
     public VaadinServiceInitListener vaadinServiceInitListener() {
         return event -> event.getSource().addSessionDestroyListener((SessionDestroyListener) destroyEvent -> {
             log.info("🛑 Browser window closed and session heartbeats timed out. Shutting down Spring Boot backend...");
