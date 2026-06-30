@@ -23,7 +23,7 @@ import org.springframework.web.context.annotation.SessionScope
 class AiSettingsService(
     private val ollamaProperties: OllamaProperties,
     private val geminiProperties: GeminiProperties,
-    private val aiProperties: AiProperties = AiProperties("NONE,EXTERNAL,LOCAL,GEMINI")
+    private val aiProperties: AiProperties
 ) {
     @Volatile
     private var integrationTypeValue: AiIntegrationType = AiIntegrationType.NONE
