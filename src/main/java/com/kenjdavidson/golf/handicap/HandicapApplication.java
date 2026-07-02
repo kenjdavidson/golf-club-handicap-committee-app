@@ -18,16 +18,28 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableAsync;
 
+import java.util.Locale;
+
 /**
  * Entry point for the Golf Club Handicap Committee application.
  *
- * <p>When started via {@link #main} the application defaults to the {@code desktop}
- * Spring profile (via {@code spring.profiles.default=desktop}), which binds the
- * embedded Tomcat server exclusively to {@code 127.0.0.1} and shuts down the JVM
- * when the browser session ends.  For cloud deployments set
- * {@code SPRING_PROFILES_ACTIVE} to any non-desktop value (e.g. {@code cloud});
- * that overrides the default, so the desktop profile is never activated, the
- * server listens on all interfaces, and the automatic JVM shutdown is disabled.
+ * <p>When started via {@link #main} the application auto-detects the host OS:
+ * <ul>
+ *   <li><b>Windows / macOS</b> – the {@code desktop} Spring profile is activated as
+ *       the default, which binds Tomcat to {@code 127.0.0.1} and shuts down the JVM
+ *       when the browser session ends.</li>
+ *   <li><b>Linux (and all other OS)</b> – no default profile is set, so the base
+ *       {@code application.properties} cloud-safe settings apply: the server listens
+ *       on all interfaces and the automatic JVM shutdown listener is never registered.</li>
+ * </ul>
+ *
+ * <p>{@code SPRING_PROFILES_ACTIVE} always takes precedence and can override the
+ * OS-based default on any platform.
+ *
+ * <p>This auto-detection works identically in JVM and GraalVM native-image binaries
+ * because {@link #main} still executes at runtime; Spring Boot's AOT processor
+ * preserves {@code @Profile} condition metadata so that profile-gated beans are
+ * evaluated at runtime rather than baked in at build time.
  *
  * <p>All data is held in an in-memory H2 database so no PII survives after
  * the process exits.
@@ -43,10 +55,22 @@ public class HandicapApplication implements AppShellConfigurator {
 
     public static void main(String[] args) {
         GolfCanadaSslTrustConfigurator.configureDefaultSslTrust();
-        context = new SpringApplicationBuilder(HandicapApplication.class)
-                .headless(false)
-                .properties("spring.profiles.default=desktop")
-                .run(args);
+        SpringApplicationBuilder builder = new SpringApplicationBuilder(HandicapApplication.class)
+                .headless(false);
+        if (isDesktopOs()) {
+            builder.properties("spring.profiles.default=desktop");
+        }
+        context = builder.run(args);
+    }
+
+    /**
+     * Returns {@code true} on Windows and macOS, where the app runs as a local desktop
+     * application. Returns {@code false} on Linux and all other platforms, which are
+     * treated as cloud/server environments.
+     */
+    private static boolean isDesktopOs() {
+        String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
+        return os.contains("win") || os.contains("mac");
     }
 
     public static void shutdownAndExit() {
