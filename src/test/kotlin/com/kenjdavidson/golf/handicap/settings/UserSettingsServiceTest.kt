@@ -1,6 +1,7 @@
 package com.kenjdavidson.golf.handicap.settings
 
 import com.kenjdavidson.golf.handicap.ai.AiIntegrationType
+import com.kenjdavidson.golf.handicap.ai.AiProperties
 import com.kenjdavidson.golf.handicap.ai.AiSettingsService
 import com.kenjdavidson.golf.handicap.ai.GeminiProperties
 import com.kenjdavidson.golf.handicap.ai.OllamaProperties
@@ -26,7 +27,8 @@ class UserSettingsServiceTest {
     private val parserTwo = ParserTwo()
     private val aiSettingsService = AiSettingsService(
         OllamaProperties("http://localhost:11434"),
-        GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1)
+        GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1),
+        AiProperties("NONE,EXTERNAL,LOCAL,GEMINI")
     )
 
     @AfterEach
@@ -101,7 +103,8 @@ class UserSettingsServiceTest {
             )
             val localAiSettings = AiSettingsService(
                 OllamaProperties("http://localhost:11434"),
-                GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1)
+                GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1),
+                AiProperties("NONE,EXTERNAL,LOCAL,GEMINI")
             )
             val appSettings = UserSettingsService(
                 parsers = listOf(parserOne),
@@ -129,7 +132,8 @@ class UserSettingsServiceTest {
             )
             val localAiSettings = AiSettingsService(
                 OllamaProperties("http://localhost:11434"),
-                GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1)
+                GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1),
+                AiProperties("NONE,EXTERNAL,LOCAL,GEMINI")
             )
             val appSettings = UserSettingsService(
                 parsers = listOf(parserOne),

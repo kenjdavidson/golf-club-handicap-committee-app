@@ -19,6 +19,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import com.kenjdavidson.golf.handicap.ai.AiSettingsService
+import com.kenjdavidson.golf.handicap.ai.AiProperties
 import com.kenjdavidson.golf.handicap.ai.GeminiProperties
 import com.kenjdavidson.golf.handicap.ai.OllamaProperties
 import com.kenjdavidson.golf.handicap.verification.VerificationProperties
@@ -31,7 +32,8 @@ class CachingGolfCanadaHistoryLookupServiceTest {
         parsers = listOf(parser),
         aiSettingsService = AiSettingsService(
             OllamaProperties("http://localhost:11434"),
-            GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1)
+            GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1),
+            AiProperties("NONE,EXTERNAL,LOCAL,GEMINI")
         ),
         verificationProperties = VerificationProperties(20)
     )
