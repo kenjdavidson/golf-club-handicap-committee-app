@@ -5,6 +5,7 @@ import com.kenjdavidson.golf.handicap.verification.file.ClubLinkPdfRoundParser
 import com.kenjdavidson.golf.handicap.verification.file.PdfTextExtractor
 import com.kenjdavidson.golf.handicap.verification.file.RoundParser
 import com.kenjdavidson.golf.handicap.ai.AiSettingsService
+import com.kenjdavidson.golf.handicap.ai.AiProperties
 import com.kenjdavidson.golf.handicap.ai.GeminiProperties
 import com.kenjdavidson.golf.handicap.ai.OllamaProperties
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -194,7 +195,8 @@ class ClubLinkPdfRoundParserTest {
         parsers = listOf(NoopRoundParser()),
         aiSettingsService = AiSettingsService(
             OllamaProperties("http://localhost:11434"),
-            GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1)
+            GeminiProperties("https://generativelanguage.googleapis.com", "gemini-2.5-flash", 0.1),
+            AiProperties("NONE,EXTERNAL,LOCAL,GEMINI")
         ),
         verificationProperties = VerificationProperties(maxRounds)
     )
