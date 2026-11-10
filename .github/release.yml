@@ -1,0 +1,47 @@
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+
+categories:
+  - title: "Features"
+    labels:
+      - "feature"
+      - "enhancement"
+      - "feat"
+      - "type: feature"
+  - title: "Bugs"
+    labels:
+      - "bug"
+      - "bugfix"
+      - "fix"
+      - "regression"
+      - "type: bug"
+  - title: "Infrastructure / Security"
+    labels:
+      - "security"
+      - "infrastructure"
+      - "dependencies"
+      - "build"
+      - "ci"
+      - "chore"
+      - "perf"
+      - "refactor"
+      - "type: security"
+      - "type: chore"
+  - title: "Documentation"
+    labels:
+      - "documentation"
+      - "docs"
+      - "type: docs"
+
+exclude-labels:
+  - "duplicate"
+  - "question"
+  - "invalid"
+  - "wontfix"
+  - "skip release"
+
+change-template: "- $TITLE (#$NUMBER) @$AUTHOR"
+template: |
+  ## Highlights
+
+  $CHANGES
